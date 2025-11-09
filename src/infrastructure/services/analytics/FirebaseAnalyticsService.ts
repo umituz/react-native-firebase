@@ -183,6 +183,23 @@ class FirebaseAnalyticsService implements IAnalyticsService {
   getCurrentUserId(): string | null {
     return this.userId;
   }
+
+  /**
+   * Log screen view
+   */
+  async logScreenView(params: {
+    screen_name: string;
+    screen_class?: string;
+  }): Promise<void> {
+    try {
+      await this.logEvent('screen_view', {
+        screen_name: params.screen_name,
+        screen_class: params.screen_class || params.screen_name,
+      });
+    } catch (_error) {
+      // Silent fail
+    }
+  }
 }
 
 export const firebaseAnalyticsService = new FirebaseAnalyticsService();
