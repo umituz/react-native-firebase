@@ -9,11 +9,11 @@
  * Architecture:
  * - domain: Entities, value objects, errors (business logic)
  * - application: Ports (interfaces)
- * - infrastructure: Firebase client implementation
- * - presentation: Hooks (React integration)
+ * - infrastructure: Firebase client implementation + services
+ * - presentation: Hooks, decorators (React integration)
  *
  * Usage:
- *   import { initializeFirebase, getFirebaseApp, useFirebase } from '@umituz/react-native-firebase';
+ *   import { initializeFirebase, firebaseAnalyticsService, TrackEvent } from '@umituz/react-native-firebase';
  */
 
 // =============================================================================
@@ -58,4 +58,42 @@ export type {
   Auth,
   Firestore,
 } from './infrastructure/config/FirebaseClient';
+
+// =============================================================================
+// SERVICES - Analytics, Crashlytics, Performance
+// =============================================================================
+
+export {
+  firebaseAnalyticsService,
+} from './infrastructure/services/analytics/FirebaseAnalyticsService';
+export type { IAnalyticsService } from './infrastructure/services/analytics/FirebaseAnalyticsService';
+
+export {
+  firebaseCrashlyticsService,
+} from './infrastructure/services/crashlytics/FirebaseCrashlyticsService';
+export type { ICrashlyticsService } from './infrastructure/services/crashlytics/FirebaseCrashlyticsService';
+
+export {
+  performanceTracker,
+  PerformanceTracker,
+} from './infrastructure/services/performance/PerformanceTracker';
+
+// =============================================================================
+// PRESENTATION LAYER - Decorators
+// =============================================================================
+
+export {
+  TrackEvent,
+  trackEvent,
+} from './presentation/decorators/TrackingDecorator';
+
+export {
+  TrackErrors,
+  trackErrors,
+} from './presentation/decorators/ErrorTrackingDecorator';
+
+export {
+  TrackPerformance,
+  TrackOperation,
+} from './presentation/decorators/PerformanceDecorator';
 

@@ -1,6 +1,6 @@
 {
   "name": "@umituz/react-native-firebase",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Domain-Driven Design Firebase client for React Native apps with type-safe operations and singleton pattern",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -35,8 +35,22 @@
   "peerDependencies": {
     "firebase": ">=11.0.0",
     "@react-native-async-storage/async-storage": ">=1.21.0",
+    "@react-native-firebase/app": ">=20.0.0",
+    "@react-native-firebase/analytics": ">=20.0.0",
+    "@react-native-firebase/crashlytics": ">=20.0.0",
     "react": ">=18.2.0",
     "react-native": ">=0.74.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-native-firebase/app": {
+      "optional": true
+    },
+    "@react-native-firebase/analytics": {
+      "optional": true
+    },
+    "@react-native-firebase/crashlytics": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "firebase": "^11.10.0",
