@@ -1,0 +1,59 @@
+{
+  "name": "@umituz/react-native-firebase",
+  "version": "1.0.0",
+  "description": "Domain-Driven Design Firebase client for React Native apps with type-safe operations and singleton pattern",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "version:patch": "npm version patch -m 'chore: release v%s'",
+    "version:minor": "npm version minor -m 'chore: release v%s'",
+    "version:major": "npm version major -m 'chore: release v%s'"
+  },
+  "keywords": [
+    "react-native",
+    "firebase",
+    "firestore",
+    "authentication",
+    "analytics",
+    "crashlytics",
+    "ddd",
+    "domain-driven-design",
+    "type-safe",
+    "singleton",
+    "solid",
+    "dry",
+    "kiss"
+  ],
+  "author": "Ümit UZ <umit@umituz.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/umituz/react-native-firebase.git"
+  },
+  "peerDependencies": {
+    "firebase": ">=11.0.0",
+    "@react-native-async-storage/async-storage": ">=1.21.0",
+    "react": ">=18.2.0",
+    "react-native": ">=0.74.0"
+  },
+  "devDependencies": {
+    "firebase": "^11.10.0",
+    "@react-native-async-storage/async-storage": "^1.24.0",
+    "@types/react": "^18.2.45",
+    "@types/react-native": "^0.73.0",
+    "react": "^18.2.0",
+    "react-native": "^0.74.0",
+    "typescript": "^5.3.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ]
+}
+
