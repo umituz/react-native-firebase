@@ -1,6 +1,6 @@
 {
   "name": "@umituz/react-native-firebase",
-  "version": "1.3.0",
+  "version": "1.0.1",
   "description": "Domain-Driven Design Firebase client for React Native apps with type-safe operations and singleton pattern",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -14,30 +14,28 @@
   "keywords": [
     "react-native",
     "firebase",
+    "analytics",
+    "crashlytics",
     "ddd",
-    "domain-driven-design",
-    "type-safe",
-    "solid",
-    "dry",
-    "kiss",
-    "singleton"
+    "domain-driven-design"
   ],
   "author": "Ümit UZ <umit@umituz.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/umituz/react-native-firebase.git"
+    "url": "https://github.com/umituz/react-native-firebase"
   },
   "peerDependencies": {
+    "@react-native-async-storage/async-storage": ">=1.21.0",
     "firebase": ">=11.0.0",
     "react": ">=18.2.0",
-    "react-native": ">=0.74.0",
-    "@react-native-async-storage/async-storage": ">=1.21.0"
+    "react-native": ">=0.74.0"
   },
   "devDependencies": {
-    "firebase": "^11.10.0",
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@types/react": "^18.2.45",
     "@types/react-native": "^0.73.0",
+    "firebase": "^11.0.0",
     "react": "^18.2.0",
     "react-native": "^0.74.0",
     "typescript": "^5.3.3"
