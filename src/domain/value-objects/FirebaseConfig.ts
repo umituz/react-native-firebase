@@ -38,16 +38,6 @@ export interface FirebaseConfig {
    * Firebase App ID
    */
   appId?: string;
-
-  /**
-   * Optional: Custom storage adapter for Auth persistence
-   * If not provided, AsyncStorage will be used for React Native
-   */
-  authStorage?: {
-    getItem: (key: string) => Promise<string | null>;
-    setItem: (key: string, value: string) => Promise<void>;
-    removeItem: (key: string) => Promise<void>;
-  };
 }
 
 // Validation moved to FirebaseConfigValidator class (SOLID: Single Responsibility)

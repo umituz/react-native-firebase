@@ -14,15 +14,12 @@
  */
 
 import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
-import type { Firestore } from 'firebase/firestore';
 import type { FirebaseConfig } from '../../domain/value-objects/FirebaseConfig';
 import { FirebaseInitializationError } from '../../domain/errors/FirebaseError';
 import type { IFirebaseClient } from '../../application/ports/IFirebaseClient';
 import { FirebaseConfigValidator } from './validators/FirebaseConfigValidator';
 import { FirebaseAppInitializer } from './initializers/FirebaseAppInitializer';
-import { FirebaseAuthInitializer } from './initializers/FirebaseAuthInitializer';
-import { FirebaseFirestoreInitializer } from './initializers/FirebaseFirestoreInitializer';
+import { loadFirebaseConfig } from './FirebaseConfigLoader';
 
 /**
  * Firebase Client Singleton
@@ -31,8 +28,6 @@ import { FirebaseFirestoreInitializer } from './initializers/FirebaseFirestoreIn
 class FirebaseClientSingleton implements IFirebaseClient {
   private static instance: FirebaseClientSingleton | null = null;
   private app: FirebaseApp | null = null;
-  private auth: Auth | null = null;
-  private db: Firestore | null = null;
   private initializationError: string | null = null;
 
   private constructor() {
@@ -74,12 +69,6 @@ class FirebaseClientSingleton implements IFirebaseClient {
       // Initialize Firebase App
       this.app = FirebaseAppInitializer.initialize(config);
 
-      // Initialize Auth
-      this.auth = FirebaseAuthInitializer.initialize(this.app, config);
-
-      // Initialize Firestore
-      this.db = FirebaseFirestoreInitializer.initialize(this.app);
-
       return this.app;
     } catch (error) {
       this.initializationError =
@@ -92,45 +81,27 @@ class FirebaseClientSingleton implements IFirebaseClient {
 
   /**
    * Get the Firebase app instance
-   * @throws {FirebaseInitializationError} If client is not initialized
+   * Auto-initializes from Constants/environment if not already initialized
+   * @throws {FirebaseInitializationError} If client is not initialized and auto-init fails
    */
   getApp(): FirebaseApp {
+    // Auto-initialize if not already initialized
+    if (!this.app && !this.initializationError) {
+      const autoConfig = loadFirebaseConfig();
+      if (autoConfig) {
+        this.initialize(autoConfig);
+      }
+    }
+
     if (!this.app) {
       const errorMsg =
         this.initializationError ||
-        'Firebase client not initialized. Call initialize() first with configuration.';
+        'Firebase client not initialized. Call initialize() first with configuration, or set Firebase config in Constants/expoConfig.extra or environment variables.';
       throw new FirebaseInitializationError(errorMsg);
     }
     return this.app;
   }
 
-  /**
-   * Get the Firebase Auth instance
-   * @throws {FirebaseInitializationError} If client is not initialized
-   */
-  getAuth(): Auth {
-    if (!this.auth) {
-      const errorMsg =
-        this.initializationError ||
-        'Firebase client not initialized. Call initialize() first with configuration.';
-      throw new FirebaseInitializationError(errorMsg);
-    }
-    return this.auth;
-  }
-
-  /**
-   * Get the Firestore instance
-   * @throws {FirebaseInitializationError} If client is not initialized
-   */
-  getFirestore(): Firestore {
-    if (!this.db) {
-      const errorMsg =
-        this.initializationError ||
-        'Firebase client not initialized. Call initialize() first with configuration.';
-      throw new FirebaseInitializationError(errorMsg);
-    }
-    return this.db;
-  }
 
   /**
    * Check if client is initialized
@@ -152,8 +123,6 @@ class FirebaseClientSingleton implements IFirebaseClient {
    */
   reset(): void {
     this.app = null;
-    this.auth = null;
-    this.db = null;
     this.initializationError = null;
   }
 }
@@ -191,26 +160,25 @@ export function initializeFirebase(
 
 /**
  * Get Firebase app instance
- * @throws {FirebaseInitializationError} If client is not initialized
+ * Auto-initializes from Constants/environment if not already initialized
+ * @throws {FirebaseInitializationError} If client is not initialized and auto-init fails
  */
 export function getFirebaseApp(): FirebaseApp {
   return firebaseClient.getApp();
 }
 
 /**
- * Get Firebase Auth instance
- * @throws {FirebaseInitializationError} If client is not initialized
+ * Auto-initialize Firebase from Constants/environment
+ * Called automatically when getFirebaseApp() is first accessed
+ * Can be called manually to initialize early
+ * @returns Firebase app instance or null if initialization fails
  */
-export function getFirebaseAuth(): Auth {
-  return firebaseClient.getAuth();
-}
-
-/**
- * Get Firestore instance
- * @throws {FirebaseInitializationError} If client is not initialized
- */
-export function getFirestore(): Firestore {
-  return firebaseClient.getFirestore();
+export function autoInitializeFirebase(): FirebaseApp | null {
+  const config = loadFirebaseConfig();
+  if (config) {
+    return initializeFirebase(config);
+  }
+  return null;
 }
 
 /**
@@ -237,6 +205,4 @@ export function resetFirebaseClient(): void {
 
 // Export types
 export type { FirebaseApp } from 'firebase/app';
-export type { Auth } from 'firebase/auth';
-export type { Firestore } from 'firebase/firestore';
 export type { FirebaseConfig } from '../../domain/value-objects/FirebaseConfig';

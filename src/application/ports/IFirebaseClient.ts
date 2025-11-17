@@ -6,12 +6,14 @@
  */
 
 import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
-import type { Firestore } from 'firebase/firestore';
 
 /**
  * Firebase Client Interface
  * Defines the contract for Firebase client operations
+ * 
+ * Note: 
+ * - Firebase Auth is now handled by @umituz/react-native-firebase-auth
+ * - Firestore is now handled by @umituz/react-native-firestore
  */
 export interface IFirebaseClient {
   /**
@@ -19,18 +21,6 @@ export interface IFirebaseClient {
    * @throws {FirebaseInitializationError} If client is not initialized
    */
   getApp(): FirebaseApp;
-
-  /**
-   * Get the Firebase Auth instance
-   * @throws {FirebaseInitializationError} If client is not initialized
-   */
-  getAuth(): Auth;
-
-  /**
-   * Get the Firestore instance
-   * @throws {FirebaseInitializationError} If client is not initialized
-   */
-  getFirestore(): Firestore;
 
   /**
    * Check if client is initialized
@@ -48,6 +38,7 @@ export interface IFirebaseClient {
    */
   reset(): void;
 }
+
 
 
 

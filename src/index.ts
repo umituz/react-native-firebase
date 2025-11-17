@@ -1,19 +1,22 @@
 /**
- * React Native Firebase - Public API
+ * React Native Firebase - Minimal Core Package
  *
  * Domain-Driven Design (DDD) Architecture
  *
- * This is the SINGLE SOURCE OF TRUTH for all Firebase operations.
- * ALL imports from the Firebase package MUST go through this file.
+ * This package provides ONLY Firebase App initialization.
+ * For other Firebase services, use dedicated packages:
+ * - @umituz/react-native-firebase-auth - Firebase Authentication
+ * - @umituz/react-native-firebase-analytics - Firebase Analytics
+ * - @umituz/react-native-firebase-crashlytics - Firebase Crashlytics
+ * - @umituz/react-native-firestore - Firestore initialization and utilities
  *
  * Architecture:
  * - domain: Entities, value objects, errors (business logic)
  * - application: Ports (interfaces)
- * - infrastructure: Firebase client implementation + services
- * - presentation: Hooks, decorators (React integration)
+ * - infrastructure: Firebase client implementation
  *
  * Usage:
- *   import { initializeFirebase, firebaseAnalyticsService, TrackEvent } from '@umituz/react-native-firebase';
+ *   import { initializeFirebase, getFirebaseApp } from '@umituz/react-native-firebase';
  */
 
 // =============================================================================
@@ -24,10 +27,6 @@ export {
   FirebaseError,
   FirebaseInitializationError,
   FirebaseConfigurationError,
-  FirebaseAnalyticsError,
-  FirebaseCrashlyticsError,
-  FirebaseAuthError,
-  FirebaseFirestoreError,
 } from './domain/errors/FirebaseError';
 
 export type { FirebaseConfig } from './domain/value-objects/FirebaseConfig';
@@ -45,8 +44,7 @@ export type { IFirebaseClient } from './application/ports/IFirebaseClient';
 export {
   initializeFirebase,
   getFirebaseApp,
-  getFirebaseAuth,
-  getFirestore,
+  autoInitializeFirebase,
   isFirebaseInitialized,
   getFirebaseInitializationError,
   resetFirebaseClient,
@@ -55,45 +53,5 @@ export {
 
 export type {
   FirebaseApp,
-  Auth,
-  Firestore,
 } from './infrastructure/config/FirebaseClient';
-
-// =============================================================================
-// SERVICES - Analytics, Crashlytics, Performance
-// =============================================================================
-
-export {
-  firebaseAnalyticsService,
-} from './infrastructure/services/analytics/FirebaseAnalyticsService';
-export type { IAnalyticsService } from './infrastructure/services/analytics/FirebaseAnalyticsService';
-
-export {
-  firebaseCrashlyticsService,
-} from './infrastructure/services/crashlytics/FirebaseCrashlyticsService';
-export type { ICrashlyticsService } from './infrastructure/services/crashlytics/FirebaseCrashlyticsService';
-
-export {
-  performanceTracker,
-  PerformanceTracker,
-} from './infrastructure/services/performance/PerformanceTracker';
-
-// =============================================================================
-// PRESENTATION LAYER - Decorators
-// =============================================================================
-
-export {
-  TrackEvent,
-  trackEvent,
-} from './presentation/decorators/TrackingDecorator';
-
-export {
-  TrackErrors,
-  trackErrors,
-} from './presentation/decorators/ErrorTrackingDecorator';
-
-export {
-  TrackPerformance,
-  TrackOperation,
-} from './presentation/decorators/PerformanceDecorator';
 

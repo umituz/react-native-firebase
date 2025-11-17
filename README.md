@@ -72,7 +72,9 @@ if (!app) {
 #### Direct Access
 
 ```typescript
-import { getFirebaseApp, getFirebaseAuth, getFirestore } from '@umituz/react-native-firebase';
+import { getFirebaseApp } from '@umituz/react-native-firebase';
+import { getFirebaseAuth } from '@umituz/react-native-firebase-auth';
+import { getFirestore } from '@umituz/react-native-firestore';
 
 // Get instances
 const app = getFirebaseApp();
@@ -134,9 +136,7 @@ if (isFirebaseInitialized()) {
 - **Single Responsibility**: Each class has one clear purpose
   - `FirebaseConfigValidator`: Only validates configuration
   - `FirebaseAppInitializer`: Only initializes Firebase App
-  - `FirebaseAuthInitializer`: Only initializes Auth
-  - `FirebaseFirestoreInitializer`: Only initializes Firestore
-  - `FirebaseClient`: Only orchestrates initialization
+  - `FirebaseClient`: Only orchestrates Firebase App initialization
 
 - **Open/Closed**: Extensible through configuration, closed for modification
 
@@ -157,28 +157,30 @@ if (isFirebaseInitialized()) {
 
 ### Functions
 
-- `initializeFirebase(config)`: Initialize Firebase client with configuration
-- `getFirebaseApp()`: Get Firebase app instance (throws if not initialized)
-- `getFirebaseAuth()`: Get Firebase Auth instance (throws if not initialized)
-- `getFirestore()`: Get Firestore instance (throws if not initialized)
-- `isFirebaseInitialized()`: Check if client is initialized
+- `initializeFirebase(config)`: Initialize Firebase App with configuration
+- `getFirebaseApp()`: Get Firebase App instance (throws if not initialized)
+- `isFirebaseInitialized()`: Check if Firebase App is initialized
 - `getFirebaseInitializationError()`: Get initialization error if any
 - `resetFirebaseClient()`: Reset client instance (useful for testing)
 
 ### Types
 
 - `FirebaseConfig`: Configuration interface
-- `FirebaseApp`: Firebase app type
-- `Auth`: Firebase Auth type
-- `Firestore`: Firestore type
+- `FirebaseApp`: Firebase App type
 
 ### Errors
 
 - `FirebaseError`: Base error class
 - `FirebaseInitializationError`: Initialization errors
 - `FirebaseConfigurationError`: Configuration errors
-- `FirebaseAuthError`: Authentication errors
-- `FirebaseFirestoreError`: Firestore errors
+
+### Related Packages
+
+For other Firebase services, use dedicated packages:
+- `@umituz/react-native-firebase-auth` - Firebase Authentication
+- `@umituz/react-native-firebase-analytics` - Firebase Analytics
+- `@umituz/react-native-firebase-crashlytics` - Firebase Crashlytics
+- `@umituz/react-native-firestore` - Firestore initialization and utilities
 
 ## Integration with Expo
 
@@ -212,6 +214,7 @@ module.exports = () => {
 ## License
 
 MIT
+
 
 
 
