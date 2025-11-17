@@ -82,9 +82,10 @@ class FirebaseClientSingleton implements IFirebaseClient {
   /**
    * Get the Firebase app instance
    * Auto-initializes from Constants/environment if not already initialized
-   * @throws {FirebaseInitializationError} If client is not initialized and auto-init fails
+   * Returns null if config is not available (offline mode)
+   * @returns Firebase app instance or null if not initialized
    */
-  getApp(): FirebaseApp {
+  getApp(): FirebaseApp | null {
     // Auto-initialize if not already initialized
     if (!this.app && !this.initializationError) {
       const autoConfig = loadFirebaseConfig();
@@ -93,13 +94,8 @@ class FirebaseClientSingleton implements IFirebaseClient {
       }
     }
 
-    if (!this.app) {
-      const errorMsg =
-        this.initializationError ||
-        'Firebase client not initialized. Call initialize() first with configuration, or set Firebase config in Constants/expoConfig.extra or environment variables.';
-      throw new FirebaseInitializationError(errorMsg);
-    }
-    return this.app;
+    // Return null if not initialized (offline mode - no error)
+    return this.app || null;
   }
 
 
@@ -161,9 +157,10 @@ export function initializeFirebase(
 /**
  * Get Firebase app instance
  * Auto-initializes from Constants/environment if not already initialized
- * @throws {FirebaseInitializationError} If client is not initialized and auto-init fails
+ * Returns null if config is not available (offline mode - no error)
+ * @returns Firebase app instance or null if not initialized
  */
-export function getFirebaseApp(): FirebaseApp {
+export function getFirebaseApp(): FirebaseApp | null {
   return firebaseClient.getApp();
 }
 
