@@ -57,8 +57,13 @@ export function loadFirebaseConfig(): FirebaseConfig | null {
       '',
   };
 
-  // Only return config if required fields are present
-  if (config.apiKey && config.projectId) {
+  // Only return config if required fields are present and not empty
+  if (
+    config.apiKey &&
+    config.projectId &&
+    config.apiKey.trim() !== '' &&
+    config.projectId.trim() !== ''
+  ) {
     return config as FirebaseConfig;
   }
 
