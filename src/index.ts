@@ -45,6 +45,7 @@ export {
   initializeFirebase,
   getFirebaseApp,
   autoInitializeFirebase,
+  initializeAllFirebaseServices,
   isFirebaseInitialized,
   getFirebaseInitializationError,
   resetFirebaseClient,

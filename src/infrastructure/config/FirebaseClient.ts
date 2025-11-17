@@ -179,6 +179,95 @@ export function autoInitializeFirebase(): FirebaseApp | null {
 }
 
 /**
+ * Initialize all Firebase services (App, Auth, Analytics, Crashlytics)
+ * This is the main entry point for applications - call this once at app startup
+ * All services will be initialized automatically if Firebase App is available
+ * 
+ * @param config - Optional Firebase configuration (if not provided, will auto-load from Constants/env)
+ * @returns Object with initialization results for each service
+ * 
+ * @example
+ * ```typescript
+ * import { initializeAllFirebaseServices } from '@umituz/react-native-firebase';
+ * 
+ * // Auto-initialize from Constants/env
+ * const result = await initializeAllFirebaseServices();
+ * 
+ * // Or provide config explicitly
+ * const result = await initializeAllFirebaseServices({
+ *   apiKey: 'your-api-key',
+ *   projectId: 'your-project-id',
+ *   // ...
+ * });
+ * ```
+ */
+export async function initializeAllFirebaseServices(
+  config?: FirebaseConfig
+): Promise<{
+  app: FirebaseApp | null;
+  auth: any | null;
+  analytics: any | null;
+  crashlytics: any | null;
+}> {
+  // 1. Initialize Firebase App
+  let app: FirebaseApp | null = null;
+  if (config) {
+    app = initializeFirebase(config);
+  } else {
+    app = autoInitializeFirebase();
+  }
+
+  if (!app) {
+    // Firebase App not available - return null for all services
+    return {
+      app: null,
+      auth: null,
+      analytics: null,
+      crashlytics: null,
+    };
+  }
+
+  // 2. Initialize Firebase Auth (if package is available)
+  let auth: any | null = null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { initializeFirebaseAuth } = require('@umituz/react-native-firebase-auth');
+    auth = initializeFirebaseAuth();
+  } catch {
+    // @umituz/react-native-firebase-auth not available
+  }
+
+  // 3. Initialize Firebase Analytics (if package is available)
+  let analytics: any | null = null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { firebaseAnalyticsService } = require('@umituz/react-native-firebase-analytics');
+    await firebaseAnalyticsService.init();
+    analytics = firebaseAnalyticsService;
+  } catch {
+    // @umituz/react-native-firebase-analytics not available
+  }
+
+  // 4. Initialize Firebase Crashlytics (if package is available)
+  let crashlytics: any | null = null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { firebaseCrashlyticsService } = require('@umituz/react-native-firebase-crashlytics');
+    await firebaseCrashlyticsService.init();
+    crashlytics = firebaseCrashlyticsService;
+  } catch {
+    // @umituz/react-native-firebase-crashlytics not available
+  }
+
+  return {
+    app,
+    auth,
+    analytics,
+    crashlytics,
+  };
+}
+
+/**
  * Check if Firebase client is initialized
  */
 export function isFirebaseInitialized(): boolean {
