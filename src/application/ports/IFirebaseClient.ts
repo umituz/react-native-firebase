@@ -18,9 +18,10 @@ import type { FirebaseApp } from 'firebase/app';
 export interface IFirebaseClient {
   /**
    * Get the Firebase app instance
-   * @throws {FirebaseInitializationError} If client is not initialized
+   * Returns null if config is not available (offline mode)
+   * @returns Firebase app instance or null if not initialized
    */
-  getApp(): FirebaseApp;
+  getApp(): FirebaseApp | null;
 
   /**
    * Check if client is initialized
