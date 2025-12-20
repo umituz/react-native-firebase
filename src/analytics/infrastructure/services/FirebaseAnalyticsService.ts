@@ -1,0 +1,165 @@
+/**
+ * Firebase Analytics Service
+ * Single Responsibility: Orchestrate analytics operations
+ * Delegates to specialized services for initialization, events, and user management
+ */
+
+import { analyticsInitializerService } from './analytics-initializer.service';
+import { analyticsEventService } from './analytics-event.service';
+import { analyticsUserService } from './analytics-user.service';
+import type { AnalyticsInstance } from './analytics-initializer.service';
+import type { IAnalyticsService } from '../../application/ports/IAnalyticsService';
+import { nativeAnalyticsAdapter } from '../adapters/native-analytics.adapter';
+
+export type { IAnalyticsService };
+
+class FirebaseAnalyticsService implements IAnalyticsService {
+  private isInitialized = false;
+  private userId: string | null = null;
+  private userProperties: Record<string, string> = {};
+  private analyticsInstance: AnalyticsInstance | null = null;
+
+  async init(userId?: string): Promise<void> {
+    if (this.isInitialized) {
+      if (userId && userId !== this.userId) {
+        await this.setUserId(userId);
+      }
+      return;
+    }
+
+    try {
+      this.analyticsInstance = await analyticsInitializerService.initialize();
+
+      if (this.analyticsInstance) {
+        if (userId) {
+          this.userId = userId;
+          await analyticsUserService.setUserId(this.analyticsInstance, userId);
+        }
+
+        // Explicitly enable analytics collection to ensure it's active
+        await this.setAnalyticsCollectionEnabled(true);
+      }
+    } catch (_error) {
+      // Analytics is non-critical, fail silently
+    } finally {
+      this.isInitialized = true;
+    }
+  }
+
+  async setAnalyticsCollectionEnabled(enabled: boolean): Promise<void> {
+    if (!this.analyticsInstance) {
+      return;
+    }
+
+    try {
+      if (this.analyticsInstance.platform === 'native' && nativeAnalyticsAdapter) {
+        await nativeAnalyticsAdapter.setAnalyticsCollectionEnabled(
+          this.analyticsInstance.instance,
+          enabled,
+        );
+      }
+    } catch (_error) {
+      // Fail silently
+    }
+  }
+
+  async setUserId(userId: string): Promise<void> {
+    if (!this.isInitialized || !this.analyticsInstance) {
+      // Not initialized yet, will be set during init
+      return;
+    }
+
+    if (this.userId === userId) {
+      // Already set to this user ID
+      return;
+    }
+
+    try {
+      this.userId = userId;
+      await analyticsUserService.setUserId(this.analyticsInstance, userId);
+    } catch (_error) {
+      // Analytics is non-critical, fail silently
+    }
+  }
+
+  async logEvent(
+    eventName: string,
+    params?: Record<string, string | number | boolean | null>,
+  ): Promise<void> {
+    if (!this.isInitialized) {
+      return;
+    }
+    await analyticsEventService.logEvent(this.analyticsInstance, eventName, params);
+  }
+
+  async setUserProperty(key: string, value: string): Promise<void> {
+    this.userProperties[key] = value;
+    await analyticsUserService.setUserProperty(this.analyticsInstance, key, value);
+  }
+
+  async setUserProperties(properties: Record<string, string>): Promise<void> {
+    await analyticsUserService.setUserProperties(this.analyticsInstance, properties);
+    Object.assign(this.userProperties, properties);
+  }
+
+  async clearUserData(): Promise<void> {
+    await analyticsUserService.clearUserData(this.analyticsInstance);
+    this.userId = null;
+    this.userProperties = {};
+    this.isInitialized = false;
+  }
+
+  getCurrentUserId(): string | null {
+    return this.userId;
+  }
+
+  async logScreenView(params: {
+    screen_name: string;
+    screen_class?: string;
+  }): Promise<void> {
+    await this.logEvent('screen_view', {
+      screen_name: params.screen_name,
+      screen_class: params.screen_class || params.screen_name,
+    });
+  }
+
+  async logScreenTime(params: {
+    screen_name: string;
+    screen_class?: string;
+    time_spent_seconds: number;
+  }): Promise<void> {
+    await this.logEvent('screen_time', {
+      screen_name: params.screen_name,
+      screen_class: params.screen_class || params.screen_name,
+      time_spent_seconds: params.time_spent_seconds,
+    });
+  }
+
+  async logNavigation(params: {
+    from_screen: string;
+    to_screen: string;
+    screen_class?: string;
+  }): Promise<void> {
+    await this.logEvent('navigation', {
+      from_screen: params.from_screen,
+      to_screen: params.to_screen,
+      screen_class: params.screen_class || params.to_screen,
+    });
+  }
+
+  async logButtonClick(params: {
+    button_id: string;
+    button_name?: string;
+    screen_name: string;
+    screen_class?: string;
+  }): Promise<void> {
+    await this.logEvent('button_click', {
+      button_id: params.button_id,
+      button_name: params.button_name || params.button_id,
+      screen_name: params.screen_name,
+      screen_class: params.screen_class || params.screen_name,
+    });
+  }
+}
+
+export const firebaseAnalyticsService = new FirebaseAnalyticsService();

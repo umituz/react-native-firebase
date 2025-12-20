@@ -1,0 +1,38 @@
+/**
+ * Firebase Domain Errors
+ * 
+ * Domain-Driven Design: Specialized error types for the Firebase domain
+ */
+
+/**
+ * Base Firebase error class
+ */
+export class FirebaseError extends Error {
+    constructor(message: string, public code?: string, public cause?: any) {
+        super(message);
+        this.name = 'FirebaseError';
+        Object.setPrototypeOf(this, FirebaseError.prototype);
+    }
+}
+
+/**
+ * Initialization specific error
+ */
+export class FirebaseInitializationError extends FirebaseError {
+    constructor(message: string, cause?: any) {
+        super(message, 'INITIALIZATION_ERROR', cause);
+        this.name = 'FirebaseInitializationError';
+        Object.setPrototypeOf(this, FirebaseInitializationError.prototype);
+    }
+}
+
+/**
+ * Configuration specific error
+ */
+export class FirebaseConfigurationError extends FirebaseError {
+    constructor(message: string, cause?: any) {
+        super(message, 'CONFIGURATION_ERROR', cause);
+        this.name = 'FirebaseConfigurationError';
+        Object.setPrototypeOf(this, FirebaseConfigurationError.prototype);
+    }
+}
