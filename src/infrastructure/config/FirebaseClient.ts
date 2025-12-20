@@ -21,6 +21,8 @@ import {
   type FirebaseApp,
 } from './initializers/FirebaseAppInitializer';
 import { loadFirebaseConfig } from './FirebaseConfigLoader';
+import { firebaseAnalyticsService } from '../../analytics';
+import { firebaseCrashlyticsService } from '../../crashlytics';
 
 export type { FirebaseApp };
 
@@ -299,23 +301,26 @@ interface ServiceInitializationResult {
  */
 class ServiceInitializer {
   /**
-   * Initialize optional Firebase service with error handling
+   * Initialize Firebase Auth from external package
    */
-  private static initializeService(
-    packageName: string,
-    initializerName: string,
-    isAsync = false
-  ): any | null {
+  private static initializeAuth(): any | null {
     try {
-      const serviceModule = require(packageName);
-      const service = serviceModule[initializerName];
+      const authModule = require('@umituz/react-native-firebase-auth');
+      const initializeFirebaseAuth = authModule.initializeFirebaseAuth;
 
-      if (isAsync && typeof service.init === 'function') {
-        return service;
+      if (typeof initializeFirebaseAuth !== 'function') {
+        if (__DEV__) {
+          console.warn('[Firebase] initializeFirebaseAuth is not a function');
+        }
+        return null;
       }
 
-      return typeof service === 'function' ? service() : service;
-    } catch {
+      const auth = initializeFirebaseAuth();
+      return auth;
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('[Firebase] Auth package not available:', error instanceof Error ? error.message : 'Unknown error');
+      }
       return null;
     }
   }
@@ -332,22 +337,12 @@ class ServiceInitializer {
       console.log('[Firebase] Initializing optional services...');
     }
 
-    const auth = this.initializeService(
-      '@umituz/react-native-firebase-auth',
-      'initializeFirebaseAuth'
-    );
+    // Initialize auth from external package
+    const auth = this.initializeAuth();
 
-    const analytics = this.initializeService(
-      '@umituz/react-native-firebase-analytics',
-      'firebaseAnalyticsService',
-      true
-    );
-
-    const crashlytics = this.initializeService(
-      '@umituz/react-native-firebase-crashlytics',
-      'firebaseCrashlyticsService',
-      true
-    );
+    // Analytics and Crashlytics are local modules - use imported services directly
+    const analytics = firebaseAnalyticsService;
+    const crashlytics = firebaseCrashlyticsService;
 
     if (__DEV__) {
       console.log('[Firebase] Services initialized - Auth:', !!auth, 'Analytics:', !!analytics, 'Crashlytics:', !!crashlytics);
