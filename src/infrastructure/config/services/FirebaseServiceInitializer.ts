@@ -1,15 +1,12 @@
 /**
  * Firebase Service Initializer
- * Handles initialization of Firebase services (Analytics, Crashlytics)
+ * Handles initialization of Firebase Auth service
  *
  * NOTE: Auth initialization is handled by the main app via callback.
  * This removes the need for dynamic require() which causes issues in production.
  *
- * Single Responsibility: Only initializes Firebase services
+ * Single Responsibility: Only initializes Firebase Auth service
  */
-
-import { firebaseAnalyticsService } from '../../../analytics';
-import { firebaseCrashlyticsService } from '../../../crashlytics';
 
 declare const __DEV__: boolean;
 
@@ -21,8 +18,6 @@ export interface ServiceInitializationOptions {
 
 export interface ServiceInitializationResult {
   auth: unknown;
-  analytics: typeof firebaseAnalyticsService;
-  crashlytics: typeof firebaseCrashlyticsService;
 }
 
 export class FirebaseServiceInitializer {
@@ -30,7 +25,7 @@ export class FirebaseServiceInitializer {
     options?: ServiceInitializationOptions
   ): Promise<ServiceInitializationResult> {
     if (__DEV__) {
-      console.log('[Firebase] Initializing services...');
+      console.log('[Firebase] Initializing auth service...');
     }
 
     let auth: unknown = null;
@@ -50,20 +45,10 @@ export class FirebaseServiceInitializer {
       }
     }
 
-    const analytics = firebaseAnalyticsService;
-    const crashlytics = firebaseCrashlyticsService;
-
     if (__DEV__) {
-      console.log(
-        '[Firebase] Services initialized - Auth:',
-        !!auth,
-        'Analytics:',
-        !!analytics,
-        'Crashlytics:',
-        !!crashlytics
-      );
+      console.log('[Firebase] Auth service initialized:', !!auth);
     }
 
-    return { auth, analytics, crashlytics };
+    return { auth };
   }
 }

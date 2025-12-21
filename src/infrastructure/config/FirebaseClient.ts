@@ -38,8 +38,6 @@ declare const __DEV__: boolean;
 export interface ServiceInitializationResult {
   app: FirebaseApp | null;
   auth: unknown;
-  analytics: unknown;
-  crashlytics: unknown;
 }
 
 /**
@@ -111,7 +109,7 @@ export function autoInitializeFirebase(): FirebaseApp | null {
 }
 
 /**
- * Initialize all Firebase services (App, Auth, Analytics, Crashlytics)
+ * Initialize all Firebase services (App and Auth)
  * This is the main entry point for applications - call this once at app startup
  *
  * IMPORTANT: Auth initialization is handled via callback to avoid require() issues.
@@ -141,36 +139,21 @@ export async function initializeAllFirebaseServices(
     return {
       app: null,
       auth: null,
-      analytics: null,
-      crashlytics: null,
     };
   }
 
-  const { auth, analytics, crashlytics } =
-    await FirebaseServiceInitializer.initializeServices(options);
-
-  if (analytics && typeof (analytics as { init?: () => Promise<void> }).init === 'function') {
-    await (analytics as { init: () => Promise<void> }).init();
-  }
-
-  if (crashlytics && typeof (crashlytics as { init?: () => Promise<void> }).init === 'function') {
-    await (crashlytics as { init: () => Promise<void> }).init();
-  }
+  const { auth } = await FirebaseServiceInitializer.initializeServices(options);
 
   if (__DEV__) {
     console.log('[Firebase] All services initialized:', {
       app: !!app,
       auth: !!auth,
-      analytics: !!analytics,
-      crashlytics: !!crashlytics,
     });
   }
 
   return {
     app,
     auth,
-    analytics,
-    crashlytics,
   };
 }
 
