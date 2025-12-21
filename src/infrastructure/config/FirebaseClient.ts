@@ -7,6 +7,9 @@
  * IMPORTANT: This package does NOT read from .env files.
  * Configuration must be provided by the application.
  *
+ * NOTE: Auth initialization is handled by the main app via callback.
+ * This removes the need for dynamic require() which causes issues in production.
+ *
  * SOLID Principles:
  * - Single Responsibility: Only orchestrates initialization, delegates to specialized classes
  * - Open/Closed: Extensible through configuration, closed for modification
@@ -15,154 +18,28 @@
 
 import type { FirebaseConfig } from '../../domain/value-objects/FirebaseConfig';
 import type { IFirebaseClient } from '../../application/ports/IFirebaseClient';
-import { FirebaseConfigValidator } from './validators/FirebaseConfigValidator';
+import type { FirebaseApp } from './initializers/FirebaseAppInitializer';
+import { FirebaseClientState } from './state/FirebaseClientState';
+import { FirebaseInitializationOrchestrator } from './orchestrators/FirebaseInitializationOrchestrator';
 import {
-  FirebaseAppInitializer,
-  type FirebaseApp,
-} from './initializers/FirebaseAppInitializer';
+  FirebaseServiceInitializer,
+  type AuthInitializer,
+  type ServiceInitializationOptions,
+} from './services/FirebaseServiceInitializer';
 import { loadFirebaseConfig } from './FirebaseConfigLoader';
-import { firebaseAnalyticsService } from '../../analytics';
-import { firebaseCrashlyticsService } from '../../crashlytics';
 
-export type { FirebaseApp };
+export type { FirebaseApp, AuthInitializer, ServiceInitializationOptions };
 
-// Development environment check
 declare const __DEV__: boolean;
 
 /**
- * Firebase Client State Manager
- * Manages the state of Firebase initialization
+ * Service initialization result interface
  */
-class FirebaseClientState {
-  private app: FirebaseApp | null = null;
-  private initializationError: string | null = null;
-
-  /**
-   * Get the current Firebase app instance
-   */
-  getApp(): FirebaseApp | null {
-    return this.app;
-  }
-
-  /**
-   * Set the Firebase app instance
-   */
-  setApp(app: FirebaseApp | null): void {
-    this.app = app;
-  }
-
-  /**
-   * Check if client is initialized
-   */
-  isInitialized(): boolean {
-    return this.app !== null;
-  }
-
-  /**
-   * Get initialization error if any
-   */
-  getInitializationError(): string | null {
-    return this.initializationError;
-  }
-
-  /**
-   * Set initialization error
-   */
-  setInitializationError(error: string | null): void {
-    this.initializationError = error;
-  }
-
-  /**
-   * Reset the client state
-   */
-  reset(): void {
-    this.app = null;
-    this.initializationError = null;
-  }
-}
-
-/**
- * Firebase Initialization Orchestrator
- * Handles the initialization logic
- */
-class FirebaseInitializationOrchestrator {
-  /**
-   * Initialize Firebase with configuration
-   */
-  static initialize(
-    config: FirebaseConfig,
-    state: FirebaseClientState
-  ): FirebaseApp | null {
-    // Return existing instance if already initialized
-    if (state.isInitialized()) {
-      if (__DEV__) {
-        console.log('[Firebase] Already initialized, returning existing instance');
-      }
-      return state.getApp();
-    }
-
-    // Don't retry if initialization already failed
-    if (state.getInitializationError()) {
-      if (__DEV__) {
-        console.log('[Firebase] Previous initialization failed, skipping retry');
-      }
-      return null;
-    }
-
-    try {
-      if (__DEV__) {
-        console.log('[Firebase] Initializing with projectId:', config.projectId);
-      }
-
-      // Validate configuration
-      FirebaseConfigValidator.validate(config);
-
-      // Initialize Firebase App
-      const app = FirebaseAppInitializer.initialize(config);
-      state.setApp(app);
-
-      if (__DEV__) {
-        console.log('[Firebase] Successfully initialized');
-      }
-
-      return app;
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Failed to initialize Firebase client';
-      state.setInitializationError(errorMessage);
-
-      if (__DEV__) {
-        console.error('[Firebase] Initialization failed:', errorMessage);
-      }
-
-      return null;
-    }
-  }
-
-  /**
-   * Auto-initialize Firebase from environment
-   */
-  static autoInitialize(state: FirebaseClientState): FirebaseApp | null {
-    if (state.isInitialized() || state.getInitializationError()) {
-      return state.getApp();
-    }
-
-    const autoConfig = loadFirebaseConfig();
-    if (autoConfig) {
-      if (__DEV__) {
-        console.log('[Firebase] Auto-initializing with environment config');
-      }
-      return this.initialize(autoConfig, state);
-    }
-
-    if (__DEV__) {
-      console.log('[Firebase] No configuration found for auto-initialization');
-    }
-
-    return null;
-  }
+export interface ServiceInitializationResult {
+  app: FirebaseApp | null;
+  auth: unknown;
+  analytics: unknown;
+  crashlytics: unknown;
 }
 
 /**
@@ -177,9 +54,6 @@ class FirebaseClientSingleton implements IFirebaseClient {
     this.state = new FirebaseClientState();
   }
 
-  /**
-   * Get singleton instance
-   */
   static getInstance(): FirebaseClientSingleton {
     if (!FirebaseClientSingleton.instance) {
       FirebaseClientSingleton.instance = new FirebaseClientSingleton();
@@ -187,86 +61,39 @@ class FirebaseClientSingleton implements IFirebaseClient {
     return FirebaseClientSingleton.instance;
   }
 
-  /**
-   * Initialize Firebase client with configuration
-   * Configuration must be provided by the application (not from .env)
-   *
-   * @param config - Firebase configuration
-   * @returns Firebase app instance or null if initialization fails
-   */
   initialize(config: FirebaseConfig): FirebaseApp | null {
     return FirebaseInitializationOrchestrator.initialize(config, this.state);
   }
 
-  /**
-   * Get the Firebase app instance
-   * Auto-initializes from Constants/environment if not already initialized
-   * Returns null if config is not available (offline mode - no error)
-   * @returns Firebase app instance or null if not initialized
-   */
   getApp(): FirebaseApp | null {
     return FirebaseInitializationOrchestrator.autoInitialize(this.state);
   }
 
-  /**
-   * Check if client is initialized
-   */
   isInitialized(): boolean {
     return this.state.isInitialized();
   }
 
-  /**
-   * Get initialization error if any
-   */
   getInitializationError(): string | null {
     return this.state.getInitializationError();
   }
 
-  /**
-   * Reset the client instance
-   * Useful for testing
-   */
   reset(): void {
     this.state.reset();
   }
 }
 
-/**
- * Singleton instance
- */
 export const firebaseClient = FirebaseClientSingleton.getInstance();
 
 /**
- * Initialize Firebase client
- * This is the main entry point for applications
- *
- * @param config - Firebase configuration (must be provided by app, not from .env)
- * @returns Firebase app instance or null if initialization fails
- *
- * @example
- * ```typescript
- * import { initializeFirebase } from '@umituz/react-native-firebase';
- *
- * const config = {
- *   apiKey: 'your-api-key',
- *   authDomain: 'your-project.firebaseapp.com',
- *   projectId: 'your-project-id',
- * };
- *
- * const app = initializeFirebase(config);
- * ```
+ * Initialize Firebase client with configuration
  */
-export function initializeFirebase(
-  config: FirebaseConfig
-): FirebaseApp | null {
+export function initializeFirebase(config: FirebaseConfig): FirebaseApp | null {
   return firebaseClient.initialize(config);
 }
 
 /**
  * Get Firebase app instance
  * Auto-initializes from Constants/environment if not already initialized
- * Returns null if config is not available (offline mode - no error)
- * @returns Firebase app instance or null if not initialized
  */
 export function getFirebaseApp(): FirebaseApp | null {
   return firebaseClient.getApp();
@@ -274,9 +101,6 @@ export function getFirebaseApp(): FirebaseApp | null {
 
 /**
  * Auto-initialize Firebase from Constants/environment
- * Called automatically when getFirebaseApp() is first accessed
- * Can be called manually to initialize early
- * @returns Firebase app instance or null if initialization fails
  */
 export function autoInitializeFirebase(): FirebaseApp | null {
   const config = loadFirebaseConfig();
@@ -287,96 +111,29 @@ export function autoInitializeFirebase(): FirebaseApp | null {
 }
 
 /**
- * Service initialization result interface
- */
-interface ServiceInitializationResult {
-  app: FirebaseApp | null;
-  auth: any | null;
-  analytics: any | null;
-  crashlytics: any | null;
-}
-
-/**
- * Service initializer class for better separation of concerns
- */
-class ServiceInitializer {
-  /**
-   * Initialize Firebase Auth from external package
-   */
-  private static initializeAuth(): any | null {
-    try {
-      const authModule = require('@umituz/react-native-firebase-auth');
-      const initializeFirebaseAuth = authModule.initializeFirebaseAuth;
-
-      if (typeof initializeFirebaseAuth !== 'function') {
-        if (__DEV__) {
-          console.warn('[Firebase] initializeFirebaseAuth is not a function');
-        }
-        return null;
-      }
-
-      const auth = initializeFirebaseAuth();
-      return auth;
-    } catch (error) {
-      if (__DEV__) {
-        console.warn('[Firebase] Auth package not available:', error instanceof Error ? error.message : 'Unknown error');
-      }
-      return null;
-    }
-  }
-
-  /**
-   * Initialize all optional Firebase services
-   */
-  static async initializeServices(): Promise<{
-    auth: any | null;
-    analytics: any | null;
-    crashlytics: any | null;
-  }> {
-    if (__DEV__) {
-      console.log('[Firebase] Initializing optional services...');
-    }
-
-    // Initialize auth from external package
-    const auth = this.initializeAuth();
-
-    // Analytics and Crashlytics are local modules - use imported services directly
-    const analytics = firebaseAnalyticsService;
-    const crashlytics = firebaseCrashlyticsService;
-
-    if (__DEV__) {
-      console.log('[Firebase] Services initialized - Auth:', !!auth, 'Analytics:', !!analytics, 'Crashlytics:', !!crashlytics);
-    }
-
-    return { auth, analytics, crashlytics };
-  }
-}
-
-/**
  * Initialize all Firebase services (App, Auth, Analytics, Crashlytics)
  * This is the main entry point for applications - call this once at app startup
- * All services will be initialized automatically if Firebase App is available
- * 
- * @param config - Optional Firebase configuration (if not provided, will auto-load from Constants/env)
+ *
+ * IMPORTANT: Auth initialization is handled via callback to avoid require() issues.
+ * The main app should pass the authInitializer callback from react-native-firebase-auth.
+ *
+ * @param config - Optional Firebase configuration
+ * @param options - Optional service initialization options including authInitializer
  * @returns Object with initialization results for each service
- * 
+ *
  * @example
  * ```typescript
  * import { initializeAllFirebaseServices } from '@umituz/react-native-firebase';
- * 
- * // Auto-initialize from Constants/env
- * const result = await initializeAllFirebaseServices();
- * 
- * // Or provide config explicitly
- * const result = await initializeAllFirebaseServices({
- *   apiKey: 'your-api-key',
- *   projectId: 'your-project-id',
- *   // ...
+ * import { initializeFirebaseAuth } from '@umituz/react-native-firebase-auth';
+ *
+ * const result = await initializeAllFirebaseServices(undefined, {
+ *   authInitializer: () => initializeFirebaseAuth(),
  * });
  * ```
  */
 export async function initializeAllFirebaseServices(
-  config?: FirebaseConfig
+  config?: FirebaseConfig,
+  options?: ServiceInitializationOptions
 ): Promise<ServiceInitializationResult> {
   const app = config ? initializeFirebase(config) : autoInitializeFirebase();
 
@@ -389,15 +146,24 @@ export async function initializeAllFirebaseServices(
     };
   }
 
-  const { auth, analytics, crashlytics } = await ServiceInitializer.initializeServices();
+  const { auth, analytics, crashlytics } =
+    await FirebaseServiceInitializer.initializeServices(options);
 
-  // Initialize services if they have an init method
-  if (analytics && typeof analytics.init === 'function') {
-    await analytics.init();
+  if (analytics && typeof (analytics as { init?: () => Promise<void> }).init === 'function') {
+    await (analytics as { init: () => Promise<void> }).init();
   }
 
-  if (crashlytics && typeof crashlytics.init === 'function') {
-    await crashlytics.init();
+  if (crashlytics && typeof (crashlytics as { init?: () => Promise<void> }).init === 'function') {
+    await (crashlytics as { init: () => Promise<void> }).init();
+  }
+
+  if (__DEV__) {
+    console.log('[Firebase] All services initialized:', {
+      app: !!app,
+      auth: !!auth,
+      analytics: !!analytics,
+      crashlytics: !!crashlytics,
+    });
   }
 
   return {
@@ -424,7 +190,6 @@ export function getFirebaseInitializationError(): string | null {
 
 /**
  * Reset Firebase client instance
- * Useful for testing
  */
 export function resetFirebaseClient(): void {
   firebaseClient.reset();

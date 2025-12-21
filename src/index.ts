@@ -38,6 +38,9 @@ export {
 
 export type {
   FirebaseApp,
+  AuthInitializer,
+  ServiceInitializationOptions,
+  ServiceInitializationResult,
 } from './infrastructure/config/FirebaseClient';
 
 // =============================================================================
