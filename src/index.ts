@@ -5,12 +5,14 @@
  *
  * This package provides Firebase App initialization and core services:
  * - Auth
+ * - Firestore
  * - Analytics
  * - Crashlytics
  *
  * Usage:
  *   import { initializeFirebase, getFirebaseApp } from '@umituz/react-native-firebase';
  *   import { useFirebaseAuth } from '@umituz/react-native-firebase';
+ *   import { getFirestore, BaseRepository } from '@umituz/react-native-firebase';
  *   import { firebaseAnalyticsService } from '@umituz/react-native-firebase';
  */
 
@@ -50,6 +52,12 @@ export type {
 // =============================================================================
 
 export * from './auth';
+
+// =============================================================================
+// FIRESTORE MODULE
+// =============================================================================
+
+export * from './firestore';
 
 // =============================================================================
 // ANALYTICS MODULE
