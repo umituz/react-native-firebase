@@ -9,11 +9,11 @@ import {
   log,
   recordError,
   setAttribute,
+  setUserId,
 } from '@react-native-firebase/crashlytics';
+import type { FirebaseCrashlyticsTypes } from '@react-native-firebase/crashlytics';
 
-export interface CrashlyticsInstance {
-  // Instance is now opaque - methods are called via modular functions
-}
+export type CrashlyticsInstance = FirebaseCrashlyticsTypes.Module;
 
 export interface NativeCrashlyticsAdapter {
   getCrashlytics(): CrashlyticsInstance;
@@ -25,12 +25,11 @@ export interface NativeCrashlyticsAdapter {
 
 export const nativeCrashlyticsAdapter: NativeCrashlyticsAdapter = {
   getCrashlytics(): CrashlyticsInstance {
-    return getCrashlytics() as CrashlyticsInstance;
+    return getCrashlytics();
   },
   async setUserId(crashlytics: CrashlyticsInstance, userId: string): Promise<void> {
     try {
-      // Note: setUserId is a method on the crashlytics instance, not a modular function
-      await (crashlytics as any).setUserId(userId);
+      await setUserId(crashlytics, userId);
     } catch (error) {
       /* eslint-disable-next-line no-console */
       if (__DEV__) {
