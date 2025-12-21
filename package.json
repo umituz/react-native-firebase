@@ -1,6 +1,6 @@
 {
   "name": "@umituz/react-native-firebase",
-  "version": "1.12.1",
+  "version": "1.12.2",
   "description": "Unified Firebase package for React Native apps - Centralized initialization and core services (Analytics, Crashlytics).",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
