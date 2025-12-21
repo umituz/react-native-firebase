@@ -4,15 +4,13 @@
  * Domain-Driven Design (DDD) Architecture
  *
  * This package provides Firebase App initialization and core services:
- * - Auth
- * - Firestore
- * - Analytics
+ * - Auth (Firebase JS SDK)
+ * - Firestore (Firebase JS SDK)
  *
  * Usage:
  *   import { initializeFirebase, getFirebaseApp } from '@umituz/react-native-firebase';
  *   import { useFirebaseAuth } from '@umituz/react-native-firebase';
  *   import { getFirestore, BaseRepository } from '@umituz/react-native-firebase';
- *   import { firebaseAnalyticsService } from '@umituz/react-native-firebase';
  */
 
 // =============================================================================
@@ -57,10 +55,4 @@ export * from './auth';
 // =============================================================================
 
 export * from './firestore';
-
-// =============================================================================
-// ANALYTICS MODULE
-// =============================================================================
-
-export * from './analytics';
 
