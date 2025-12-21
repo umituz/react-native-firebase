@@ -10,6 +10,10 @@ import {
   type Auth,
   type UserCredential,
 } from "firebase/auth";
+import {
+  trackPackageError,
+  addPackageBreadcrumb,
+} from "@umituz/react-native-sentry";
 
 /**
  * Google Auth configuration
@@ -71,6 +75,8 @@ export class GoogleAuthService {
     auth: Auth,
     idToken: string,
   ): Promise<GoogleAuthResult> {
+    addPackageBreadcrumb("firebase-auth", "Google Sign-In with ID token");
+
     try {
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
@@ -80,12 +86,25 @@ export class GoogleAuthService {
         userCredential.user.metadata.creationTime ===
         userCredential.user.metadata.lastSignInTime;
 
+      addPackageBreadcrumb("firebase-auth", "Google Sign-In successful", {
+        isNewUser,
+        userId: userCredential.user.uid,
+      });
+
       return {
         success: true,
         userCredential,
         isNewUser,
       };
     } catch (error) {
+      trackPackageError(
+        error instanceof Error ? error : new Error("Google sign-in failed"),
+        {
+          packageName: "firebase-auth",
+          operation: "google-sign-in",
+        }
+      );
+
       return {
         success: false,
         error: error instanceof Error ? error.message : "Google sign-in failed",

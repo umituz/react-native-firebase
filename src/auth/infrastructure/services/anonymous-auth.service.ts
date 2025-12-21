@@ -6,6 +6,10 @@
 import { signInAnonymously, type Auth, type User } from "firebase/auth";
 import { toAnonymousUser, type AnonymousUser } from "../../domain/entities/AnonymousUser";
 import { checkAuthState } from "./auth-utils.service";
+import {
+  trackPackageError,
+  addPackageBreadcrumb,
+} from "@umituz/react-native-sentry";
 
 declare const __DEV__: boolean;
 
@@ -66,6 +70,8 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
     }
 
     // No user exists, sign in anonymously
+    addPackageBreadcrumb("firebase-auth", "Starting anonymous sign-in");
+
     try {
       const userCredential = await signInAnonymously(auth);
       const anonymousUser = toAnonymousUser(userCredential.user);
@@ -74,6 +80,10 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
         // eslint-disable-next-line no-console
         console.log("[AnonymousAuthService] Successfully signed in anonymously", { uid: anonymousUser.uid });
       }
+
+      addPackageBreadcrumb("firebase-auth", "Anonymous sign-in successful", {
+        userId: anonymousUser.uid,
+      });
 
       return {
         user: userCredential.user,
@@ -85,6 +95,15 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
         // eslint-disable-next-line no-console
         console.error("[AnonymousAuthService] Failed to sign in anonymously", error);
       }
+
+      trackPackageError(
+        error instanceof Error ? error : new Error("Anonymous sign-in failed"),
+        {
+          packageName: "firebase-auth",
+          operation: "anonymous-sign-in",
+        }
+      );
+
       throw error;
     }
   }
