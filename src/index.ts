@@ -7,7 +7,6 @@
  * - Auth
  * - Firestore
  * - Analytics
- * - Crashlytics
  *
  * Usage:
  *   import { initializeFirebase, getFirebaseApp } from '@umituz/react-native-firebase';
@@ -64,10 +63,4 @@ export * from './firestore';
 // =============================================================================
 
 export * from './analytics';
-
-// =============================================================================
-// CRASHLYTICS MODULE
-// =============================================================================
-
-export * from './crashlytics';
 

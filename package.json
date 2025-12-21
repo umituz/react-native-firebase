@@ -1,7 +1,7 @@
 {
   "name": "@umituz/react-native-firebase",
   "version": "1.13.5",
-  "description": "Unified Firebase package for React Native apps - Centralized initialization and core services (Auth, Firestore, Analytics, Crashlytics).",
+  "description": "Unified Firebase package for React Native apps - Centralized initialization and core services (Auth, Firestore, Analytics).",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
@@ -21,7 +21,6 @@
     "database",
     "repository",
     "analytics",
-    "crashlytics",
     "ddd",
     "domain-driven-design"
   ],
