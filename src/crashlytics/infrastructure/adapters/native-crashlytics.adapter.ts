@@ -1,13 +1,18 @@
 /**
  * Native Crashlytics Adapter
  * Single Responsibility: Handle Firebase Crashlytics native implementation
+ * Uses React Native Firebase v23+ modular API
  */
 
+import {
+  getCrashlytics,
+  log,
+  recordError,
+  setAttribute,
+} from '@react-native-firebase/crashlytics';
+
 export interface CrashlyticsInstance {
-  setUserId(userId: string): Promise<void>;
-  setAttributes(attributes: Record<string, string>): Promise<void>;
-  recordError(error: Error): Promise<void>;
-  log(message: string): Promise<void>;
+  // Instance is now opaque - methods are called via modular functions
 }
 
 export interface NativeCrashlyticsAdapter {
@@ -18,70 +23,14 @@ export interface NativeCrashlyticsAdapter {
   log(crashlytics: CrashlyticsInstance, message: string): Promise<void>;
 }
 
-interface NativeCrashlyticsModuleFunction {
-  (): CrashlyticsInstance;
-}
-
-interface NativeCrashlyticsModuleObject {
-  default: () => CrashlyticsInstance;
-}
-
-type NativeCrashlyticsModule = NativeCrashlyticsModuleFunction | NativeCrashlyticsModuleObject;
-
-let nativeCrashlyticsModule: NativeCrashlyticsModule | null = null;
-let isModuleLoaded = false;
-
-function loadCrashlyticsModule(): void {
-  if (isModuleLoaded) return;
-  
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require('@react-native-firebase/app');
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const crashlytics = require('@react-native-firebase/crashlytics');
-    nativeCrashlyticsModule = crashlytics;
-  } catch {
-    // @react-native-firebase/crashlytics not available
-  } finally {
-    isModuleLoaded = true;
-  }
-}
-
-function getCrashlyticsInstance(): CrashlyticsInstance | null {
-  if (!isModuleLoaded) {
-    loadCrashlyticsModule();
-  }
-  
-  if (!nativeCrashlyticsModule) return null;
-
-  try {
-    if (typeof nativeCrashlyticsModule === 'function') {
-      return nativeCrashlyticsModule();
-    }
-    if ('default' in nativeCrashlyticsModule && typeof nativeCrashlyticsModule.default === 'function') {
-      return nativeCrashlyticsModule.default();
-    }
-  } catch (error) {
-    /* eslint-disable-next-line no-console */
-    if (__DEV__) {
-      console.warn('[Crashlytics] Failed to get instance:', error);
-    }
-  }
-  
-  return null;
-}
-
-export const nativeCrashlyticsAdapter: NativeCrashlyticsAdapter | null = {
+export const nativeCrashlyticsAdapter: NativeCrashlyticsAdapter = {
   getCrashlytics(): CrashlyticsInstance {
-    const instance = getCrashlyticsInstance();
-    if (!instance) {
-      throw new Error('Crashlytics not initialized');
-    }
-    return instance;
+    return getCrashlytics() as CrashlyticsInstance;
   },
   async setUserId(crashlytics: CrashlyticsInstance, userId: string): Promise<void> {
     try {
-      await crashlytics.setUserId(userId);
+      // Note: setUserId is a method on the crashlytics instance, not a modular function
+      await (crashlytics as any).setUserId(userId);
     } catch (error) {
       /* eslint-disable-next-line no-console */
       if (__DEV__) {
@@ -94,7 +43,10 @@ export const nativeCrashlyticsAdapter: NativeCrashlyticsAdapter | null = {
     attributes: Record<string, string>,
   ): Promise<void> {
     try {
-      await crashlytics.setAttributes(attributes);
+      // Set each attribute individually using the modular API
+      for (const [key, value] of Object.entries(attributes)) {
+        await setAttribute(crashlytics, key, value);
+      }
     } catch (error) {
       /* eslint-disable-next-line no-console */
       if (__DEV__) {
@@ -104,7 +56,7 @@ export const nativeCrashlyticsAdapter: NativeCrashlyticsAdapter | null = {
   },
   async recordError(crashlytics: CrashlyticsInstance, error: Error): Promise<void> {
     try {
-      await crashlytics.recordError(error);
+      await recordError(crashlytics, error);
     } catch (err) {
       /* eslint-disable-next-line no-console */
       if (__DEV__) {
@@ -114,7 +66,7 @@ export const nativeCrashlyticsAdapter: NativeCrashlyticsAdapter | null = {
   },
   async log(crashlytics: CrashlyticsInstance, message: string): Promise<void> {
     try {
-      await crashlytics.log(message);
+      await log(crashlytics, message);
     } catch (error) {
       /* eslint-disable-next-line no-console */
       if (__DEV__) {

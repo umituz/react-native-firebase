@@ -60,26 +60,6 @@ export class AnalyticsInitializerService {
         return null;
       }
 
-      // Try to get Firebase App instance to check if it's initialized
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const firebaseAppModule = require('@react-native-firebase/app');
-        firebaseAppModule.app();
-      } catch (appError: any) {
-        /* eslint-disable-next-line no-console */
-        if (__DEV__) {
-          const errorMessage = appError?.message || String(appError);
-          if (errorMessage.includes('No Firebase App') || errorMessage.includes('has been created')) {
-            console.warn(
-              '⚠️ Firebase Analytics: Firebase App not initialized. Please add GoogleService-Info.plist to ios/ directory and rebuild the app.',
-            );
-          } else {
-            console.warn('⚠️ Firebase Analytics: Firebase App check failed', appError);
-          }
-        }
-        return null;
-      }
-
       const instance = nativeAnalyticsAdapter.getAnalytics();
       if (!instance) {
         /* eslint-disable-next-line no-console */
