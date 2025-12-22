@@ -55,14 +55,11 @@ export function useFirebaseAuth(): UseFirebaseAuthResult {
       }
       
       // Subscribe to auth state changes
+      // onAuthStateChanged fires immediately with current user, then on every change
       const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
         setUser(currentUser);
         setLoading(false);
       });
-
-      // Set initial state
-      setUser(auth.currentUser);
-      setLoading(false);
 
       return () => {
         unsubscribe();
