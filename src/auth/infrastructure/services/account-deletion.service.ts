@@ -10,7 +10,6 @@ import { getFirebaseAuth } from "../config/FirebaseAuthClient";
 import {
   getUserAuthProvider,
   reauthenticateWithApple,
-  type AuthProviderType,
 } from "./reauthentication.service";
 
 export interface AccountDeletionResult {

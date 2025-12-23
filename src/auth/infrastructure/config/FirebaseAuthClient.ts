@@ -15,7 +15,6 @@
 
 import type { Auth } from 'firebase/auth';
 import { getFirebaseApp } from '../../../infrastructure/config/FirebaseClient';
-import { FirebaseAuthInitializationError } from '../../domain/errors/FirebaseAuthError';
 import { FirebaseAuthInitializer } from './initializers/FirebaseAuthInitializer';
 import type { FirebaseAuthConfig } from '../../domain/value-objects/FirebaseAuthConfig';
 
