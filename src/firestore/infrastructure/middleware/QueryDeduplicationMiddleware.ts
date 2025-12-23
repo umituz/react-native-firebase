@@ -19,7 +19,7 @@ export class QueryDeduplicationMiddleware {
   private pendingQueries = new Map<string, PendingQuery>();
   private readonly DEDUPLICATION_WINDOW_MS = 1000; // 1 second
   private readonly CLEANUP_INTERVAL_MS = 5000; // 5 seconds
-  private cleanupTimer: NodeJS.Timeout | null = null;
+  private cleanupTimer: any = null;
 
   constructor() {
     this.startCleanupTimer();
@@ -32,7 +32,7 @@ export class QueryDeduplicationMiddleware {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
     }
-    
+
     this.cleanupTimer = setInterval(() => {
       this.cleanupExpiredQueries();
     }, this.CLEANUP_INTERVAL_MS);
