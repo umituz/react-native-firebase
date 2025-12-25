@@ -112,12 +112,7 @@ export {
 // UTILS - Path Resolver
 // =============================================================================
 
-export {
-  FirestorePathResolver,
-  createDefaultPathBuilder,
-} from './utils/path-resolver';
-
-export type { PathBuilder } from './utils/path-resolver';
+export { FirestorePathResolver } from './utils/path-resolver';
 
 // =============================================================================
 // DOMAIN LAYER - Constants
