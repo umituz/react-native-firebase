@@ -1,4 +1,4 @@
-import type { Firestore } from "firebase/firestore";
+import type { Firestore, CollectionReference, DocumentReference, DocumentData } from "firebase/firestore";
 import { collection, doc } from "firebase/firestore";
 
 /**
@@ -21,7 +21,7 @@ export class FirestorePathResolver {
      * @param userId User identifier
      * @returns CollectionReference or null if db not initialized
      */
-    getUserCollection(userId: string) {
+    getUserCollection(userId: string): CollectionReference<DocumentData> | null {
         if (!this.db) return null;
         return collection(this.db, "users", userId, this.collectionName);
     }
@@ -34,7 +34,7 @@ export class FirestorePathResolver {
      * @param documentId Document identifier
      * @returns DocumentReference or null if db not initialized
      */
-    getDocRef(userId: string, documentId: string) {
+    getDocRef(userId: string, documentId: string): DocumentReference<DocumentData> | null {
         if (!this.db) return null;
         return doc(this.db, "users", userId, this.collectionName, documentId);
     }
