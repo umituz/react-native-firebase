@@ -11,19 +11,9 @@ import {
     type UploadMetadata,
 } from "firebase/storage";
 import { getFirebaseApp } from "../infrastructure/config/FirebaseClient";
+import type { UploadResult, UploadOptions } from "./types";
 
 declare const __DEV__: boolean;
-
-export interface UploadResult {
-    downloadUrl: string;
-    storagePath: string;
-    metadata?: any;
-}
-
-export interface UploadOptions {
-    mimeType?: string;
-    metadata?: any;
-}
 
 /**
  * Extract MIME type from base64 data URL or return default
@@ -79,16 +69,22 @@ export async function uploadBase64Image(
 
     const metadata: UploadMetadata = {
         contentType: mimeType,
-        customMetadata: options?.metadata,
+        customMetadata: options?.customMetadata,
     };
 
-    const snapshot = await uploadBytes(storageRef, blob, metadata);
+    await uploadBytes(storageRef, blob, metadata);
     const downloadUrl = await getDownloadURL(storageRef);
+
+    if (__DEV__) {
+        console.log("[StorageUploader] Upload complete", {
+            storagePath,
+            downloadUrl,
+        });
+    }
 
     return {
         downloadUrl,
         storagePath,
-        metadata: snapshot.metadata,
     };
 }
 
@@ -118,15 +114,21 @@ export async function uploadFile(
 
     const metadata: UploadMetadata = {
         contentType: options?.mimeType ?? "image/jpeg",
-        customMetadata: options?.metadata,
+        customMetadata: options?.customMetadata,
     };
 
-    const snapshot = await uploadBytes(storageRef, blob, metadata);
+    await uploadBytes(storageRef, blob, metadata);
     const downloadUrl = await getDownloadURL(storageRef);
+
+    if (__DEV__) {
+        console.log("[StorageUploader] Upload complete", {
+            storagePath,
+            downloadUrl,
+        });
+    }
 
     return {
         downloadUrl,
         storagePath,
-        metadata: snapshot.metadata,
     };
 }
