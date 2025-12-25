@@ -1,17 +1,6 @@
 /**
  * React Native Firestore Module
  * Domain-Driven Design (DDD) Architecture
- *
- * This is the SINGLE SOURCE OF TRUTH for all Firestore operations.
- * ALL imports from the Firestore module MUST go through this file.
- *
- * Architecture:
- * - domain: Errors, Constants, Entities, Services
- * - infrastructure: Firestore client, BaseRepository, utilities
- * - utils: Date utilities, timestamp conversion, query builders
- *
- * This module is designed to be used across hundreds of apps.
- * It provides a consistent interface for Firestore operations.
  */
 
 // =============================================================================
@@ -99,16 +88,6 @@ export {
 } from './utils/document-mapper.helper';
 
 // =============================================================================
-// UTILS - Quota Error Detection
-// =============================================================================
-
-export {
-  isQuotaError,
-  isRetryableError,
-  getQuotaErrorMessage,
-} from './utils/quota-error-detector.util';
-
-// =============================================================================
 // UTILS - Path Resolver
 // =============================================================================
 
@@ -149,6 +128,16 @@ export type {
 export { QuotaCalculator } from './domain/services/QuotaCalculator';
 
 // =============================================================================
+// UTILS - Quota Error Detection
+// =============================================================================
+
+export {
+  isQuotaError,
+  isRetryableError,
+  getQuotaErrorMessage,
+} from './utils/quota-error-detector.util';
+
+// =============================================================================
 // INFRASTRUCTURE LAYER - Middleware
 // =============================================================================
 
@@ -165,11 +154,6 @@ export {
 // =============================================================================
 // INFRASTRUCTURE LAYER - Services
 // =============================================================================
-
-export {
-  QuotaMonitorService,
-  quotaMonitorService,
-} from './infrastructure/services/QuotaMonitorService';
 
 export {
   RequestLoggerService,
