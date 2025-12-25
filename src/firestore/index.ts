@@ -109,6 +109,17 @@ export {
 } from './utils/quota-error-detector.util';
 
 // =============================================================================
+// UTILS - Path Resolver
+// =============================================================================
+
+export {
+  FirestorePathResolver,
+  createDefaultPathBuilder,
+} from './utils/path-resolver';
+
+export type { PathBuilder } from './utils/path-resolver';
+
+// =============================================================================
 // DOMAIN LAYER - Constants
 // =============================================================================
 
