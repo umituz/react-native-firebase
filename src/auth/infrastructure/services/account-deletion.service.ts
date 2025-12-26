@@ -129,8 +129,8 @@ export async function deleteCurrentUser(
       });
     }
 
-    // If reauthentication is required and autoReauthenticate is enabled
-    if (requiresReauth && options.autoReauthenticate) {
+    // If reauthentication is required and autoReauthenticate is enabled OR password is provided
+    if (requiresReauth && (options.autoReauthenticate || options.password)) {
       if (__DEV__) {
         console.log("[deleteCurrentUser] Attempting auto-reauthentication...");
       }

@@ -1,6 +1,6 @@
 {
   "name": "@umituz/react-native-firebase",
-  "version": "1.13.25",
+  "version": "1.13.26",
   "description": "Unified Firebase package for React Native apps - Auth and Firestore services using Firebase JS SDK (no native modules).",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
