@@ -167,7 +167,10 @@ export class AppleAuthService {
     let result = "";
 
     for (let i = 0; i < randomBytes.length; i++) {
-      result += chars.charAt(randomBytes[i] % chars.length);
+      const byte = randomBytes[i];
+      if (byte !== undefined) {
+        result += chars.charAt(byte % chars.length);
+      }
     }
 
     return result;

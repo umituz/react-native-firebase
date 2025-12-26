@@ -3,10 +3,11 @@
  */
 
 // Mock __DEV__ for tests
-export {};
+export { };
 
 declare global {
-  var __DEV__: boolean | undefined;
+  var mockFirestore: () => any;
+  var mockFirebaseError: (code: string, message: string) => any;
 }
 
 if (typeof (global as any).__DEV__ === 'undefined') {
@@ -16,20 +17,28 @@ if (typeof (global as any).__DEV__ === 'undefined') {
 // Mock console methods to avoid noise in tests
 const originalConsole = { ...console };
 
-beforeEach(() => {
-  // Restore console methods before each test
-  Object.assign(console, originalConsole);
-});
+const globalAny = global as any;
+
+/**
+ * We check if beforeEach is available before using it
+ * This avoids errors when running tsc or in environments without Jest
+ */
+if (typeof globalAny.beforeEach !== 'undefined') {
+  globalAny.beforeEach(() => {
+    // Restore console methods before each test
+    Object.assign(console, originalConsole);
+  });
+}
 
 // Set up global test utilities
-global.mockFirestore = () => ({
-  collection: jest.fn(),
-  doc: jest.fn(),
-  runTransaction: jest.fn(),
-  batch: jest.fn(),
+globalAny.mockFirestore = () => ({
+  collection: globalAny.jest?.fn() || (() => ({})),
+  doc: globalAny.jest?.fn() || (() => ({})),
+  runTransaction: globalAny.jest?.fn() || (() => Promise.resolve()),
+  batch: globalAny.jest?.fn() || (() => ({})),
 });
 
-global.mockFirebaseError = (code: string, message: string) => {
+globalAny.mockFirebaseError = (code: string, message: string) => {
   const error = new Error(message) as any;
   error.code = code;
   return error;

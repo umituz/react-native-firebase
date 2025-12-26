@@ -126,7 +126,10 @@ async function generateNonce(length: number = 32): Promise<string> {
   let result = "";
 
   for (let i = 0; i < randomBytes.length; i++) {
-    result += chars.charAt(randomBytes[i] % chars.length);
+    const byte = randomBytes[i];
+    if (byte !== undefined) {
+      result += chars.charAt(byte % chars.length);
+    }
   }
 
   return result;
@@ -223,7 +226,7 @@ export async function getAppleReauthCredential(): Promise<{
  */
 export async function reauthenticateWithApple(user: User): Promise<ReauthenticationResult> {
   const result = await getAppleReauthCredential();
-  
+
   if (!result.success || !result.credential) {
     return {
       success: false,
