@@ -10,6 +10,7 @@ import { getFirebaseAuth } from "../config/FirebaseAuthClient";
 import {
   getUserAuthProvider,
   reauthenticateWithApple,
+  reauthenticateWithPassword,
 } from "./reauthentication.service";
 
 export interface AccountDeletionResult {
@@ -28,6 +29,11 @@ export interface AccountDeletionOptions {
    */
   googleIdToken?: string;
   /**
+   * Password for reauthentication (required if user signed in with email/password)
+   * This must be provided by the calling code after prompting user for password
+   */
+  password?: string;
+  /**
    * If true, will attempt to reauthenticate with Apple automatically
    * (shows Apple sign-in prompt to user)
    */
@@ -42,9 +48,16 @@ export interface AccountDeletionOptions {
 export async function deleteCurrentUser(
   options: AccountDeletionOptions = { autoReauthenticate: true }
 ): Promise<AccountDeletionResult> {
+  if (__DEV__) {
+    console.log("[deleteCurrentUser] Starting with options:", options);
+  }
+
   const auth = getFirebaseAuth();
 
   if (!auth) {
+    if (__DEV__) {
+      console.log("[deleteCurrentUser] ❌ Firebase Auth not initialized");
+    }
     return {
       success: false,
       error: {
@@ -58,6 +71,9 @@ export async function deleteCurrentUser(
   const user = auth.currentUser;
 
   if (!user) {
+    if (__DEV__) {
+      console.log("[deleteCurrentUser] ❌ No user signed in");
+    }
     return {
       success: false,
       error: {
@@ -69,6 +85,9 @@ export async function deleteCurrentUser(
   }
 
   if (user.isAnonymous) {
+    if (__DEV__) {
+      console.log("[deleteCurrentUser] ❌ Cannot delete anonymous user");
+    }
     return {
       success: false,
       error: {
@@ -79,18 +98,47 @@ export async function deleteCurrentUser(
     };
   }
 
+  if (__DEV__) {
+    const provider = getUserAuthProvider(user);
+    console.log("[deleteCurrentUser] User info:", {
+      uid: user.uid,
+      provider,
+      providerData: user.providerData?.map(p => p.providerId),
+    });
+  }
+
   // First attempt to delete
   try {
+    if (__DEV__) {
+      console.log("[deleteCurrentUser] Attempting to delete user...");
+    }
     await deleteUser(user);
+    if (__DEV__) {
+      console.log("[deleteCurrentUser] ✅ User deleted successfully");
+    }
     return { success: true };
   } catch (error) {
     const firebaseError = error as { code?: string; message?: string };
     const requiresReauth = firebaseError.code === "auth/requires-recent-login";
 
+    if (__DEV__) {
+      console.log("[deleteCurrentUser] First delete attempt failed:", {
+        code: firebaseError.code,
+        message: firebaseError.message,
+        requiresReauth,
+      });
+    }
+
     // If reauthentication is required and autoReauthenticate is enabled
     if (requiresReauth && options.autoReauthenticate) {
+      if (__DEV__) {
+        console.log("[deleteCurrentUser] Attempting auto-reauthentication...");
+      }
       const reauthResult = await attemptReauthenticationAndDelete(user, options);
       if (reauthResult) {
+        if (__DEV__) {
+          console.log("[deleteCurrentUser] Auto-reauth result:", reauthResult);
+        }
         return reauthResult;
       }
     }
@@ -117,17 +165,38 @@ async function attemptReauthenticationAndDelete(
 ): Promise<AccountDeletionResult | null> {
   const provider = getUserAuthProvider(user);
 
+  if (__DEV__) {
+    console.log("[attemptReauthenticationAndDelete] Provider:", provider);
+  }
+
   // Handle Apple reauthentication
   if (provider === "apple.com") {
+    if (__DEV__) {
+      console.log("[attemptReauthenticationAndDelete] Attempting Apple reauthentication...");
+    }
+
     const reauthResult = await reauthenticateWithApple(user);
+
+    if (__DEV__) {
+      console.log("[attemptReauthenticationAndDelete] Apple reauth result:", reauthResult);
+    }
 
     if (reauthResult.success) {
       // Retry deletion after successful reauthentication
       try {
+        if (__DEV__) {
+          console.log("[attemptReauthenticationAndDelete] Deleting user after Apple reauth...");
+        }
         await deleteUser(user);
+        if (__DEV__) {
+          console.log("[attemptReauthenticationAndDelete] ✅ User deleted after Apple reauth");
+        }
         return { success: true };
       } catch (deleteError) {
         const firebaseError = deleteError as { code?: string; message?: string };
+        if (__DEV__) {
+          console.log("[attemptReauthenticationAndDelete] ❌ Delete failed after Apple reauth:", firebaseError);
+        }
         return {
           success: false,
           error: {
@@ -139,6 +208,9 @@ async function attemptReauthenticationAndDelete(
       }
     } else {
       // Reauthentication failed
+      if (__DEV__) {
+        console.log("[attemptReauthenticationAndDelete] ❌ Apple reauth failed");
+      }
       return {
         success: false,
         error: {
@@ -190,6 +262,76 @@ async function attemptReauthenticationAndDelete(
         error: {
           code: reauthResult.error?.code || "auth/reauthentication-failed",
           message: reauthResult.error?.message || "Google reauthentication failed",
+          requiresReauth: true,
+        },
+      };
+    }
+  }
+
+  // Handle Password reauthentication (requires password from caller)
+  if (provider === "password") {
+    if (__DEV__) {
+      console.log("[attemptReauthenticationAndDelete] Password provider detected");
+    }
+
+    // For password, we need the caller to provide the password
+    if (!options.password) {
+      if (__DEV__) {
+        console.log("[attemptReauthenticationAndDelete] No password provided, requesting reauth");
+      }
+      return {
+        success: false,
+        error: {
+          code: "auth/password-reauth-required",
+          message: "Please enter your password to delete your account",
+          requiresReauth: true,
+        },
+      };
+    }
+
+    if (__DEV__) {
+      console.log("[attemptReauthenticationAndDelete] Attempting password reauthentication...");
+    }
+
+    const reauthResult = await reauthenticateWithPassword(user, options.password);
+
+    if (__DEV__) {
+      console.log("[attemptReauthenticationAndDelete] Password reauth result:", reauthResult);
+    }
+
+    if (reauthResult.success) {
+      try {
+        if (__DEV__) {
+          console.log("[attemptReauthenticationAndDelete] Deleting user after password reauth...");
+        }
+        await deleteUser(user);
+        if (__DEV__) {
+          console.log("[attemptReauthenticationAndDelete] ✅ User deleted after password reauth");
+        }
+        return { success: true };
+      } catch (deleteError) {
+        const firebaseError = deleteError as { code?: string; message?: string };
+        if (__DEV__) {
+          console.log("[attemptReauthenticationAndDelete] ❌ Delete failed after password reauth:", firebaseError);
+        }
+        return {
+          success: false,
+          error: {
+            code: firebaseError.code || "auth/deletion-failed-after-reauth",
+            message: firebaseError.message || "Failed to delete account after reauthentication",
+            requiresReauth: false,
+          },
+        };
+      }
+    } else {
+      if (__DEV__) {
+        console.log("[attemptReauthenticationAndDelete] ❌ Password reauth failed");
+      }
+      return {
+        success: false,
+        error: {
+          code: reauthResult.error?.code || "auth/reauthentication-failed",
+          message: reauthResult.error?.message || "Password reauthentication failed",
           requiresReauth: true,
         },
       };

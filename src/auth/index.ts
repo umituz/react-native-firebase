@@ -101,6 +101,7 @@ export {
   getUserAuthProvider,
   reauthenticateWithGoogle,
   reauthenticateWithApple,
+  reauthenticateWithPassword,
   getAppleReauthCredential,
 } from './infrastructure/services/reauthentication.service';
 

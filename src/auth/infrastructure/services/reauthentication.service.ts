@@ -9,6 +9,7 @@ import {
   reauthenticateWithCredential,
   GoogleAuthProvider,
   OAuthProvider,
+  EmailAuthProvider,
   type User,
   type AuthCredential,
 } from "firebase/auth";
@@ -78,6 +79,39 @@ export async function reauthenticateWithGoogle(
       error: {
         code: firebaseError.code || "auth/reauthentication-failed",
         message: firebaseError.message || "Google reauthentication failed",
+      },
+    };
+  }
+}
+
+/**
+ * Reauthenticate with Email/Password
+ */
+export async function reauthenticateWithPassword(
+  user: User,
+  password: string
+): Promise<ReauthenticationResult> {
+  try {
+    if (!user.email) {
+      return {
+        success: false,
+        error: {
+          code: "auth/no-email",
+          message: "User has no email address",
+        },
+      };
+    }
+
+    const credential = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, credential);
+    return { success: true };
+  } catch (error) {
+    const firebaseError = error as { code?: string; message?: string };
+    return {
+      success: false,
+      error: {
+        code: firebaseError.code || "auth/reauthentication-failed",
+        message: firebaseError.message || "Password reauthentication failed",
       },
     };
   }
