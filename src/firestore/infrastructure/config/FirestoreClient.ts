@@ -13,6 +13,9 @@
  * - Dependency Inversion: Depends on Firebase App from @umituz/react-native-firebase
  */
 
+// eslint-disable-next-line no-console
+if (typeof __DEV__ !== "undefined" && __DEV__) console.log("📍 [LIFECYCLE] FirestoreClient.ts - Module loading");
+
 import type { Firestore } from 'firebase/firestore';
 import { getFirebaseApp } from '../../../infrastructure/config/FirebaseClient';
 import { FirebaseFirestoreInitializer } from './initializers/FirebaseFirestoreInitializer';

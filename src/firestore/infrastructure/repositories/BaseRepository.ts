@@ -14,6 +14,9 @@
  * It provides a consistent interface for Firestore operations.
  */
 
+// eslint-disable-next-line no-console
+if (typeof __DEV__ !== "undefined" && __DEV__) console.log("📍 [LIFECYCLE] BaseRepository.ts - Module loading");
+
 import type { Firestore } from "firebase/firestore";
 import { getFirestore } from "../config/FirestoreClient";
 import {

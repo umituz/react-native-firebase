@@ -5,7 +5,11 @@
  * Platform-agnostic: Works on all platforms (Web, iOS, Android)
  */
 
-import { initializeAuth, getAuth } from 'firebase/auth';
+import {
+  initializeAuth,
+  getAuth,
+  getReactNativePersistence,
+} from 'firebase/auth';
 import type { Auth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FirebaseApp } from 'firebase/app';
@@ -30,7 +34,6 @@ export class FirebaseAuthInitializer {
     addPackageBreadcrumb('firebase-auth', 'Initializing Firebase Auth');
 
     try {
-      // Try React Native persistence first (works on all platforms)
       const auth = this.initializeWithPersistence(app, config);
 
       if (auth) {
@@ -38,57 +41,54 @@ export class FirebaseAuthInitializer {
       }
 
       return auth;
-    } catch (error: any) {
-      // If already initialized or persistence fails, get existing instance
-      if (error.code === 'auth/already-initialized') {
-        trackPackageWarning(
-          'firebase-auth',
-          'Auth already initialized, returning existing instance',
-          { errorCode: error.code }
-        );
+    } catch (error: unknown) {
+      return this.handleInitializationError(error, app);
+    }
+  }
 
-        try {
-          return getAuth(app);
-        } catch (getAuthError) {
-          const errorObj = getAuthError instanceof Error ? getAuthError : new Error(String(getAuthError));
-          trackPackageError(errorObj, {
-            packageName: 'firebase-auth',
-            operation: 'getAuth-after-already-initialized',
-          });
+  private static handleInitializationError(error: unknown, app: FirebaseApp): Auth | null {
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    const errorCode = (error as { code?: string })?.code;
 
-          if (__DEV__) {
-            console.warn('Firebase Auth: Failed to get existing auth instance:', getAuthError);
-          }
-          return null;
-        }
-      }
+    if (errorCode === 'auth/already-initialized') {
+      trackPackageWarning(
+        'firebase-auth',
+        'Auth already initialized, returning existing instance',
+        { errorCode }
+      );
+      return this.getExistingAuth(app);
+    }
 
-      const errorObj = error instanceof Error ? error : new Error(String(error));
+    trackPackageError(errorObj, {
+      packageName: 'firebase-auth',
+      operation: 'initialize',
+      errorCode,
+    });
+
+    if (__DEV__) {
+      console.warn('Firebase Auth initialization error:', error);
+    }
+
+    return this.getExistingAuth(app);
+  }
+
+  private static getExistingAuth(app: FirebaseApp): Auth | null {
+    try {
+      return getAuth(app);
+    } catch (getAuthError) {
+      const errorObj = getAuthError instanceof Error
+        ? getAuthError
+        : new Error(String(getAuthError));
+
       trackPackageError(errorObj, {
         packageName: 'firebase-auth',
-        operation: 'initialize',
-        errorCode: error.code,
+        operation: 'getAuth-fallback',
       });
 
       if (__DEV__) {
-        console.warn('Firebase Auth initialization error:', error);
+        console.warn('Firebase Auth: Failed to get auth instance:', getAuthError);
       }
-
-      // Try to get auth instance as fallback
-      try {
-        return getAuth(app);
-      } catch (getAuthError) {
-        const fallbackError = getAuthError instanceof Error ? getAuthError : new Error(String(getAuthError));
-        trackPackageError(fallbackError, {
-          packageName: 'firebase-auth',
-          operation: 'getAuth-fallback',
-        });
-
-        if (__DEV__) {
-          console.warn('Firebase Auth: Failed to get auth instance after initialization error:', getAuthError);
-        }
-        return null;
-      }
+      return null;
     }
   }
 
@@ -97,25 +97,6 @@ export class FirebaseAuthInitializer {
     config?: FirebaseAuthConfig
   ): Auth | null {
     try {
-      const authModule = require('firebase/auth');
-      const getReactNativePersistence = authModule.getReactNativePersistence;
-
-      if (!getReactNativePersistence) {
-        trackPackageWarning(
-          'firebase-auth',
-          'getReactNativePersistence not available, using default persistence'
-        );
-
-        if (__DEV__) {
-          console.log('Firebase Auth: getReactNativePersistence not available, using default persistence');
-        }
-        try {
-          return getAuth(app);
-        } catch {
-          return null;
-        }
-      }
-
       const storage = config?.authStorage || {
         getItem: (key: string) => AsyncStorage.getItem(key),
         setItem: (key: string, value: string) => AsyncStorage.setItem(key, value),
@@ -137,12 +118,8 @@ export class FirebaseAuthInitializer {
       if (__DEV__) {
         console.warn('Firebase Auth: Persistence initialization failed:', error);
       }
-      try {
-        return getAuth(app);
-      } catch {
-        return null;
-      }
+
+      return this.getExistingAuth(app);
     }
   }
 }
-

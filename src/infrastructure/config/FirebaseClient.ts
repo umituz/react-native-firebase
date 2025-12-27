@@ -16,6 +16,9 @@
  * - Dependency Inversion: Depends on abstractions (interfaces), not concrete implementations
  */
 
+// eslint-disable-next-line no-console
+if (typeof __DEV__ !== "undefined" && __DEV__) console.log("📍 [LIFECYCLE] FirebaseClient.ts - Module loading");
+
 import type { FirebaseConfig } from '../../domain/value-objects/FirebaseConfig';
 import type { IFirebaseClient } from '../../application/ports/IFirebaseClient';
 import type { FirebaseApp } from './initializers/FirebaseAppInitializer';
