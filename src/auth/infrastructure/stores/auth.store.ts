@@ -1,9 +1,10 @@
 /**
  * Firebase Auth Store
- * Shared Zustand store for Firebase Auth state
+ * Basic Zustand store for Firebase Auth state
  *
- * CRITICAL: This store ensures only ONE auth listener is created,
- * preventing performance issues from multiple subscriptions.
+ * NOTE: For comprehensive auth state management including
+ * user types and guest mode, use @umituz/react-native-auth package.
+ * This store provides minimal state for low-level Firebase operations.
  */
 
 import { create } from "zustand";
@@ -27,7 +28,7 @@ type AuthStore = AuthState & AuthActions;
 
 let unsubscribe: (() => void) | null = null;
 
-export const useAuthStore = create<AuthStore>((set, get) => ({
+export const useFirebaseAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   loading: true,
   initialized: false,
@@ -36,7 +37,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   setupListener: (auth: Auth) => {
     const state = get();
 
-    // Only setup listener once
     if (state.listenerSetup || unsubscribe) {
       return;
     }
@@ -44,9 +44,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ listenerSetup: true });
 
     unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
-      if (__DEV__) {
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        // eslint-disable-next-line no-console
         console.log(
-          "[AuthStore] Auth state changed:",
+          "[FirebaseAuthStore] Auth state changed:",
           currentUser?.uid || "null"
         );
       }

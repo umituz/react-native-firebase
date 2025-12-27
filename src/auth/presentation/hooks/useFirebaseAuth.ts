@@ -1,38 +1,33 @@
 /**
  * useFirebaseAuth Hook
- * React hook for Firebase Auth state management
+ * React hook for raw Firebase Auth state
  *
- * Uses shared Zustand store to ensure only ONE auth listener exists.
- * This prevents performance issues from multiple subscriptions.
+ * NOTE: For comprehensive auth management (user types, guest mode, sign in/out),
+ * use useAuth from @umituz/react-native-auth package instead.
+ * This hook provides minimal Firebase Auth access.
  */
 
 import { useEffect } from "react";
 import type { User } from "firebase/auth";
 import { getFirebaseAuth } from "../../infrastructure/config/FirebaseAuthClient";
-import { useAuthStore } from "../../infrastructure/stores/auth.store";
+import { useFirebaseAuthStore } from "../../infrastructure/stores/auth.store";
 
 export interface UseFirebaseAuthResult {
-  /** Current authenticated user from Firebase Auth */
+  /** Current Firebase user */
   user: User | null;
-  /** Whether auth state is loading (initial check) */
+  /** Whether auth state is loading */
   loading: boolean;
   /** Whether Firebase Auth is initialized */
   initialized: boolean;
 }
 
 /**
- * Hook for Firebase Auth state management
+ * Hook for raw Firebase Auth state
  *
  * Uses shared store to ensure only one listener is active.
- * Auth is pre-initialized in appInitializer, so no retry needed.
- *
- * @example
- * ```typescript
- * const { user, loading } = useFirebaseAuth();
- * ```
  */
 export function useFirebaseAuth(): UseFirebaseAuthResult {
-  const { user, loading, initialized, setupListener } = useAuthStore();
+  const { user, loading, initialized, setupListener } = useFirebaseAuthStore();
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -41,7 +36,6 @@ export function useFirebaseAuth(): UseFirebaseAuthResult {
       return;
     }
 
-    // Setup listener (will only run once due to store check)
     setupListener(auth);
   }, [setupListener]);
 
