@@ -2,15 +2,14 @@
  * useFirebaseAuth Hook
  * React hook for Firebase Auth state management
  *
- * Directly uses Firebase Auth's built-in state management via onAuthStateChanged
- * Simple, performant, no retry mechanism needed (auth is pre-initialized)
+ * Uses shared Zustand store to ensure only ONE auth listener exists.
+ * This prevents performance issues from multiple subscriptions.
  */
 
-import { useEffect, useState, useRef } from "react";
-import { onAuthStateChanged, type User } from "firebase/auth";
+import { useEffect } from "react";
+import type { User } from "firebase/auth";
 import { getFirebaseAuth } from "../../infrastructure/config/FirebaseAuthClient";
-
-declare const __DEV__: boolean;
+import { useAuthStore } from "../../infrastructure/stores/auth.store";
 
 export interface UseFirebaseAuthResult {
   /** Current authenticated user from Firebase Auth */
@@ -24,7 +23,7 @@ export interface UseFirebaseAuthResult {
 /**
  * Hook for Firebase Auth state management
  *
- * Directly uses Firebase Auth's built-in state management.
+ * Uses shared store to ensure only one listener is active.
  * Auth is pre-initialized in appInitializer, so no retry needed.
  *
  * @example
@@ -33,41 +32,18 @@ export interface UseFirebaseAuthResult {
  * ```
  */
 export function useFirebaseAuth(): UseFirebaseAuthResult {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
-
-  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const { user, loading, initialized, setupListener } = useAuthStore();
 
   useEffect(() => {
     const auth = getFirebaseAuth();
 
     if (!auth) {
-      // Auth not available (offline mode or error)
-      setLoading(false);
-      setUser(null);
-      setInitialized(false);
       return;
     }
 
-    // Subscribe to auth state changes
-    unsubscribeRef.current = onAuthStateChanged(auth, (currentUser: User | null) => {
-      if (__DEV__) {
-        console.log('[useFirebaseAuth] Auth state changed:', currentUser?.uid || 'null');
-      }
-      setUser(currentUser);
-      setLoading(false);
-      setInitialized(true);
-    });
-
-    // Cleanup on unmount
-    return () => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-        unsubscribeRef.current = null;
-      }
-    };
-  }, []); // Empty deps - subscribe once on mount
+    // Setup listener (will only run once due to store check)
+    setupListener(auth);
+  }, [setupListener]);
 
   return {
     user,
@@ -75,4 +51,3 @@ export function useFirebaseAuth(): UseFirebaseAuthResult {
     initialized,
   };
 }
-
