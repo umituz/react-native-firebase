@@ -7,7 +7,7 @@
  * This store provides minimal state for low-level Firebase operations.
  */
 
-import { create } from "zustand";
+import { createStore } from "@umituz/react-native-storage";
 import { onAuthStateChanged, type User, type Auth } from "firebase/auth";
 
 declare const __DEV__: boolean;
@@ -24,51 +24,54 @@ interface AuthActions {
   cleanup: () => void;
 }
 
-type AuthStore = AuthState & AuthActions;
-
 let unsubscribe: (() => void) | null = null;
 
-export const useFirebaseAuthStore = create<AuthStore>((set, get) => ({
-  user: null,
-  loading: true,
-  initialized: false,
-  listenerSetup: false,
+export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
+  name: "firebase-auth-store",
+  initialState: {
+    user: null,
+    loading: true,
+    initialized: false,
+    listenerSetup: false,
+  },
+  persist: false,
+  actions: (set, get) => ({
+    setupListener: (auth: Auth) => {
+      const state = get();
 
-  setupListener: (auth: Auth) => {
-    const state = get();
+      if (state.listenerSetup || unsubscribe) {
+        return;
+      }
 
-    if (state.listenerSetup || unsubscribe) {
-      return;
-    }
+      set({ listenerSetup: true });
 
-    set({ listenerSetup: true });
+      unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
+        if (typeof __DEV__ !== "undefined" && __DEV__) {
+          // eslint-disable-next-line no-console
+          console.log(
+            "[FirebaseAuthStore] Auth state changed:",
+            currentUser?.uid || "null"
+          );
+        }
+        set({
+          user: currentUser,
+          loading: false,
+          initialized: true,
+        });
+      });
+    },
 
-    unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        // eslint-disable-next-line no-console
-        console.log(
-          "[FirebaseAuthStore] Auth state changed:",
-          currentUser?.uid || "null"
-        );
+    cleanup: () => {
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
       }
       set({
-        user: currentUser,
-        loading: false,
-        initialized: true,
+        user: null,
+        loading: true,
+        initialized: false,
+        listenerSetup: false,
       });
-    });
-  },
-
-  cleanup: () => {
-    if (unsubscribe) {
-      unsubscribe();
-      unsubscribe = null;
-    }
-    set({
-      user: null,
-      loading: true,
-      initialized: false,
-      listenerSetup: false,
-    });
-  },
-}));
+    },
+  }),
+});
