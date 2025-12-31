@@ -44,7 +44,7 @@ export interface FirestoreQueryResult {
   readonly shouldSkip: boolean;
   readonly reason?: FirestoreQuerySkipReason;
   readonly userId: string | null;
-  readonly isGuest: boolean;
+  readonly isAnonymous: boolean;
   readonly isAuthenticated: boolean;
 }
 
@@ -70,7 +70,7 @@ export function shouldSkipFirestoreQuery(
         shouldSkip: true,
         reason: "no_auth",
         userId: null,
-        isGuest: false,
+        isAnonymous: false,
         isAuthenticated: false,
       };
     }
@@ -85,20 +85,20 @@ export function shouldSkipFirestoreQuery(
           shouldSkip: true,
           reason: "not_authenticated",
           userId: null,
-          isGuest: false,
+          isAnonymous: false,
           isAuthenticated: false,
         };
       }
     }
 
-    // Guest/anonymous user
-    if (authState.isGuest) {
+    // Anonymous user
+    if (authState.isAnonymous) {
       if (skipForGuest) {
         return {
           shouldSkip: true,
           reason: "is_guest",
           userId: authState.userId,
-          isGuest: true,
+          isAnonymous: true,
           isAuthenticated: false,
         };
       }
@@ -111,7 +111,7 @@ export function shouldSkipFirestoreQuery(
           shouldSkip: true,
           reason: "user_id_mismatch",
           userId: authState.userId,
-          isGuest: authState.isGuest,
+          isAnonymous: authState.isAnonymous,
           isAuthenticated: authState.isAuthenticated,
         };
       }
@@ -121,7 +121,7 @@ export function shouldSkipFirestoreQuery(
     return {
       shouldSkip: false,
       userId: authState.userId,
-      isGuest: authState.isGuest,
+      isAnonymous: authState.isAnonymous,
       isAuthenticated: authState.isAuthenticated,
     };
   } catch (error) {
@@ -134,7 +134,7 @@ export function shouldSkipFirestoreQuery(
       shouldSkip: true,
       reason: "invalid_options",
       userId: null,
-      isGuest: false,
+      isAnonymous: false,
       isAuthenticated: false,
     };
   }

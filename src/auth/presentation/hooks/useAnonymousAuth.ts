@@ -63,7 +63,6 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
         setAuthState({
           isAuthenticated: false,
           isAnonymous: false,
-          isGuest: false,
           currentUser: null,
           userId: null,
         });
@@ -72,7 +71,6 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
         setAuthState({
           isAuthenticated: true,
           isAnonymous: anonymous,
-          isGuest: anonymous,
           currentUser: user,
           userId: user.uid,
         });
@@ -104,7 +102,6 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
       setAuthState({
         isAuthenticated: false,
         isAnonymous: false,
-        isGuest: false,
         currentUser: null,
         userId: null,
       });

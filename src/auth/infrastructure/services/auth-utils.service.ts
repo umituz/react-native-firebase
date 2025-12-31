@@ -21,7 +21,6 @@ function isAnonymousUser(user: User): boolean {
 export interface AuthCheckResult {
   isAuthenticated: boolean;
   isAnonymous: boolean;
-  isGuest: boolean;
   currentUser: User | null;
   userId: string | null;
 }
@@ -35,7 +34,6 @@ export function checkAuthState(auth: Auth | null): AuthCheckResult {
     return {
       isAuthenticated: false,
       isAnonymous: false,
-      isGuest: false,
       currentUser: null,
       userId: null,
     };
@@ -47,18 +45,14 @@ export function checkAuthState(auth: Auth | null): AuthCheckResult {
     return {
       isAuthenticated: false,
       isAnonymous: false,
-      isGuest: false,
       currentUser: null,
       userId: null,
     };
   }
 
-  const anonymous = isAnonymousUser(currentUser);
-
   return {
     isAuthenticated: true,
-    isAnonymous: anonymous,
-    isGuest: anonymous,
+    isAnonymous: isAnonymousUser(currentUser),
     currentUser,
     userId: currentUser.uid,
   };
@@ -72,10 +66,10 @@ export function isAuthenticated(auth: Auth | null): boolean {
 }
 
 /**
- * Check if user is guest (anonymous)
+ * Check if user is anonymous
  */
-export function isGuest(auth: Auth | null): boolean {
-  return checkAuthState(auth).isGuest;
+export function isAnonymous(auth: Auth | null): boolean {
+  return checkAuthState(auth).isAnonymous;
 }
 
 /**
@@ -120,12 +114,12 @@ export function isCurrentUserAuthenticated(): boolean {
 }
 
 /**
- * Check if current user is guest (anonymous)
+ * Check if current user is anonymous
  * Convenience function that uses getFirebaseAuth()
  */
-export function isCurrentUserGuest(): boolean {
+export function isCurrentUserAnonymous(): boolean {
   const auth = getFirebaseAuth();
-  return isGuest(auth);
+  return isAnonymous(auth);
 }
 
 /**
