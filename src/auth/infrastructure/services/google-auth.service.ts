@@ -1,7 +1,6 @@
 /**
  * Google Auth Service
  * Handles Google Sign-In with Firebase Authentication
- * Uses expo-auth-session for OAuth flow
  */
 
 import {
@@ -37,16 +36,10 @@ export interface GoogleAuthResult {
 export class GoogleAuthService {
   private config: GoogleAuthConfig | null = null;
 
-  /**
-   * Configure Google Auth with client IDs
-   */
   configure(config: GoogleAuthConfig): void {
     this.config = config;
   }
 
-  /**
-   * Check if Google Auth is configured
-   */
   isConfigured(): boolean {
     return (
       this.config !== null &&
@@ -56,17 +49,10 @@ export class GoogleAuthService {
     );
   }
 
-  /**
-   * Get the current configuration
-   */
   getConfig(): GoogleAuthConfig | null {
     return this.config;
   }
 
-  /**
-   * Sign in with Google ID token
-   * Called after successful Google OAuth flow
-   */
   async signInWithIdToken(
     auth: Auth,
     idToken: string,
@@ -75,7 +61,6 @@ export class GoogleAuthService {
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
 
-      // Check if this is a new user
       const isNewUser =
         userCredential.user.metadata.creationTime ===
         userCredential.user.metadata.lastSignInTime;
@@ -89,7 +74,6 @@ export class GoogleAuthService {
       if (__DEV__) {
         console.error('[Firebase Auth] Google Sign-In failed:', error);
       }
-
       return {
         success: false,
         error: error instanceof Error ? error.message : "Google sign-in failed",
@@ -98,7 +82,4 @@ export class GoogleAuthService {
   }
 }
 
-/**
- * Singleton instance
- */
 export const googleAuthService = new GoogleAuthService();
