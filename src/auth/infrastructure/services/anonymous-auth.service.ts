@@ -6,9 +6,6 @@
 import { signInAnonymously, type Auth, type User } from "firebase/auth";
 import { toAnonymousUser, type AnonymousUser } from "../../domain/entities/AnonymousUser";
 import { checkAuthState } from "./auth-utils.service";
-import {
-  trackPackageError,
-  addPackageBreadcrumb,
 
 declare const __DEV__: boolean;
 
@@ -42,8 +39,7 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
 
     // If user is already signed in with email/password, preserve that session
     if (currentUser && !currentUser.isAnonymous) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        // eslint-disable-next-line no-console
+      if (__DEV__) {
         console.log("[AnonymousAuthService] User already signed in with email/password, skipping anonymous auth");
       }
       // Return a "fake" anonymous result to maintain API compatibility
@@ -57,8 +53,7 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
 
     // If already signed in anonymously, return existing user
     if (currentUser && currentUser.isAnonymous) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        // eslint-disable-next-line no-console
+      if (__DEV__) {
         console.log("[AnonymousAuthService] User already signed in anonymously");
       }
       return {
@@ -69,20 +64,13 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
     }
 
     // No user exists, sign in anonymously
-    addPackageBreadcrumb("firebase-auth", "Starting anonymous sign-in");
-
     try {
       const userCredential = await signInAnonymously(auth);
       const anonymousUser = toAnonymousUser(userCredential.user);
 
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        // eslint-disable-next-line no-console
+      if (__DEV__) {
         console.log("[AnonymousAuthService] Successfully signed in anonymously", { uid: anonymousUser.uid });
       }
-
-      addPackageBreadcrumb("firebase-auth", "Anonymous sign-in successful", {
-        userId: anonymousUser.uid,
-      });
 
       return {
         user: userCredential.user,
@@ -90,18 +78,9 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
         wasAlreadySignedIn: false,
       };
     } catch (error) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        // eslint-disable-next-line no-console
+      if (__DEV__) {
         console.error("[AnonymousAuthService] Failed to sign in anonymously", error);
       }
-
-      trackPackageError(
-        error instanceof Error ? error : new Error("Anonymous sign-in failed"),
-        {
-          packageName: "firebase-auth",
-          operation: "anonymous-sign-in",
-        }
-      );
 
       throw error;
     }
@@ -122,8 +101,7 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
       }
       return null;
     } catch (error) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        // eslint-disable-next-line no-console
+      if (__DEV__) {
         console.error("[AnonymousAuthService] Error getting current anonymous user", error);
       }
       return null;
@@ -141,8 +119,7 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
     try {
       return checkAuthState(auth).isAnonymous;
     } catch (error) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        // eslint-disable-next-line no-console
+      if (__DEV__) {
         console.error("[AnonymousAuthService] Error checking if user is anonymous", error);
       }
       return false;

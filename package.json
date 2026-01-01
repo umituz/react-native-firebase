@@ -1,6 +1,6 @@
 {
   "name": "@umituz/react-native-firebase",
-  "version": "1.13.40",
+  "version": "1.13.41",
   "description": "Unified Firebase package for React Native apps - Auth and Firestore services using Firebase JS SDK (no native modules).",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -32,7 +32,6 @@
     "url": "https://github.com/umituz/react-native-firebase"
   },
   "peerDependencies": {
-    "@umituz/react-native-sentry": "*",
     "@umituz/react-native-storage": "*",
     "expo-apple-authentication": ">=6.0.0",
     "expo-crypto": ">=13.0.0",
@@ -42,11 +41,8 @@
   },
   "devDependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
-    "@sentry/react-native": "^7.8.0",
-    "@sentry/types": "^10.32.1",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
-    "@umituz/react-native-sentry": "*",
     "@umituz/react-native-storage": "*",
     "expo-apple-authentication": "^8.0.8",
     "expo-crypto": "^15.0.8",

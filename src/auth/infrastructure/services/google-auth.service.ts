@@ -10,9 +10,6 @@ import {
   type Auth,
   type UserCredential,
 } from "firebase/auth";
-import {
-  trackPackageError,
-  addPackageBreadcrumb,
 
 /**
  * Google Auth configuration
@@ -74,8 +71,6 @@ export class GoogleAuthService {
     auth: Auth,
     idToken: string,
   ): Promise<GoogleAuthResult> {
-    addPackageBreadcrumb("firebase-auth", "Google Sign-In with ID token");
-
     try {
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
@@ -85,24 +80,15 @@ export class GoogleAuthService {
         userCredential.user.metadata.creationTime ===
         userCredential.user.metadata.lastSignInTime;
 
-      addPackageBreadcrumb("firebase-auth", "Google Sign-In successful", {
-        isNewUser,
-        userId: userCredential.user.uid,
-      });
-
       return {
         success: true,
         userCredential,
         isNewUser,
       };
     } catch (error) {
-      trackPackageError(
-        error instanceof Error ? error : new Error("Google sign-in failed"),
-        {
-          packageName: "firebase-auth",
-          operation: "google-sign-in",
-        }
-      );
+      if (__DEV__) {
+        console.error('[Firebase Auth] Google Sign-In failed:', error);
+      }
 
       return {
         success: false,
