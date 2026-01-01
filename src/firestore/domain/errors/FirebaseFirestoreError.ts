@@ -41,11 +41,12 @@ export class FirebaseFirestoreInitializationError extends FirebaseFirestoreError
  * This error is NOT retryable - quota won't increase by retrying
  */
 export class FirebaseFirestoreQuotaError extends FirebaseFirestoreError {
+  readonly isQuotaError = true;
+  override readonly code = 'resource-exhausted';
+
   constructor(message: string, originalError?: unknown) {
     super(message, originalError);
     this.name = 'FirebaseFirestoreQuotaError';
-    (this as any).isQuotaError = true;
-    (this as any).code = 'resource-exhausted';
     Object.setPrototypeOf(this, FirebaseFirestoreQuotaError.prototype);
   }
 }

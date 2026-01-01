@@ -5,7 +5,6 @@
 
 import { signInAnonymously, type Auth, type User } from "firebase/auth";
 import { toAnonymousUser, type AnonymousUser } from "../../domain/entities/AnonymousUser";
-import { checkAuthState } from "./auth-utils.service";
 
 export interface AnonymousAuthResult {
   readonly user: User;
@@ -13,7 +12,11 @@ export interface AnonymousAuthResult {
   readonly wasAlreadySignedIn: boolean;
 }
 
-export class AnonymousAuthService {
+export interface AnonymousAuthServiceInterface {
+  signInAnonymously(auth: Auth): Promise<AnonymousAuthResult>;
+}
+
+export class AnonymousAuthService implements AnonymousAuthServiceInterface {
   async signInAnonymously(auth: Auth): Promise<AnonymousAuthResult> {
     if (!auth) throw new Error("Firebase Auth instance is required");
 
