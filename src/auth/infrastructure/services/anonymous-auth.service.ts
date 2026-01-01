@@ -9,7 +9,6 @@ import { checkAuthState } from "./auth-utils.service";
 import {
   trackPackageError,
   addPackageBreadcrumb,
-} from "@umituz/react-native-sentry";
 
 declare const __DEV__: boolean;
 

@@ -20,7 +20,6 @@ import {
   trackPackageError,
   addPackageBreadcrumb,
   trackPackageWarning,
-} from '@umituz/react-native-sentry';
 
 declare const __DEV__: boolean;
 

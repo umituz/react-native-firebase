@@ -13,7 +13,6 @@ import {
 import {
   trackPackageError,
   addPackageBreadcrumb,
-} from "@umituz/react-native-sentry";
 
 /**
  * Google Auth configuration

@@ -16,7 +16,6 @@ import { Platform } from "react-native";
 import {
   trackPackageError,
   addPackageBreadcrumb,
-} from "@umituz/react-native-sentry";
 
 /**
  * Apple Auth result
