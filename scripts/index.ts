@@ -26,6 +26,9 @@ export type {
   BatchResult,
   StorageFileInfo,
   ResetSummary,
+  UserCredits,
+  UserData,
+  CreditsConfig,
 } from "./types";
 
 // Initialization
@@ -83,3 +86,15 @@ export {
   printSeparator,
   printHeader,
 } from "./utils";
+
+// User utilities
+export {
+  getUserData,
+  initializeUserCredits,
+  addUserCredits,
+  setUserCredits,
+  listUsersWithCredits,
+  deleteUserCredits,
+  getCreditsSummary,
+  printUserData,
+} from "./user";

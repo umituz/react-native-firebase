@@ -53,3 +53,32 @@ export interface ResetSummary {
   firestoreDocsDeleted: number;
   storageFilesDeleted: number;
 }
+
+/** User credits data */
+export interface UserCredits {
+  text: number;
+  image: number;
+  video: number;
+  audio: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+/** Complete user data including all related collections */
+export interface UserData {
+  userId: string;
+  exists: boolean;
+  profile: Record<string, unknown> | null;
+  credits: UserCredits | null;
+  subscriptions: Array<Record<string, unknown>>;
+  transactions: Array<Record<string, unknown>>;
+}
+
+/** Credits initialization config */
+export interface CreditsConfig {
+  collectionName?: string;
+  textLimit?: number;
+  imageLimit?: number;
+  videoLimit?: number;
+  audioLimit?: number;
+}

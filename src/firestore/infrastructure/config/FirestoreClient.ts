@@ -87,15 +87,27 @@ class FirestoreClientSingleton {
       try {
         // Try to get Firebase App (will auto-initialize if config is available)
         const app = getFirebaseApp();
+        if (typeof __DEV__ !== "undefined" && __DEV__) {
+          // eslint-disable-next-line no-console
+          console.log("[FirestoreClient] getFirestore - app:", !!app);
+        }
         if (app) {
           this.initialize();
         }
-      } catch {
+      } catch (e) {
         // Firebase App not available, return null (offline mode)
+        if (typeof __DEV__ !== "undefined" && __DEV__) {
+          // eslint-disable-next-line no-console
+          console.log("[FirestoreClient] getFirestore error:", e);
+        }
         return null;
       }
     }
 
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      // eslint-disable-next-line no-console
+      console.log("[FirestoreClient] returning firestore:", !!this.firestore, "constructor:", this.firestore?.constructor?.name);
+    }
     // Return null if not initialized (offline mode - no error)
     return this.firestore || null;
   }
