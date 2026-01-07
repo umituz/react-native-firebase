@@ -51,7 +51,6 @@ export {
   isCurrentUserAuthenticated,
   isCurrentUserAnonymous,
   verifyUserId,
-  getSafeUserId,
   isValidUser,
 } from './infrastructure/services/auth-utils.service';
 

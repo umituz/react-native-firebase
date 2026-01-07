@@ -9,13 +9,6 @@ import type { Auth, User } from 'firebase/auth';
 import { getFirebaseAuth } from '../config/FirebaseAuthClient';
 
 /**
- * Check if user is anonymous
- */
-function isAnonymousUser(user: User): boolean {
-  return user.isAnonymous === true;
-}
-
-/**
  * Auth check result interface
  */
 export interface AuthCheckResult {
@@ -28,9 +21,10 @@ export interface AuthCheckResult {
 /**
  * Check authentication state
  * Returns comprehensive auth state information
+ * Optimized: Single traversal of auth state
  */
 export function checkAuthState(auth: Auth | null): AuthCheckResult {
-  if (!auth) {
+  if (!auth || !auth.currentUser) {
     return {
       isAuthenticated: false,
       isAnonymous: false,
@@ -40,19 +34,9 @@ export function checkAuthState(auth: Auth | null): AuthCheckResult {
   }
 
   const currentUser = auth.currentUser;
-
-  if (!currentUser) {
-    return {
-      isAuthenticated: false,
-      isAnonymous: false,
-      currentUser: null,
-      userId: null,
-    };
-  }
-
   return {
     isAuthenticated: true,
-    isAnonymous: isAnonymousUser(currentUser),
+    isAnonymous: currentUser.isAnonymous === true,
     currentUser,
     userId: currentUser.uid,
   };
@@ -62,28 +46,28 @@ export function checkAuthState(auth: Auth | null): AuthCheckResult {
  * Check if user is authenticated (including anonymous)
  */
 export function isAuthenticated(auth: Auth | null): boolean {
-  return checkAuthState(auth).isAuthenticated;
+  return auth?.currentUser?.uid !== null && auth?.currentUser?.uid !== undefined;
 }
 
 /**
  * Check if user is anonymous
  */
 export function isAnonymous(auth: Auth | null): boolean {
-  return checkAuthState(auth).isAnonymous;
+  return auth?.currentUser?.isAnonymous === true;
 }
 
 /**
  * Get current user ID (null if not authenticated)
  */
 export function getCurrentUserId(auth: Auth | null): string | null {
-  return checkAuthState(auth).userId;
+  return auth?.currentUser?.uid ?? null;
 }
 
 /**
  * Get current user (null if not authenticated)
  */
 export function getCurrentUser(auth: Auth | null): User | null {
-  return checkAuthState(auth).currentUser;
+  return auth?.currentUser ?? null;
 }
 
 /**
@@ -91,8 +75,7 @@ export function getCurrentUser(auth: Auth | null): User | null {
  * Convenience function that uses getFirebaseAuth()
  */
 export function getCurrentUserIdFromGlobal(): string | null {
-  const auth = getFirebaseAuth();
-  return getCurrentUserId(auth);
+  return getCurrentUserId(getFirebaseAuth());
 }
 
 /**
@@ -100,8 +83,7 @@ export function getCurrentUserIdFromGlobal(): string | null {
  * Convenience function that uses getFirebaseAuth()
  */
 export function getCurrentUserFromGlobal(): User | null {
-  const auth = getFirebaseAuth();
-  return getCurrentUser(auth);
+  return getCurrentUser(getFirebaseAuth());
 }
 
 /**
@@ -109,8 +91,7 @@ export function getCurrentUserFromGlobal(): User | null {
  * Convenience function that uses getFirebaseAuth()
  */
 export function isCurrentUserAuthenticated(): boolean {
-  const auth = getFirebaseAuth();
-  return isAuthenticated(auth);
+  return isAuthenticated(getFirebaseAuth());
 }
 
 /**
@@ -118,45 +99,23 @@ export function isCurrentUserAuthenticated(): boolean {
  * Convenience function that uses getFirebaseAuth()
  */
 export function isCurrentUserAnonymous(): boolean {
-  const auth = getFirebaseAuth();
-  return isAnonymous(auth);
+  return isAnonymous(getFirebaseAuth());
 }
 
 /**
  * Verify userId matches current authenticated user
  */
 export function verifyUserId(auth: Auth | null, userId: string): boolean {
-  if (!auth || !userId) {
+  if (!userId) {
     return false;
   }
-
-  try {
-    const state = checkAuthState(auth);
-    return state.isAuthenticated && state.userId === userId;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Get safe user ID (null if not authenticated)
- */
-export function getSafeUserId(auth: Auth | null): string | null {
-  if (!auth) {
-    return null;
-  }
-
-  try {
-    return getCurrentUserId(auth);
-  } catch {
-    return null;
-  }
+  return auth?.currentUser?.uid === userId;
 }
 
 /**
  * Check if user exists and is valid
  */
 export function isValidUser(user: User | null | undefined): user is User {
-  return user !== null && user !== undefined && typeof user.uid === 'string' && user.uid.length > 0;
+  return user?.uid !== undefined && user.uid.length > 0;
 }
 

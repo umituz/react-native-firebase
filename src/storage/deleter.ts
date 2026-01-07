@@ -1,6 +1,6 @@
 /**
  * Firebase Storage Deleter
- * Handles image deletion from Firebase Storage
+ * Handles single and batch deletion from Firebase Storage
  */
 
 import { getStorage, ref, deleteObject } from "firebase/storage";
@@ -8,6 +8,14 @@ import { getFirebaseApp } from "../infrastructure/config/FirebaseClient";
 import type { DeleteResult } from "./types";
 
 declare const __DEV__: boolean;
+
+/**
+ * Batch delete result interface
+ */
+export interface BatchDeleteResult {
+    successful: string[];
+    failed: Array<{ path: string; error: string }>;
+}
 
 /**
  * Extract storage path from Firebase download URL
@@ -74,7 +82,66 @@ export async function deleteStorageFile(
         }
 
         return { success: true, storagePath };
-    } catch {
+    } catch (error) {
+        if (__DEV__) {
+            console.error("[StorageDeleter] Delete failed", {
+                storagePath,
+                error,
+            });
+        }
         return { success: false, storagePath };
     }
+}
+
+/**
+ * Delete multiple files from Firebase Storage
+ * Processes deletions in parallel for better performance
+ *
+ * @param urlsOrPaths - Array of download URLs or storage paths
+ * @returns Batch delete result with successful and failed deletions
+ */
+export async function deleteStorageFiles(
+    urlsOrPaths: string[]
+): Promise<BatchDeleteResult> {
+    if (__DEV__) {
+        console.log("[StorageDeleter] Batch delete", { count: urlsOrPaths.length });
+    }
+
+    const storage = getStorageInstance();
+    if (!storage) {
+        return {
+            successful: [],
+            failed: urlsOrPaths.map((path) => ({
+                path,
+                error: "Firebase Storage not initialized",
+            })),
+        };
+    }
+
+    const results = await Promise.allSettled(
+        urlsOrPaths.map((urlOrPath) => deleteStorageFile(urlOrPath))
+    );
+
+    const successful: string[] = [];
+    const failed: Array<{ path: string; error: string }> = [];
+
+    results.forEach((result, index) => {
+        if (result.status === "fulfilled" && result.value.success) {
+            successful.push(result.value.storagePath);
+        } else {
+            const errorMessage = result.status === "rejected"
+                ? String((result.reason as any)?.message ?? "Unknown error")
+                : "Delete operation failed";
+            failed.push({ path: urlsOrPaths[index]!, error: errorMessage });
+        }
+    });
+
+    if (__DEV__) {
+        console.log("[StorageDeleter] Batch delete complete", {
+            successful: successful.length,
+            failed: failed.length,
+        });
+    }
+
+    return { successful, failed };
 }
