@@ -1,8 +1,6 @@
 /**
  * Reauthentication Service
  * Handles Firebase Auth reauthentication for sensitive operations
- *
- * SOLID: Single Responsibility - Only handles reauthentication
  */
 
 import {
@@ -11,243 +9,85 @@ import {
   OAuthProvider,
   EmailAuthProvider,
   type User,
-  type AuthCredential,
 } from "firebase/auth";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as Crypto from "expo-crypto";
 import { Platform } from "react-native";
+import type { 
+  ReauthenticationResult, 
+  AuthProviderType, 
+  ReauthCredentialResult 
+} from "./reauthentication.types";
 
-export interface ReauthenticationResult {
-  success: boolean;
-  error?: {
-    code: string;
-    message: string;
-  };
-}
+export type { 
+  ReauthenticationResult, 
+  AuthProviderType, 
+  ReauthCredentialResult 
+} from "./reauthentication.types";
 
-export type AuthProviderType = "google.com" | "apple.com" | "password" | "anonymous" | "unknown";
-
-/**
- * Get the primary auth provider for a user
- */
 export function getUserAuthProvider(user: User): AuthProviderType {
-  if (user.isAnonymous) {
-    return "anonymous";
-  }
-
-  const providerData = user.providerData;
-  if (!providerData || providerData.length === 0) {
-    return "unknown";
-  }
-
-  // Check for Google
-  const googleProvider = providerData.find((p) => p.providerId === "google.com");
-  if (googleProvider) {
-    return "google.com";
-  }
-
-  // Check for Apple
-  const appleProvider = providerData.find((p) => p.providerId === "apple.com");
-  if (appleProvider) {
-    return "apple.com";
-  }
-
-  // Check for password
-  const passwordProvider = providerData.find((p) => p.providerId === "password");
-  if (passwordProvider) {
-    return "password";
-  }
-
+  if (user.isAnonymous) return "anonymous";
+  const data = user.providerData;
+  if (!data?.length) return "unknown";
+  if (data.find(p => p.providerId === "google.com")) return "google.com";
+  if (data.find(p => p.providerId === "apple.com")) return "apple.com";
+  if (data.find(p => p.providerId === "password")) return "password";
   return "unknown";
 }
 
-/**
- * Reauthenticate with Google
- */
-export async function reauthenticateWithGoogle(
-  user: User,
-  idToken: string
-): Promise<ReauthenticationResult> {
+export async function reauthenticateWithGoogle(user: User, idToken: string): Promise<ReauthenticationResult> {
   try {
-    const credential = GoogleAuthProvider.credential(idToken);
-    await reauthenticateWithCredential(user, credential);
+    await reauthenticateWithCredential(user, GoogleAuthProvider.credential(idToken));
     return { success: true };
-  } catch (error) {
-    const firebaseError = error as { code?: string; message?: string };
-    return {
-      success: false,
-      error: {
-        code: firebaseError.code || "auth/reauthentication-failed",
-        message: firebaseError.message || "Google reauthentication failed",
-      },
-    };
+  } catch (error: any) {
+    return { success: false, error: { code: error.code || "auth/failed", message: error.message } };
   }
 }
 
-/**
- * Reauthenticate with Email/Password
- */
-export async function reauthenticateWithPassword(
-  user: User,
-  password: string
-): Promise<ReauthenticationResult> {
+export async function reauthenticateWithPassword(user: User, pass: string): Promise<ReauthenticationResult> {
+  if (!user.email) return { success: false, error: { code: "auth/no-email", message: "User has no email" } };
   try {
-    if (!user.email) {
-      return {
-        success: false,
-        error: {
-          code: "auth/no-email",
-          message: "User has no email address",
-        },
-      };
-    }
-
-    const credential = EmailAuthProvider.credential(user.email, password);
-    await reauthenticateWithCredential(user, credential);
+    await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, pass));
     return { success: true };
-  } catch (error) {
-    const firebaseError = error as { code?: string; message?: string };
-    return {
-      success: false,
-      error: {
-        code: firebaseError.code || "auth/reauthentication-failed",
-        message: firebaseError.message || "Password reauthentication failed",
-      },
-    };
+  } catch (error: any) {
+    return { success: false, error: { code: error.code || "auth/failed", message: error.message } };
   }
 }
 
-/**
- * Generate a random nonce for Apple Sign-In security
- */
-async function generateNonce(length: number = 32): Promise<string> {
-  const randomBytes = await Crypto.getRandomBytesAsync(length);
+async function generateNonce(len: number = 32): Promise<string> {
+  const bytes = await Crypto.getRandomBytesAsync(len);
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-
-  for (let i = 0; i < randomBytes.length; i++) {
-    const byte = randomBytes[i];
-    if (byte !== undefined) {
-      result += chars.charAt(byte % chars.length);
-    }
-  }
-
-  return result;
+  return Array.from(bytes).map(b => chars.charAt(b % chars.length)).join("");
 }
 
-/**
- * Reauthenticate with Apple
- * Returns the credential that can be used for reauthentication
- */
-export async function getAppleReauthCredential(): Promise<{
-  success: boolean;
-  credential?: AuthCredential;
-  error?: { code: string; message: string };
-}> {
-  if (Platform.OS !== "ios") {
-    return {
-      success: false,
-      error: {
-        code: "auth/platform-not-supported",
-        message: "Apple Sign-In is only available on iOS",
-      },
-    };
-  }
-
+export async function getAppleReauthCredential(): Promise<ReauthCredentialResult> {
+  if (Platform.OS !== "ios") return { success: false, error: { code: "auth/ios-only", message: "iOS only" } };
   try {
-    const isAvailable = await AppleAuthentication.isAvailableAsync();
-    if (!isAvailable) {
-      return {
-        success: false,
-        error: {
-          code: "auth/apple-signin-unavailable",
-          message: "Apple Sign-In is not available on this device",
-        },
-      };
-    }
+    if (!(await AppleAuthentication.isAvailableAsync())) 
+      return { success: false, error: { code: "auth/unavailable", message: "Unavailable" } };
 
-    // Generate nonce
     const nonce = await generateNonce();
-    const hashedNonce = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      nonce
-    );
-
-    // Request Apple Sign-In
-    const appleCredential = await AppleAuthentication.signInAsync({
-      requestedScopes: [
-        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-        AppleAuthentication.AppleAuthenticationScope.EMAIL,
-      ],
-      nonce: hashedNonce,
+    const hashed = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nonce);
+    const apple = await AppleAuthentication.signInAsync({
+      requestedScopes: [AppleAuthentication.AppleAuthenticationScope.FULL_NAME, AppleAuthentication.AppleAuthenticationScope.EMAIL],
+      nonce: hashed,
     });
 
-    if (!appleCredential.identityToken) {
-      return {
-        success: false,
-        error: {
-          code: "auth/no-identity-token",
-          message: "No identity token received from Apple",
-        },
-      };
-    }
-
-    // Create Firebase credential
-    const provider = new OAuthProvider("apple.com");
-    const credential = provider.credential({
-      idToken: appleCredential.identityToken,
-      rawNonce: nonce,
-    });
-
-    return { success: true, credential };
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("ERR_CANCELED")) {
-      return {
-        success: false,
-        error: {
-          code: "auth/cancelled",
-          message: "Apple Sign-In was cancelled",
-        },
-      };
-    }
-
-    return {
-      success: false,
-      error: {
-        code: "auth/apple-reauthentication-failed",
-        message: error instanceof Error ? error.message : "Apple reauthentication failed",
-      },
-    };
+    if (!apple.identityToken) return { success: false, error: { code: "auth/no-token", message: "No token" } };
+    return { success: true, credential: new OAuthProvider("apple.com").credential({ idToken: apple.identityToken, rawNonce: nonce }) };
+  } catch (error: any) {
+    const code = error.message?.includes("ERR_CANCELED") ? "auth/cancelled" : "auth/failed";
+    return { success: false, error: { code, message: error.message } };
   }
 }
 
-/**
- * Reauthenticate with Apple
- */
 export async function reauthenticateWithApple(user: User): Promise<ReauthenticationResult> {
-  const result = await getAppleReauthCredential();
-
-  if (!result.success || !result.credential) {
-    return {
-      success: false,
-      error: result.error || {
-        code: "auth/no-credential",
-        message: "Failed to get Apple credential",
-      },
-    };
-  }
-
+  const res = await getAppleReauthCredential();
+  if (!res.success || !res.credential) return { success: false, error: res.error };
   try {
-    await reauthenticateWithCredential(user, result.credential);
+    await reauthenticateWithCredential(user, res.credential);
     return { success: true };
-  } catch (error) {
-    const firebaseError = error as { code?: string; message?: string };
-    return {
-      success: false,
-      error: {
-        code: firebaseError.code || "auth/reauthentication-failed",
-        message: firebaseError.message || "Apple reauthentication failed",
-      },
-    };
+  } catch (error: any) {
+    return { success: false, error: { code: error.code || "auth/failed", message: error.message } };
   }
 }
