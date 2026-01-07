@@ -50,7 +50,8 @@
     "firebase-admin": "^13.6.0",
     "react": "19.1.0",
     "react-native": "0.81.5",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "zustand": "^5.0.3"
   },
   "optionalDependencies": {
     "firebase-admin": "^13.0.2"
