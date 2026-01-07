@@ -6,11 +6,6 @@
  *
  * IMPORTANT: This package requires Firebase App to be initialized first.
  * Use @umituz/react-native-firebase to initialize Firebase App.
- *
- * SOLID Principles:
- * - Single Responsibility: Only manages Firestore initialization
- * - Open/Closed: Extensible through configuration, closed for modification
- * - Dependency Inversion: Depends on Firebase App from @umituz/react-native-firebase
  */
 
 // eslint-disable-next-line no-console
@@ -29,13 +24,8 @@ class FirestoreClientSingleton {
   private firestore: Firestore | null = null;
   private initializationError: string | null = null;
 
-  private constructor() {
-    // Private constructor to enforce singleton pattern
-  }
+  private constructor() {}
 
-  /**
-   * Get singleton instance
-   */
   static getInstance(): FirestoreClientSingleton {
     if (!FirestoreClientSingleton.instance) {
       FirestoreClientSingleton.instance = new FirestoreClientSingleton();
@@ -43,26 +33,13 @@ class FirestoreClientSingleton {
     return FirestoreClientSingleton.instance;
   }
 
-  /**
-   * Initialize Firestore
-   * Requires Firebase App to be initialized first via @umituz/react-native-firebase
-   *
-   * @returns Firestore instance or null if initialization fails
-   */
   initialize(): Firestore | null {
-    if (this.firestore) {
-      return this.firestore;
-    }
-    if (this.initializationError) {
-      return null;
-    }
-    try {
-      const app = getFirebaseApp(); // Get the core Firebase App
+    if (this.firestore) return this.firestore;
+    if (this.initializationError) return null;
 
-      // Return null if Firebase App is not available (offline mode)
-      if (!app) {
-        return null;
-      }
+    try {
+      const app = getFirebaseApp();
+      if (!app) return null;
 
       this.firestore = FirebaseFirestoreInitializer.initialize(app);
       return this.firestore;
@@ -75,61 +52,22 @@ class FirestoreClientSingleton {
     }
   }
 
-  /**
-   * Get Firestore instance
-   * Auto-initializes if Firebase App is available
-   * Returns null if config is not available (offline mode - no error)
-   * @returns Firestore instance or null if not initialized
-   */
   getFirestore(): Firestore | null {
-    // Auto-initialize if not already initialized
     if (!this.firestore && !this.initializationError) {
-      try {
-        // Try to get Firebase App (will auto-initialize if config is available)
-        const app = getFirebaseApp();
-        if (typeof __DEV__ !== "undefined" && __DEV__) {
-          // eslint-disable-next-line no-console
-          console.log("[FirestoreClient] getFirestore - app:", !!app);
-        }
-        if (app) {
-          this.initialize();
-        }
-      } catch (e) {
-        // Firebase App not available, return null (offline mode)
-        if (typeof __DEV__ !== "undefined" && __DEV__) {
-          // eslint-disable-next-line no-console
-          console.log("[FirestoreClient] getFirestore error:", e);
-        }
-        return null;
-      }
+      const app = getFirebaseApp();
+      if (app) this.initialize();
     }
-
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
-      // eslint-disable-next-line no-console
-      console.log("[FirestoreClient] returning firestore:", !!this.firestore, "constructor:", this.firestore?.constructor?.name);
-    }
-    // Return null if not initialized (offline mode - no error)
     return this.firestore || null;
   }
 
-  /**
-   * Check if Firestore is initialized
-   */
   isInitialized(): boolean {
     return this.firestore !== null;
   }
 
-  /**
-   * Get initialization error if any
-   */
   getInitializationError(): string | null {
     return this.initializationError;
   }
 
-  /**
-   * Reset Firestore client instance
-   * Useful for testing
-   */
   reset(): void {
     this.firestore = null;
     this.initializationError = null;
@@ -138,56 +76,22 @@ class FirestoreClientSingleton {
 
 export const firestoreClient = FirestoreClientSingleton.getInstance();
 
-/**
- * Initialize Firestore
- * Requires Firebase App to be initialized first via @umituz/react-native-firebase
- *
- * @returns Firestore instance or null if initialization fails
- *
- * @example
- * ```typescript
- * import { initializeFirebase } from '@umituz/react-native-firebase';
- * import { initializeFirestore } from '@umituz/react-native-firestore';
- *
- * // Initialize Firebase App first
- * const app = initializeFirebase(config);
- *
- * // Then initialize Firestore
- * const db = initializeFirestore();
- * ```
- */
 export function initializeFirestore(): Firestore | null {
   return firestoreClient.initialize();
 }
 
-/**
- * Get Firestore instance
- * Auto-initializes if Firebase App is available
- * Returns null if config is not available (offline mode - no error)
- * @returns Firestore instance or null if not initialized
- */
 export function getFirestore(): Firestore | null {
   return firestoreClient.getFirestore();
 }
 
-/**
- * Check if Firestore is initialized
- */
 export function isFirestoreInitialized(): boolean {
   return firestoreClient.isInitialized();
 }
 
-/**
- * Get Firestore initialization error if any
- */
 export function getFirestoreInitializationError(): string | null {
   return firestoreClient.getInitializationError();
 }
 
-/**
- * Reset Firestore client instance
- * Useful for testing
- */
 export function resetFirestoreClient(): void {
   firestoreClient.reset();
 }
