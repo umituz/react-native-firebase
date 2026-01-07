@@ -3,20 +3,14 @@
  * Domain-Driven Design (DDD) Architecture
  */
 
-// =============================================================================
-// DOMAIN LAYER - Errors
-// =============================================================================
-
+// Domain Errors
 export {
   FirebaseFirestoreError,
   FirebaseFirestoreInitializationError,
   FirebaseFirestoreQuotaError,
 } from './domain/errors/FirebaseFirestoreError';
 
-// =============================================================================
-// INFRASTRUCTURE LAYER - Firestore Client
-// =============================================================================
-
+// Firestore Client
 export {
   initializeFirestore,
   getFirestore,
@@ -25,21 +19,14 @@ export {
   resetFirestoreClient,
   firestoreClient,
 } from './infrastructure/config/FirestoreClient';
-
 export type { Firestore } from './infrastructure/config/FirestoreClient';
 
-// =============================================================================
-// INFRASTRUCTURE LAYER - BaseRepository
-// =============================================================================
-
+// Repositories
 export { BaseRepository } from './infrastructure/repositories/BaseRepository';
 export { BaseQueryRepository } from './infrastructure/repositories/BaseQueryRepository';
 export { BasePaginatedRepository } from './infrastructure/repositories/BasePaginatedRepository';
 
-// =============================================================================
-// UTILS - Date Utilities
-// =============================================================================
-
+// Date Utilities
 export {
   isoToTimestamp,
   timestampToISO,
@@ -47,56 +34,38 @@ export {
   getCurrentISOString,
 } from './utils/dateUtils';
 
-// =============================================================================
-// UTILS - Query Builder
-// =============================================================================
-
+// Query Builder
 export {
   buildQuery,
   createInFilter,
   createEqualFilter,
 } from './utils/query-builder';
-
 export type {
   QueryBuilderOptions,
   FieldFilter,
 } from './utils/query-builder';
 
-// =============================================================================
-// UTILS - Pagination
-// =============================================================================
-
+// Pagination
 export {
   PaginationHelper,
   createPaginationHelper,
 } from './utils/pagination.helper';
-
 export type {
   PaginatedResult,
   PaginationParams,
 } from './types/pagination.types';
-
 export { EMPTY_PAGINATED_RESULT } from './types/pagination.types';
 
-// =============================================================================
-// UTILS - Document Mapper
-// =============================================================================
-
+// Document Mapper
 export {
   DocumentMapperHelper,
   createDocumentMapper,
 } from './utils/document-mapper.helper';
 
-// =============================================================================
-// UTILS - Path Resolver
-// =============================================================================
-
+// Path Resolver
 export { FirestorePathResolver } from './utils/path-resolver';
 
-// =============================================================================
-// DOMAIN LAYER - Constants
-// =============================================================================
-
+// Domain Constants
 export {
   FREE_TIER_LIMITS,
   QUOTA_THRESHOLDS,
@@ -105,60 +74,43 @@ export {
   getRemainingQuota,
 } from './domain/constants/QuotaLimits';
 
-// =============================================================================
-// DOMAIN LAYER - Entities
-// =============================================================================
-
+// Domain Entities
 export type {
   QuotaMetrics,
   QuotaLimits,
   QuotaStatus,
 } from './domain/entities/QuotaMetrics';
-
 export type {
   RequestLog,
   RequestStats,
   RequestType,
 } from './domain/entities/RequestLog';
 
-// =============================================================================
-// DOMAIN LAYER - Services
-// =============================================================================
-
+// Domain Services
 export { QuotaCalculator } from './domain/services/QuotaCalculator';
 
-// =============================================================================
-// UTILS - Quota Error Detection
-// =============================================================================
-
+// Quota Error Detection
 export {
   isQuotaError,
   isRetryableError,
   getQuotaErrorMessage,
 } from './utils/quota-error-detector.util';
 
-// =============================================================================
-// INFRASTRUCTURE LAYER - Middleware
-// =============================================================================
-
+// Middleware
 export {
   QueryDeduplicationMiddleware,
   queryDeduplicationMiddleware,
 } from './infrastructure/middleware/QueryDeduplicationMiddleware';
-
 export {
   QuotaTrackingMiddleware,
   quotaTrackingMiddleware,
 } from './infrastructure/middleware/QuotaTrackingMiddleware';
 
-// =============================================================================
-// INFRASTRUCTURE LAYER - Services
-// =============================================================================
-
+// Services
 export {
   RequestLoggerService,
   requestLoggerService,
 } from './infrastructure/services/RequestLoggerService';
 
-// Re-export Firestore types for convenience
+// Re-export Firestore types
 export type { Timestamp } from 'firebase/firestore';

@@ -1,9 +1,6 @@
 /**
  * useSocialAuth Hook
  * Provides Google and Apple Sign-In functionality
- *
- * Note: This hook handles the Firebase authentication part.
- * The OAuth flow (expo-auth-session for Google) should be set up in the consuming app.
  */
 
 import { useState, useCallback, useEffect } from "react";
@@ -14,54 +11,45 @@ import {
 } from "../../infrastructure/services/google-auth.service";
 import { appleAuthService } from "../../infrastructure/services/apple-auth.service";
 
-/**
- * Social auth configuration
- */
 export interface SocialAuthConfig {
   google?: GoogleAuthConfig;
   apple?: { enabled: boolean };
 }
 
-/**
- * Social auth result
- */
 export interface SocialAuthResult {
   success: boolean;
   isNewUser?: boolean;
   error?: string;
 }
 
-/**
- * Hook result
- */
 export interface UseSocialAuthResult {
-  /** Sign in with Google using ID token (call after OAuth flow) */
   signInWithGoogleToken: (idToken: string) => Promise<SocialAuthResult>;
-  /** Sign in with Apple (handles full flow) */
   signInWithApple: () => Promise<SocialAuthResult>;
-  /** Whether Google is loading */
   googleLoading: boolean;
-  /** Whether Apple is loading */
   appleLoading: boolean;
-  /** Whether Google is configured */
   googleConfigured: boolean;
-  /** Whether Apple is available */
   appleAvailable: boolean;
 }
 
 /**
- * Hook for social authentication
- *
- * Usage:
- * 1. For Google: Set up expo-auth-session in your app, get idToken, then call signInWithGoogleToken
- * 2. For Apple: Just call signInWithApple (handles complete flow)
+ * Common sign-in wrapper
  */
+async function signInWrapper(
+  signInFn: () => Promise<{ success: boolean; isNewUser?: boolean; error?: string }>
+): Promise<SocialAuthResult> {
+  const auth = getFirebaseAuth();
+  if (!auth) {
+    return { success: false, error: "Firebase Auth not initialized" };
+  }
+
+  return signInFn();
+}
+
 export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
 
-  // Configure Google Auth
   const googleConfig = config?.google;
   const googleConfigured = !!(
     googleConfig?.webClientId ||
@@ -69,14 +57,12 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
     googleConfig?.androidClientId
   );
 
-  // Configure Google service on mount
   useEffect(() => {
     if (googleConfig) {
       googleAuthService.configure(googleConfig);
     }
   }, [googleConfig]);
 
-  // Check Apple availability on mount
   useEffect(() => {
     const checkApple = async () => {
       const available = await appleAuthService.isAvailable();
@@ -85,7 +71,6 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
     checkApple();
   }, [config?.apple?.enabled]);
 
-  // Sign in with Google using ID token
   const signInWithGoogleToken = useCallback(
     async (idToken: string): Promise<SocialAuthResult> => {
       if (!googleConfigured) {
@@ -94,21 +79,9 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
 
       setGoogleLoading(true);
       try {
-        const auth = getFirebaseAuth();
-        if (!auth) {
-          return { success: false, error: "Firebase Auth not initialized" };
-        }
-
-        const signInResult = await googleAuthService.signInWithIdToken(
-          auth,
-          idToken,
+        return await signInWrapper(() =>
+          googleAuthService.signInWithIdToken(getFirebaseAuth()!, idToken)
         );
-
-        return {
-          success: signInResult.success,
-          isNewUser: signInResult.isNewUser,
-          error: signInResult.error,
-        };
       } catch (error) {
         return {
           success: false,
@@ -118,10 +91,9 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
         setGoogleLoading(false);
       }
     },
-    [googleConfigured],
+    [googleConfigured]
   );
 
-  // Sign in with Apple
   const signInWithApple = useCallback(async (): Promise<SocialAuthResult> => {
     if (!appleAvailable) {
       return { success: false, error: "Apple Sign-In is not available" };
@@ -129,18 +101,9 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
 
     setAppleLoading(true);
     try {
-      const auth = getFirebaseAuth();
-      if (!auth) {
-        return { success: false, error: "Firebase Auth not initialized" };
-      }
-
-      const result = await appleAuthService.signIn(auth);
-
-      return {
-        success: result.success,
-        isNewUser: result.isNewUser,
-        error: result.error,
-      };
+      return await signInWrapper(() =>
+        appleAuthService.signIn(getFirebaseAuth()!)
+      );
     } catch (error) {
       return {
         success: false,
