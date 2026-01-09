@@ -8,7 +8,7 @@
 import {
   initializeAuth,
   getAuth,
-  // @ts-ignore: getReactNativePersistence exists in the React Native bundle but missing from type definitions
+  // @ts-expect-error: getReactNativePersistence exists in the React Native bundle but missing from type definitions
   // See: https://github.com/firebase/firebase-js-sdk/issues/9316
   getReactNativePersistence,
 } from 'firebase/auth';

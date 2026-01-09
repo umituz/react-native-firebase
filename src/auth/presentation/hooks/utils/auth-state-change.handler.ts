@@ -64,7 +64,7 @@ export function createAuthStateChangeHandler(
       setError(authError);
 
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.error('[AuthStateHandler] Auth state change error', authError);
       }
     } finally {

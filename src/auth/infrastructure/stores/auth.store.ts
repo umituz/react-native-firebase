@@ -47,7 +47,7 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
 
       unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
         if (typeof __DEV__ !== "undefined" && __DEV__) {
-          // eslint-disable-next-line no-console
+           
           console.log(
             "[FirebaseAuthStore] Auth state changed:",
             currentUser?.uid || "null"

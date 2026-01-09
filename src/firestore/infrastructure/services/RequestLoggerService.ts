@@ -36,10 +36,10 @@ export class RequestLoggerService {
         : fullLog.collection;
 
       if (fullLog.success) {
-        // eslint-disable-next-line no-console
+         
         console.log(`${prefix} ${status} ${operation}: ${details}`);
       } else {
-        // eslint-disable-next-line no-console
+         
         console.error(`${prefix} ${status} ${operation}: ${details}`, fullLog.error);
       }
     }
@@ -125,9 +125,9 @@ export class RequestLoggerService {
       try {
         listener(log);
       } catch (error) {
-        /* eslint-disable-next-line no-console */
+         
         if (__DEV__) {
-          /* eslint-disable-next-line no-console */
+           
           console.error('[RequestLogger] Listener error:', error);
         }
       }
