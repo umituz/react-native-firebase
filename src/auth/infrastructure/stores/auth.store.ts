@@ -7,7 +7,7 @@
  * This store provides minimal state for low-level Firebase operations.
  */
 
-import { createStore } from "@umituz/react-native-storage";
+import { createStore } from "@umituz/react-native-design-system";
 import { onAuthStateChanged, type User, type Auth } from "firebase/auth";
 
 declare const __DEV__: boolean;
