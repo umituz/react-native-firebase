@@ -3,29 +3,26 @@
  *
  * Domain-Driven Design (DDD) Architecture
  *
- * This package provides Firebase App initialization and core services:
- * - Auth (Firebase JS SDK)
- * - Firestore (Firebase JS SDK)
+ * Core exports - App initialization and shared utilities
  *
- * Usage:
- *   import { initializeFirebase, getFirebaseApp } from '@umituz/react-native-firebase';
- *   import { useFirebaseAuth } from '@umituz/react-native-firebase';
- *   import { getFirestore, BaseRepository } from '@umituz/react-native-firebase';
+ * Module-specific exports available via:
+ * - @umituz/react-native-firebase/auth
+ * - @umituz/react-native-firebase/firestore
+ * - @umituz/react-native-firebase/storage
  */
 
-// =============================================================================
-// CORE - App Initialization & Type Definitions
-// =============================================================================
-
+// Core Errors
 export {
   FirebaseError,
   FirebaseInitializationError,
   FirebaseConfigurationError,
 } from './domain/errors/FirebaseError';
 
+// Core Types
 export type { FirebaseConfig } from './domain/value-objects/FirebaseConfig';
 export type { IFirebaseClient } from './application/ports/IFirebaseClient';
 
+// Core Client
 export {
   initializeFirebase,
   getFirebaseApp,
@@ -44,28 +41,14 @@ export type {
   ServiceInitializationResult,
 } from './infrastructure/config/FirebaseClient';
 
-// =============================================================================
-// TYPE GUARDS
-// =============================================================================
-
-export * from './domain/guards/firebase-error.guard';
-
-// =============================================================================
-// AUTH MODULE
-// =============================================================================
-
-export * from './auth';
-
-// =============================================================================
-// FIRESTORE MODULE
-// =============================================================================
-
-export * from './firestore';
-
-// =============================================================================
-// STORAGE MODULE
-// =============================================================================
-
-export * from './storage';
-
-
+// Type Guards
+export {
+  isFirestoreError,
+  isAuthError,
+  isNetworkError,
+  isPermissionDeniedError,
+  isNotFoundError,
+  isQuotaExceededError,
+  getSafeErrorMessage,
+  getSafeErrorCode,
+} from './domain/guards/firebase-error.guard';
