@@ -70,4 +70,7 @@ export { FirestorePathResolver } from './firestore/utils/path-resolver';
 
 // Auth Hooks (commonly used)
 export { useSocialAuth } from './auth/presentation/hooks/useSocialAuth';
-export type { SocialAuthResult } from './auth/presentation/hooks/useSocialAuth';
+export type {
+  SocialAuthConfig,
+  SocialAuthResult,
+} from './auth/presentation/hooks/useSocialAuth';
