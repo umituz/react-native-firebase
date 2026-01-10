@@ -64,3 +64,10 @@ export {
   getFirestore,
   initializeFirestore,
 } from './firestore/infrastructure/config/FirestoreClient';
+
+export { BaseRepository } from './firestore/infrastructure/repositories/BaseRepository';
+export { FirestorePathResolver } from './firestore/utils/path-resolver';
+
+// Auth Hooks (commonly used)
+export { useSocialAuth } from './auth/presentation/hooks/useSocialAuth';
+export type { SocialAuthResult } from './auth/presentation/hooks/useSocialAuth';
