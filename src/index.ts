@@ -52,3 +52,15 @@ export {
   getSafeErrorMessage,
   getSafeErrorCode,
 } from './domain/guards/firebase-error.guard';
+
+// Commonly Used Auth Exports (for convenience)
+export {
+  getFirebaseAuth,
+  initializeFirebaseAuth,
+} from './auth/infrastructure/config/FirebaseAuthClient';
+
+// Commonly Used Firestore Exports (for convenience)
+export {
+  getFirestore,
+  initializeFirestore,
+} from './firestore/infrastructure/config/FirestoreClient';
