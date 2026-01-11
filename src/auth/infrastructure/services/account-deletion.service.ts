@@ -14,8 +14,6 @@ import type { AccountDeletionResult, AccountDeletionOptions } from "./reauthenti
 
 export type { AccountDeletionResult, AccountDeletionOptions } from "./reauthentication.types";
 
-declare const __DEV__: boolean;
-
 export async function deleteCurrentUser(
   options: AccountDeletionOptions = { autoReauthenticate: true }
 ): Promise<AccountDeletionResult> {

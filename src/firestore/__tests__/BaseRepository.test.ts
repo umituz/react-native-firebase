@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { BaseRepository } from '../infrastructure/repositories/BaseRepository';
-import { getFirestore, resetFirestoreClient } from '../infrastructure/config/FirestoreClient';
+import { getFirestore } from '../infrastructure/config/FirestoreClient';
 
 // Mock Firestore client
 jest.mock('../infrastructure/config/FirestoreClient', () => ({
@@ -13,7 +13,6 @@ jest.mock('../infrastructure/config/FirestoreClient', () => ({
 }));
 
 const mockGetFirestore = getFirestore as jest.MockedFunction<typeof getFirestore>;
-const mockResetFirestoreClient = resetFirestoreClient as jest.MockedFunction<typeof resetFirestoreClient>;
 
 describe('BaseRepository', () => {
   let repository: BaseRepository;

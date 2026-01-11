@@ -7,7 +7,7 @@
  * This store provides minimal state for low-level Firebase operations.
  */
 
-import { createStore } from "@umituz/react-native-design-system";
+import { createStore, type SetState, type GetState } from "@umituz/react-native-design-system";
 import { onAuthStateChanged, type User, type Auth } from "firebase/auth";
 
 declare const __DEV__: boolean;
@@ -35,7 +35,7 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
     listenerSetup: false,
   },
   persist: false,
-  actions: (set, get) => ({
+  actions: (set: SetState<AuthState>, get: GetState<AuthState>) => ({
     setupListener: (auth: Auth) => {
       const state = get();
 
