@@ -67,6 +67,9 @@ export {
   initializeFirebaseAuth,
 } from './auth/infrastructure/config/FirebaseAuthClient';
 
+export { anonymousAuthService } from './auth/infrastructure/services/anonymous-auth.service';
+export { deleteCurrentUser } from './auth/infrastructure/services/account-deletion.service';
+
 // Commonly Used Firestore Exports (for convenience)
 export {
   getFirestore,
