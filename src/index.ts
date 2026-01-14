@@ -78,6 +78,8 @@ export {
 
 export { BaseRepository } from './firestore/infrastructure/repositories/BaseRepository';
 export { FirestorePathResolver } from './firestore/utils/path-resolver';
+export { PaginationHelper } from './firestore/utils/pagination.helper';
+export type { Timestamp } from 'firebase/firestore';
 
 // Auth Hooks (commonly used)
 export { useSocialAuth } from './auth/presentation/hooks/useSocialAuth';
