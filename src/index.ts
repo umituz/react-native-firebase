@@ -87,3 +87,16 @@ export type {
   SocialAuthConfig,
   SocialAuthResult,
 } from './auth/presentation/hooks/useSocialAuth';
+
+export {
+  updateUserPassword,
+} from './auth/infrastructure/services/password.service';
+export type { PasswordUpdateResult } from './auth/infrastructure/services/password.service';
+
+export {
+  reauthenticateWithPassword,
+} from './auth/infrastructure/services/reauthentication.service';
+
+export {
+  getCurrentUserFromGlobal,
+} from './auth/infrastructure/services/auth-utils.service';
