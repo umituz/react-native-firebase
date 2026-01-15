@@ -144,3 +144,10 @@ export type {
   SocialAuthResult,
   UseSocialAuthResult,
 } from './presentation/hooks/useSocialAuth';
+
+// Password Management
+export {
+  updateUserPassword,
+} from './infrastructure/services/password.service';
+export type { PasswordUpdateResult } from './infrastructure/services/password.service';
+
