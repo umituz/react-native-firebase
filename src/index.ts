@@ -100,3 +100,9 @@ export {
 export {
   getCurrentUserFromGlobal,
 } from './auth/infrastructure/services/auth-utils.service';
+
+// Init Module Factory
+export {
+  createFirebaseInitModule,
+  type FirebaseInitModuleConfig,
+} from './init';
