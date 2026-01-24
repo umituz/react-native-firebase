@@ -3,20 +3,11 @@
  * Creates a ready-to-use InitModule for app initialization
  */
 
+import type { InitModule } from '@umituz/react-native-design-system';
 import { initializeAllFirebaseServices } from '../infrastructure/config/FirebaseClient';
 import { initializeFirebaseAuth } from '../auth/infrastructure/config/FirebaseAuthClient';
 
 declare const __DEV__: boolean;
-
-/**
- * InitModule interface (from @umituz/react-native-design-system)
- */
-export interface InitModule {
-  name: string;
-  init: () => Promise<boolean>;
-  critical?: boolean;
-  dependsOn?: string[];
-}
 
 export interface FirebaseInitModuleConfig {
   /**
