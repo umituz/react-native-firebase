@@ -25,6 +25,8 @@ interface AuthActions {
 }
 
 let unsubscribe: (() => void) | null = null;
+// Mutex flag to prevent race condition in setupListener
+let setupInProgress = false;
 
 export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
   name: "firebase-auth-store",
@@ -39,10 +41,13 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
     setupListener: (auth: Auth) => {
       const state = get();
 
-      if (state.listenerSetup || unsubscribe) {
+      // Atomic check: both state flag AND in-progress mutex
+      if (state.listenerSetup || unsubscribe || setupInProgress) {
         return;
       }
 
+      // Set mutex immediately (synchronous, before any async operation)
+      setupInProgress = true;
       set({ listenerSetup: true });
 
       unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
@@ -66,6 +71,8 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
         unsubscribe();
         unsubscribe = null;
       }
+      // Reset mutex on cleanup
+      setupInProgress = false;
       set({
         user: null,
         loading: true,
