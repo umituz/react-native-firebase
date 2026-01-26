@@ -34,7 +34,13 @@ export class QueryDeduplicationMiddleware {
     }
 
     this.cleanupTimer = setInterval(() => {
-      this.cleanupExpiredQueries();
+      try {
+        this.cleanupExpiredQueries();
+      } catch {
+        // Silently handle cleanup errors to prevent timer from causing issues
+        // Clear all queries if cleanup fails to prevent memory leak
+        this.pendingQueries.clear();
+      }
     }, this.CLEANUP_INTERVAL_MS);
   }
 

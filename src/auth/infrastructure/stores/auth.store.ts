@@ -50,20 +50,31 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
       setupInProgress = true;
       set({ listenerSetup: true });
 
-      unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
-        if (typeof __DEV__ !== "undefined" && __DEV__) {
-           
-          console.log(
-            "[FirebaseAuthStore] Auth state changed:",
-            currentUser?.uid || "null"
-          );
-        }
-        set({
-          user: currentUser,
-          loading: false,
-          initialized: true,
+      try {
+        unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
+          if (typeof __DEV__ !== "undefined" && __DEV__) {
+            console.log(
+              "[FirebaseAuthStore] Auth state changed:",
+              currentUser?.uid || "null"
+            );
+          }
+          set({
+            user: currentUser,
+            loading: false,
+            initialized: true,
+          });
         });
-      });
+
+        // Listener setup complete - keep mutex locked until cleanup
+        // (setupInProgress remains true to indicate active listener)
+      } catch (error) {
+        // On error, release the mutex so retry is possible
+        setupInProgress = false;
+        set({ listenerSetup: false });
+        if (typeof __DEV__ !== "undefined" && __DEV__) {
+          console.error("[FirebaseAuthStore] Failed to setup listener:", error);
+        }
+      }
     },
 
     cleanup: () => {
