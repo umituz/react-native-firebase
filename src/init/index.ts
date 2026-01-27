@@ -6,5 +6,4 @@
 export {
   createFirebaseInitModule,
   type FirebaseInitModuleConfig,
-  type InitModule,
 } from './createFirebaseInitModule';
