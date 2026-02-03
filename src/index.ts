@@ -88,6 +88,17 @@ export { FirestorePathResolver } from "./firestore/utils/path-resolver";
 export { PaginationHelper } from "./firestore/utils/pagination.helper";
 export type { Timestamp } from "firebase/firestore";
 
+// Firestore Helper Utilities
+export {
+  getDb,
+  withFirestore,
+  withFirestoreVoid,
+  withFirestoreBool,
+  createErrorResult,
+  createSuccessResult,
+} from "./firestore/utils/firestore-helper";
+export type { FirestoreResult, NoDbResult } from "./firestore/utils/firestore-helper";
+
 // Auth Hooks (commonly used)
 export { useSocialAuth } from "./auth/presentation/hooks/useSocialAuth";
 export type {

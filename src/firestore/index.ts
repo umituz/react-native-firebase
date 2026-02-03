@@ -112,5 +112,16 @@ export {
   requestLoggerService,
 } from './infrastructure/services/RequestLoggerService';
 
+// Firestore Helper Utilities
+export {
+  getDb,
+  withFirestore,
+  withFirestoreVoid,
+  withFirestoreBool,
+  createErrorResult,
+  createSuccessResult,
+} from './utils/firestore-helper';
+export type { FirestoreResult, NoDbResult } from './utils/firestore-helper';
+
 // Re-export Firestore types
 export type { Timestamp } from 'firebase/firestore';
