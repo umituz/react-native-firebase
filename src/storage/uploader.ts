@@ -4,13 +4,12 @@
  */
 
 import {
-    getStorage,
     ref,
     uploadBytes,
     getDownloadURL,
     type UploadMetadata,
 } from "firebase/storage";
-import { getFirebaseApp } from "../infrastructure/config/FirebaseClient";
+import { getStorageInstance } from "./storage-instance";
 import type { UploadResult, UploadOptions } from "./types";
 
 declare const __DEV__: boolean;
@@ -33,11 +32,6 @@ function ensureDataUrl(base64: string, mimeType: string): string {
         return base64;
     }
     return `data:${mimeType};base64,${base64}`;
-}
-
-function getStorageInstance() {
-    const app = getFirebaseApp();
-    return app ? getStorage(app) : null;
 }
 
 /**

@@ -3,8 +3,8 @@
  * Handles single and batch deletion from Firebase Storage
  */
 
-import { getStorage, ref, deleteObject } from "firebase/storage";
-import { getFirebaseApp } from "../infrastructure/config/FirebaseClient";
+import { ref, deleteObject } from "firebase/storage";
+import { getStorageInstance } from "./storage-instance";
 import type { DeleteResult } from "./types";
 
 declare const __DEV__: boolean;
@@ -37,11 +37,6 @@ function extractStoragePath(downloadUrl: string): string | null {
     } catch {
         return null;
     }
-}
-
-function getStorageInstance() {
-    const app = getFirebaseApp();
-    return app ? getStorage(app) : null;
 }
 
 /**

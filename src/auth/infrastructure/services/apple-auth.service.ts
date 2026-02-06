@@ -10,8 +10,8 @@ import {
   type UserCredential,
 } from "firebase/auth";
 import * as AppleAuthentication from "expo-apple-authentication";
-import * as Crypto from "expo-crypto";
 import { Platform } from "react-native";
+import { generateNonce, hashNonce } from "./crypto.util";
 
 export interface AppleAuthResult {
   success: boolean;
@@ -40,11 +40,8 @@ export class AppleAuthService {
         };
       }
 
-      const nonce = await this.generateNonce();
-      const hashedNonce = await Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256,
-        nonce,
-      );
+      const nonce = await generateNonce();
+      const hashedNonce = await hashNonce(nonce);
 
       const appleCredential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -86,16 +83,6 @@ export class AppleAuthService {
     }
   }
 
-  private async generateNonce(length: number = 32): Promise<string> {
-    const randomBytes = await Crypto.getRandomBytesAsync(length);
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
-    for (let i = 0; i < randomBytes.length; i++) {
-      const byte = randomBytes[i];
-      if (byte !== undefined) result += chars.charAt(byte % chars.length);
-    }
-    return result;
-  }
 }
 
 export const appleAuthService = new AppleAuthService();

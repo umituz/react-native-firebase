@@ -11,8 +11,8 @@ import {
   type User,
 } from "firebase/auth";
 import * as AppleAuthentication from "expo-apple-authentication";
-import * as Crypto from "expo-crypto";
 import { Platform } from "react-native";
+import { generateNonce, hashNonce } from "./crypto.util";
 import type { 
   ReauthenticationResult, 
   AuthProviderType, 
@@ -54,12 +54,6 @@ export async function reauthenticateWithPassword(user: User, pass: string): Prom
   }
 }
 
-async function generateNonce(len: number = 32): Promise<string> {
-  const bytes = await Crypto.getRandomBytesAsync(len);
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from(bytes).map(b => chars.charAt(b % chars.length)).join("");
-}
-
 export async function getAppleReauthCredential(): Promise<ReauthCredentialResult> {
   if (Platform.OS !== "ios") return { success: false, error: { code: "auth/ios-only", message: "iOS only" } };
   try {
@@ -67,7 +61,7 @@ export async function getAppleReauthCredential(): Promise<ReauthCredentialResult
       return { success: false, error: { code: "auth/unavailable", message: "Unavailable" } };
 
     const nonce = await generateNonce();
-    const hashed = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nonce);
+    const hashed = await hashNonce(nonce);
     const apple = await AppleAuthentication.signInAsync({
       requestedScopes: [AppleAuthentication.AppleAuthenticationScope.FULL_NAME, AppleAuthentication.AppleAuthenticationScope.EMAIL],
       nonce: hashed,

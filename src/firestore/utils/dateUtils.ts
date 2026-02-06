@@ -10,7 +10,7 @@ export function isoToTimestamp(isoString: string): Timestamp {
 /**
  * Convert Firestore Timestamp to ISO string
  */
-export function timestampToISO(timestamp: Timestamp): string {
+export function timestampToISO(timestamp: Timestamp | null | undefined): string {
     if (!timestamp) return new Date().toISOString();
     return timestamp.toDate().toISOString();
 }
@@ -18,7 +18,7 @@ export function timestampToISO(timestamp: Timestamp): string {
 /**
  * Convert Firestore Timestamp to Date
  */
-export function timestampToDate(timestamp: Timestamp): Date {
+export function timestampToDate(timestamp: Timestamp | null | undefined): Date {
     if (!timestamp) return new Date();
     return timestamp.toDate();
 }
