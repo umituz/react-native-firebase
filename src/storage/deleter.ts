@@ -7,8 +7,6 @@ import { ref, deleteObject } from "firebase/storage";
 import { getStorageInstance } from "./storage-instance";
 import type { DeleteResult } from "./types";
 
-declare const __DEV__: boolean;
-
 /**
  * Batch delete result interface
  */
@@ -34,7 +32,8 @@ function extractStoragePath(downloadUrl: string): string | null {
         }
 
         return decodeURIComponent(pathMatch[1]);
-    } catch {
+    } catch (error) {
+        if (__DEV__) console.warn('[StorageDeleter] Failed to parse URL:', error);
         return null;
     }
 }
@@ -125,9 +124,10 @@ export async function deleteStorageFiles(
             successful.push(result.value.storagePath);
         } else {
             const errorMessage = result.status === "rejected"
-                ? String((result.reason as any)?.message ?? "Unknown error")
+                ? String(result.reason instanceof Error ? result.reason.message : "Unknown error")
                 : "Delete operation failed";
-            failed.push({ path: urlsOrPaths[index]!, error: errorMessage });
+            const path = urlsOrPaths[index] ?? "unknown";
+            failed.push({ path, error: errorMessage });
         }
     });
 

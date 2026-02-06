@@ -9,8 +9,6 @@ import type { AuthCheckResult } from "../../infrastructure/services/auth-utils.s
 import { anonymousAuthService, type AnonymousAuthResult } from "../../infrastructure/services/anonymous-auth.service";
 import { createAuthStateChangeHandler, userToAuthCheckResult } from "./utils/auth-state-change.handler";
 
-declare const __DEV__: boolean;
-
 export interface UseAnonymousAuthResult extends AuthCheckResult {
   /**
    * Sign in anonymously

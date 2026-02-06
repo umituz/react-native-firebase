@@ -14,8 +14,7 @@
  * It provides a consistent interface for Firestore operations.
  */
 
- 
-if (typeof __DEV__ !== "undefined" && __DEV__) console.log("📍 [LIFECYCLE] BaseRepository.ts - Module loading");
+if (__DEV__) console.log("📍 [LIFECYCLE] BaseRepository.ts - Module loading");
 
 import type { Firestore } from "firebase/firestore";
 import { getFirestore } from "../config/FirestoreClient";
@@ -71,7 +70,8 @@ export class BaseRepository {
     try {
       const db = getFirestore();
       return db !== null;
-    } catch {
+    } catch (error) {
+      if (__DEV__) console.warn('[BaseRepository] isDbInitialized check failed:', error);
       return false;
     }
   }

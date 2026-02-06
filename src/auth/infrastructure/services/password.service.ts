@@ -24,12 +24,13 @@ export async function updateUserPassword(user: User, newPassword: string): Promi
   try {
     await updatePassword(user, newPassword);
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
     return {
       success: false,
       error: {
-        code: error.code || 'auth/password-update-failed',
-        message: error.message || 'Failed to update password',
+        code: err.code || 'auth/password-update-failed',
+        message: err.message || 'Failed to update password',
       },
     };
   }

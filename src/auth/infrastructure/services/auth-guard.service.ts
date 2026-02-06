@@ -52,7 +52,8 @@ export class AuthGuardService {
   async getAuthenticatedUserId(): Promise<string | null> {
     try {
       return await this.requireAuthenticatedUser();
-    } catch {
+    } catch (error) {
+      if (__DEV__) console.warn('[AuthGuard] getAuthenticatedUserId:', error);
       return null;
     }
   }

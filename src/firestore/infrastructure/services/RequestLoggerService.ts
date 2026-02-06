@@ -74,8 +74,8 @@ export class RequestLoggerService {
     const failedRequests = this.logs.filter((l) => !l.success).length;
 
     const durations = this.logs
-      .filter((l) => l.duration !== undefined)
-      .map((l) => l.duration!);
+      .map((l) => l.duration)
+      .filter((d): d is number => d !== undefined);
     const averageDuration =
       durations.length > 0
         ? durations.reduce((sum, d) => sum + d, 0) / durations.length

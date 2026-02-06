@@ -42,8 +42,8 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
       limit(fetchLimit),
     );
 
-    if (helper.hasCursor(params)) {
-      const cursorDoc = await getDoc(doc(db, collectionName, params!.cursor!));
+    if (helper.hasCursor(params) && params?.cursor) {
+      const cursorDoc = await getDoc(doc(db, collectionName, params.cursor));
       if (cursorDoc.exists()) {
         q = query(
           collectionRef,

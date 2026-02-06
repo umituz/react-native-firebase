@@ -12,8 +12,6 @@ import { FirebaseAppInitializer } from '../initializers/FirebaseAppInitializer';
 import { loadFirebaseConfig } from '../FirebaseConfigLoader';
 import type { FirebaseClientState } from '../state/FirebaseClientState';
 
-declare const __DEV__: boolean;
-
 export class FirebaseInitializationOrchestrator {
   static initialize(
     config: FirebaseConfig,

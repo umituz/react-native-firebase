@@ -25,7 +25,8 @@ export class AppleAuthService {
     if (Platform.OS !== "ios") return false;
     try {
       return await AppleAuthentication.isAvailableAsync();
-    } catch {
+    } catch (error) {
+      if (__DEV__) console.warn('[AppleAuth] isAvailable check failed:', error);
       return false;
     }
   }

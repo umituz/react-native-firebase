@@ -10,8 +10,6 @@
 import { createStore, type SetState, type GetState } from "@umituz/react-native-design-system";
 import { onAuthStateChanged, type User, type Auth } from "firebase/auth";
 
-declare const __DEV__: boolean;
-
 interface AuthState {
   user: User | null;
   loading: boolean;
@@ -52,7 +50,7 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
 
       try {
         unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
-          if (typeof __DEV__ !== "undefined" && __DEV__) {
+          if (__DEV__) {
             console.log(
               "[FirebaseAuthStore] Auth state changed:",
               currentUser?.uid || "null"
@@ -71,7 +69,7 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
         // On error, release the mutex so retry is possible
         setupInProgress = false;
         set({ listenerSetup: false });
-        if (typeof __DEV__ !== "undefined" && __DEV__) {
+        if (__DEV__) {
           console.error("[FirebaseAuthStore] Failed to setup listener:", error);
         }
       }

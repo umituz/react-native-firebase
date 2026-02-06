@@ -3,8 +3,6 @@
  * Tracks Firestore operations for quota monitoring
  */
 
-declare const __DEV__: boolean;
-
 interface OperationInfo {
     type: 'read' | 'write' | 'delete';
     collection: string;

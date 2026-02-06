@@ -79,8 +79,10 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
 
       setGoogleLoading(true);
       try {
+        const auth = getFirebaseAuth();
+        if (!auth) return { success: false, error: "Firebase Auth not initialized" };
         return await signInWrapper(() =>
-          googleAuthService.signInWithIdToken(getFirebaseAuth()!, idToken)
+          googleAuthService.signInWithIdToken(auth, idToken)
         );
       } catch (error) {
         return {
@@ -101,8 +103,10 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
 
     setAppleLoading(true);
     try {
+      const auth = getFirebaseAuth();
+      if (!auth) return { success: false, error: "Firebase Auth not initialized" };
       return await signInWrapper(() =>
-        appleAuthService.signIn(getFirebaseAuth()!)
+        appleAuthService.signIn(auth)
       );
     } catch (error) {
       return {

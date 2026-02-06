@@ -6,8 +6,6 @@
 import type { User } from 'firebase/auth';
 import type { AuthCheckResult } from '../../../infrastructure/services/auth-utils.service';
 
-declare const __DEV__: boolean;
-
 /**
  * Convert Firebase User to AuthCheckResult
  * @param user - Firebase user or null

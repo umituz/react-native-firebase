@@ -2,8 +2,6 @@
  * Firestore Helper - Centralized Firestore access utilities
  * Provides common patterns for Firestore operations with error handling
  */
-declare const __DEV__: boolean;
-
 import { getFirestore } from "../infrastructure/config/FirestoreClient";
 import type { Firestore } from "../infrastructure/config/FirestoreClient";
 

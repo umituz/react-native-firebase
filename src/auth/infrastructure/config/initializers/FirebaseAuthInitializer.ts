@@ -17,8 +17,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FirebaseApp } from 'firebase/app';
 import type { FirebaseAuthConfig } from '../../../domain/value-objects/FirebaseAuthConfig';
 
-declare const __DEV__: boolean;
-
 /**
  * Initializes Firebase Auth
  * Platform-agnostic: Works on all platforms (Web, iOS, Android)

@@ -6,8 +6,6 @@
 import type { Auth } from "firebase/auth";
 import { checkAuthState, verifyUserId } from "./auth-utils.service";
 
-declare const __DEV__: boolean;
-
 export interface FirestoreQueryOptions {
   readonly skipForGuest?: boolean;
   readonly skipIfNotAuthenticated?: boolean;

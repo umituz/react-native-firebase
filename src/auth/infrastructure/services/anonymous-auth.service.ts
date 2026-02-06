@@ -22,15 +22,7 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
 
     const currentUser = auth.currentUser;
 
-    if (currentUser && !currentUser.isAnonymous) {
-      return {
-        user: currentUser,
-        anonymousUser: toAnonymousUser(currentUser),
-        wasAlreadySignedIn: true,
-      };
-    }
-
-    if (currentUser && currentUser.isAnonymous) {
+    if (currentUser) {
       return {
         user: currentUser,
         anonymousUser: toAnonymousUser(currentUser),

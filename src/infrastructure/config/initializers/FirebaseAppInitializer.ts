@@ -21,7 +21,7 @@ class FirebaseConfigMapper {
   /**
    * Map domain config to Firebase SDK config
    */
-  static toFirebaseConfig(config: FirebaseConfig): Record<string, any> {
+  static toFirebaseConfig(config: FirebaseConfig): Record<string, string | undefined> {
     return {
       apiKey: config.apiKey,
       authDomain: config.authDomain,
@@ -44,7 +44,8 @@ class FirebaseAppManager {
     try {
       const existingApps = getApps();
       return existingApps.length > 0;
-    } catch {
+    } catch (error) {
+      if (__DEV__) console.warn('[FirebaseAppManager] isInitialized check failed:', error);
       return false;
     }
   }
@@ -56,7 +57,8 @@ class FirebaseAppManager {
     try {
       const existingApps = getApps();
       return existingApps.length > 0 ? existingApps[0] ?? null : null;
-    } catch {
+    } catch (error) {
+      if (__DEV__) console.warn('[FirebaseAppManager] getExistingApp failed:', error);
       return null;
     }
   }

@@ -37,11 +37,11 @@ function getEnvValue(key: ConfigKey): string {
  */
 function loadExpoConfig(): Record<string, string> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Constants = require('expo-constants');
     const expoConfig = Constants?.expoConfig || Constants?.default?.expoConfig;
     return expoConfig?.extra || {};
-  } catch {
+  } catch (error) {
+    if (__DEV__) console.warn('[FirebaseConfigLoader] expo-constants not available:', error);
     return {};
   }
 }

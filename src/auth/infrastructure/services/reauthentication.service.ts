@@ -25,6 +25,14 @@ export type {
   ReauthCredentialResult 
 } from "./reauthentication.types";
 
+function toAuthError(error: unknown): { code: string; message: string } {
+  const err = error as { code?: string; message?: string };
+  return {
+    code: err.code || "auth/failed",
+    message: err.message || "Unknown error",
+  };
+}
+
 export function getUserAuthProvider(user: User): AuthProviderType {
   if (user.isAnonymous) return "anonymous";
   const data = user.providerData;
@@ -39,8 +47,9 @@ export async function reauthenticateWithGoogle(user: User, idToken: string): Pro
   try {
     await reauthenticateWithCredential(user, GoogleAuthProvider.credential(idToken));
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: { code: error.code || "auth/failed", message: error.message } };
+  } catch (error: unknown) {
+    const err = toAuthError(error);
+    return { success: false, error: err };
   }
 }
 
@@ -49,8 +58,9 @@ export async function reauthenticateWithPassword(user: User, pass: string): Prom
   try {
     await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, pass));
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: { code: error.code || "auth/failed", message: error.message } };
+  } catch (error: unknown) {
+    const err = toAuthError(error);
+    return { success: false, error: err };
   }
 }
 
@@ -69,9 +79,10 @@ export async function getAppleReauthCredential(): Promise<ReauthCredentialResult
 
     if (!apple.identityToken) return { success: false, error: { code: "auth/no-token", message: "No token" } };
     return { success: true, credential: new OAuthProvider("apple.com").credential({ idToken: apple.identityToken, rawNonce: nonce }) };
-  } catch (error: any) {
-    const code = error.message?.includes("ERR_CANCELED") ? "auth/cancelled" : "auth/failed";
-    return { success: false, error: { code, message: error.message } };
+  } catch (error: unknown) {
+    const err = toAuthError(error);
+    const code = err.message.includes("ERR_CANCELED") ? "auth/cancelled" : err.code;
+    return { success: false, error: { code, message: err.message } };
   }
 }
 
@@ -81,7 +92,8 @@ export async function reauthenticateWithApple(user: User): Promise<Reauthenticat
   try {
     await reauthenticateWithCredential(user, res.credential);
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: { code: error.code || "auth/failed", message: error.message } };
+  } catch (error: unknown) {
+    const err = toAuthError(error);
+    return { success: false, error: err };
   }
 }

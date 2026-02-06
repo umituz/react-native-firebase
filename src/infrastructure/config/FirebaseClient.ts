@@ -16,8 +16,7 @@
  * - Dependency Inversion: Depends on abstractions (interfaces), not concrete implementations
  */
 
- 
-if (typeof __DEV__ !== "undefined" && __DEV__) console.log("📍 [LIFECYCLE] FirebaseClient.ts - Module loading");
+if (__DEV__) console.log("📍 [LIFECYCLE] FirebaseClient.ts - Module loading");
 
 import type { FirebaseConfig } from '../../domain/value-objects/FirebaseConfig';
 import type { IFirebaseClient } from '../../application/ports/IFirebaseClient';
@@ -32,8 +31,6 @@ import {
 import { loadFirebaseConfig } from './FirebaseConfigLoader';
 
 export type { FirebaseApp, AuthInitializer, ServiceInitializationOptions };
-
-declare const __DEV__: boolean;
 
 /**
  * Service initialization result interface

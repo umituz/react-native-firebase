@@ -12,8 +12,6 @@ import {
 import { getStorageInstance } from "./storage-instance";
 import type { UploadResult, UploadOptions } from "./types";
 
-declare const __DEV__: boolean;
-
 /**
  * Extract MIME type from base64 data URL or return default
  */

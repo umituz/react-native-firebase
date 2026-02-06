@@ -19,7 +19,7 @@ export class QueryDeduplicationMiddleware {
   private pendingQueries = new Map<string, PendingQuery>();
   private readonly DEDUPLICATION_WINDOW_MS = 1000; // 1 second
   private readonly CLEANUP_INTERVAL_MS = 5000; // 5 seconds
-  private cleanupTimer: any = null;
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     this.startCleanupTimer();

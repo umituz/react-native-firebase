@@ -8,8 +8,6 @@
  * Single Responsibility: Only initializes Firebase Auth service
  */
 
-declare const __DEV__: boolean;
-
 export type AuthInitializer = () => unknown;
 
 export interface ServiceInitializationOptions {

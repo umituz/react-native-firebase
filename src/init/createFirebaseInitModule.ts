@@ -7,8 +7,6 @@ import type { InitModule } from '@umituz/react-native-design-system';
 import { initializeAllFirebaseServices } from '../infrastructure/config/FirebaseClient';
 import { initializeFirebaseAuth } from '../auth/infrastructure/config/FirebaseAuthClient';
 
-declare const __DEV__: boolean;
-
 export interface FirebaseInitModuleConfig {
   /**
    * Custom auth initializer function
@@ -53,13 +51,13 @@ export function createFirebaseInitModule(
           authInitializer: authInitializer ?? (() => initializeFirebaseAuth()),
         });
 
-        if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        if (__DEV__) {
           console.log('[createFirebaseInitModule] Firebase initialized');
         }
 
         return true;
       } catch (error) {
-        if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        if (__DEV__) {
           console.error('[createFirebaseInitModule] Error:', error);
         }
         // Return false to indicate failure, let the app initializer handle it
