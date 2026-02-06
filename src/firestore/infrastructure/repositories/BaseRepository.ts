@@ -121,24 +121,6 @@ export class BaseRepository {
   }
 
   /**
-   * Track read operations (stub for analytics)
-   * @param collection - Collection name
-   * @param count - Number of reads
-   * @param cached - Whether read was from cache
-   */
-  protected trackRead(_collection: string, _count: number, _cached: boolean): void {
-    // Stub for future analytics implementation
-  }
-
-  protected trackWrite(_collection: string, _docId: string, _count: number): void {
-    // Stub for future analytics implementation
-  }
-
-  protected trackDelete(_collection: string, _docId: string, _count: number): void {
-    // Stub for future analytics implementation
-  }
-
-  /**
    * Destroy repository and cleanup resources
    */
   destroy(): void {

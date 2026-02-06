@@ -17,5 +17,3 @@ export interface DeleteResult {
   success: boolean;
   storagePath: string;
 }
-
-export { Directory as FileSystemDirectory } from "expo-file-system";

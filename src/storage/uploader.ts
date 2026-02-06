@@ -19,6 +19,9 @@ export function getMimeType(base64: string): string {
     if (base64.startsWith("data:image/png")) return "image/png";
     if (base64.startsWith("data:image/webp")) return "image/webp";
     if (base64.startsWith("data:image/gif")) return "image/gif";
+    if (__DEV__) {
+        console.warn("[StorageUploader] Could not detect MIME type from base64 prefix, falling back to image/jpeg");
+    }
     return "image/jpeg";
 }
 
@@ -104,8 +107,12 @@ export async function uploadFile(
     const response = await fetch(uri);
     const blob = await response.blob();
 
+    const contentType = options?.mimeType ?? "image/jpeg";
+    if (!options?.mimeType && __DEV__) {
+        console.warn("[StorageUploader] No MIME type provided for file upload, falling back to image/jpeg");
+    }
     const metadata: UploadMetadata = {
-        contentType: options?.mimeType ?? "image/jpeg",
+        contentType,
         customMetadata: options?.customMetadata,
     };
 

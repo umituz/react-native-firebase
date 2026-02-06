@@ -54,7 +54,7 @@ export abstract class BaseQueryRepository extends BaseRepository {
    * @param count - Number of documents read
    * @param cached - Whether the result is from cache
    */
-  protected override trackRead(
+  protected trackRead(
     collection: string,
     count: number = 1,
     cached: boolean = false,
@@ -62,19 +62,17 @@ export abstract class BaseQueryRepository extends BaseRepository {
     quotaTrackingMiddleware.trackRead(collection, count, cached);
   }
 
-  protected override trackWrite(
+  protected trackWrite(
     collection: string,
-    documentId?: string,
     count: number = 1,
   ): void {
-    quotaTrackingMiddleware.trackWrite(collection, documentId, count);
+    quotaTrackingMiddleware.trackWrite(collection, count);
   }
 
-  protected override trackDelete(
+  protected trackDelete(
     collection: string,
-    documentId?: string,
     count: number = 1,
   ): void {
-    quotaTrackingMiddleware.trackDelete(collection, documentId, count);
+    quotaTrackingMiddleware.trackDelete(collection, count);
   }
 }

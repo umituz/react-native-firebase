@@ -60,7 +60,7 @@ export class QuotaTrackingMiddleware {
     /**
      * Track write operation
      */
-    trackWrite(collection: string, _documentId?: string, count: number = 1): void {
+    trackWrite(collection: string, count: number = 1): void {
         this.writeCount += count;
         if (__DEV__) {
             console.log(`[QuotaTracking] write: ${collection} (${count})`);
@@ -70,7 +70,7 @@ export class QuotaTrackingMiddleware {
     /**
      * Track delete operation
      */
-    trackDelete(collection: string, _documentId?: string, count: number = 1): void {
+    trackDelete(collection: string, count: number = 1): void {
         this.deleteCount += count;
         if (__DEV__) {
             console.log(`[QuotaTracking] delete: ${collection} (${count})`);

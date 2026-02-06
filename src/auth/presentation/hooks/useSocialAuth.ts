@@ -5,10 +5,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { getFirebaseAuth } from "../../infrastructure/config/FirebaseAuthClient";
-import {
-  googleAuthService,
-  type GoogleAuthConfig,
-} from "../../infrastructure/services/google-auth.service";
+import { googleAuthService } from "../../infrastructure/services/google-auth.service";
+import type { GoogleAuthConfig } from "../../infrastructure/services/google-auth.types";
 import { appleAuthService } from "../../infrastructure/services/apple-auth.service";
 
 export interface SocialAuthConfig {

@@ -73,7 +73,7 @@ export { anonymousAuthService } from "./auth/infrastructure/services/anonymous-a
 export { deleteCurrentUser } from "./auth/infrastructure/services/account-deletion.service";
 export { appleAuthService } from "./auth/infrastructure/services/apple-auth.service";
 export { googleAuthService } from "./auth/infrastructure/services/google-auth.service";
-export type { GoogleAuthConfig } from "./auth/infrastructure/services/google-auth.service";
+export type { GoogleAuthConfig } from "./auth/infrastructure/services/google-auth.types";
 export { useAnonymousAuth } from "./auth/presentation/hooks/useAnonymousAuth";
 export type { UseAnonymousAuthResult } from "./auth/presentation/hooks/useAnonymousAuth";
 

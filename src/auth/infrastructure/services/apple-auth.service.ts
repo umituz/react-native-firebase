@@ -7,18 +7,11 @@ import {
   OAuthProvider,
   signInWithCredential,
   type Auth,
-  type UserCredential,
 } from "firebase/auth";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
 import { generateNonce, hashNonce } from "./crypto.util";
-
-export interface AppleAuthResult {
-  success: boolean;
-  userCredential?: UserCredential;
-  error?: string;
-  isNewUser?: boolean;
-}
+import type { AppleAuthResult } from "./apple-auth.types";
 
 export class AppleAuthService {
   async isAvailable(): Promise<boolean> {

@@ -120,13 +120,13 @@ export {
 export type {
   GoogleAuthConfig,
   GoogleAuthResult,
-} from './infrastructure/services/google-auth.service';
+} from './infrastructure/services/google-auth.types';
 
 export {
   AppleAuthService,
   appleAuthService,
 } from './infrastructure/services/apple-auth.service';
-export type { AppleAuthResult } from './infrastructure/services/apple-auth.service';
+export type { AppleAuthResult } from './infrastructure/services/apple-auth.types';
 
 // =============================================================================
 // PRESENTATION LAYER - Hooks

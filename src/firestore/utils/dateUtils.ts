@@ -9,17 +9,19 @@ export function isoToTimestamp(isoString: string): Timestamp {
 
 /**
  * Convert Firestore Timestamp to ISO string
+ * Returns null if timestamp is null or undefined
  */
-export function timestampToISO(timestamp: Timestamp | null | undefined): string {
-    if (!timestamp) return new Date().toISOString();
+export function timestampToISO(timestamp: Timestamp | null | undefined): string | null {
+    if (!timestamp) return null;
     return timestamp.toDate().toISOString();
 }
 
 /**
  * Convert Firestore Timestamp to Date
+ * Returns null if timestamp is null or undefined
  */
-export function timestampToDate(timestamp: Timestamp | null | undefined): Date {
-    if (!timestamp) return new Date();
+export function timestampToDate(timestamp: Timestamp | null | undefined): Date | null {
+    if (!timestamp) return null;
     return timestamp.toDate();
 }
 

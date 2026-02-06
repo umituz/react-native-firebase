@@ -5,13 +5,13 @@
  * Defines the contract for Firebase client operations
  */
 
-export type FirebaseApp = any;
+import type { FirebaseApp } from 'firebase/app';
 
 /**
  * Firebase Client Interface
  * Defines the contract for Firebase client operations
- * 
- * Note: 
+ *
+ * Note:
  * - Firebase Auth is now handled by @umituz/react-native-firebase-auth
  * - Firestore is now handled by @umituz/react-native-firestore
  */
@@ -39,8 +39,4 @@ export interface IFirebaseClient {
    */
   reset(): void;
 }
-
-
-
-
 
