@@ -25,7 +25,9 @@ export function toAnonymousUser(user: User): AnonymousUser {
   return {
     uid: user.uid,
     isAnonymous: user.isAnonymous,
-    createdAt: Date.now(),
+    createdAt: user.metadata.creationTime
+      ? new Date(user.metadata.creationTime).getTime()
+      : Date.now(),
   };
 }
 
@@ -39,6 +41,6 @@ export function isValidAnonymousUser(user: unknown): user is AnonymousUser {
     'uid' in user &&
     typeof user.uid === 'string' &&
     'isAnonymous' in user &&
-    typeof user.isAnonymous === 'boolean'
+    user.isAnonymous === true
   );
 }

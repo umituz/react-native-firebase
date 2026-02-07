@@ -29,20 +29,6 @@ export interface UseSocialAuthResult {
   appleAvailable: boolean;
 }
 
-/**
- * Common sign-in wrapper
- */
-async function signInWrapper(
-  signInFn: () => Promise<{ success: boolean; isNewUser?: boolean; error?: string }>
-): Promise<SocialAuthResult> {
-  const auth = getFirebaseAuth();
-  if (!auth) {
-    return { success: false, error: "Firebase Auth not initialized" };
-  }
-
-  return signInFn();
-}
-
 export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
@@ -79,9 +65,7 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
       try {
         const auth = getFirebaseAuth();
         if (!auth) return { success: false, error: "Firebase Auth not initialized" };
-        return await signInWrapper(() =>
-          googleAuthService.signInWithIdToken(auth, idToken)
-        );
+        return await googleAuthService.signInWithIdToken(auth, idToken);
       } catch (error) {
         return {
           success: false,
@@ -103,9 +87,7 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
     try {
       const auth = getFirebaseAuth();
       if (!auth) return { success: false, error: "Firebase Auth not initialized" };
-      return await signInWrapper(() =>
-        appleAuthService.signIn(auth)
-      );
+      return await appleAuthService.signIn(auth);
     } catch (error) {
       return {
         success: false,

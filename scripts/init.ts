@@ -56,6 +56,9 @@ export function getStorageAdmin(app: admin.app.App): admin.storage.Storage {
 /**
  * Reset initialized app (for testing)
  */
-export function resetFirebaseAdmin(): void {
-  initializedApp = null;
+export async function resetFirebaseAdmin(): Promise<void> {
+  if (initializedApp) {
+    await initializedApp.delete();
+    initializedApp = null;
+  }
 }

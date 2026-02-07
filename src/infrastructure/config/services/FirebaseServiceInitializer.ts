@@ -29,7 +29,7 @@ export class FirebaseServiceInitializer {
     let auth: unknown = null;
     if (options?.authInitializer) {
       try {
-        auth = options.authInitializer();
+        auth = await options.authInitializer();
         if (__DEV__) {
           console.log('[Firebase] Auth initialized via callback');
         }

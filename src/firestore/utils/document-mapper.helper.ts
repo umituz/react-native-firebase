@@ -116,7 +116,7 @@ export class DocumentMapperHelper<TSource, TEnrichment, TResult> {
 
     for (const doc of docs) {
       const data = extractData(doc);
-      if (data) {
+      if (data != null) {
         results.push(data);
       }
     }

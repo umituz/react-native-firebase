@@ -61,26 +61,29 @@ export async function seedUserSubcollection(
     errors: [],
   };
 
-  const batch = db.batch();
+  for (let i = 0; i < docs.length; i += BATCH_SIZE) {
+    const slice = docs.slice(i, i + BATCH_SIZE);
+    const batch = db.batch();
 
-  for (const { id, data } of docs) {
-    const ref = db
-      .collection("users")
-      .doc(userId)
-      .collection(subcollectionName)
-      .doc(id);
-    const clean = Object.fromEntries(
-      Object.entries(data).filter(([, v]) => v !== undefined)
-    );
-    batch.set(ref, clean);
-  }
+    for (const { id, data } of slice) {
+      const ref = db
+        .collection("users")
+        .doc(userId)
+        .collection(subcollectionName)
+        .doc(id);
+      const clean = Object.fromEntries(
+        Object.entries(data).filter(([, v]) => v !== undefined)
+      );
+      batch.set(ref, clean);
+    }
 
-  try {
-    await batch.commit();
-    result.processed = docs.length;
-  } catch (error) {
-    result.success = false;
-    result.errors.push(`Failed to seed subcollection: ${error}`);
+    try {
+      await batch.commit();
+      result.processed += slice.length;
+    } catch (error) {
+      result.success = false;
+      result.errors.push(`Failed to seed subcollection at index ${i}: ${error}`);
+    }
   }
 
   return result;

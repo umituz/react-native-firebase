@@ -22,27 +22,27 @@ export class QuotaTrackingMiddleware {
         info: OperationInfo,
         operation: () => Promise<T>
     ): Promise<T> {
-        const result = await operation();
+        try {
+            return await operation();
+        } finally {
+            switch (info.type) {
+                case 'read':
+                    if (!info.cached) {
+                        this.readCount += info.count;
+                    }
+                    break;
+                case 'write':
+                    this.writeCount += info.count;
+                    break;
+                case 'delete':
+                    this.deleteCount += info.count;
+                    break;
+            }
 
-        switch (info.type) {
-            case 'read':
-                if (!info.cached) {
-                    this.readCount += info.count;
-                }
-                break;
-            case 'write':
-                this.writeCount += info.count;
-                break;
-            case 'delete':
-                this.deleteCount += info.count;
-                break;
+            if (__DEV__) {
+                console.log(`[QuotaTracking] ${info.type}: ${info.collection} (${info.count})`);
+            }
         }
-
-        if (__DEV__) {
-            console.log(`[QuotaTracking] ${info.type}: ${info.collection} (${info.count})`);
-        }
-
-        return result;
     }
 
     /**

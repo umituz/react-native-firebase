@@ -57,11 +57,14 @@ export async function deleteUserSubcollection(
     const subcollectionSnapshot = await subcollectionRef.get();
 
     if (!subcollectionSnapshot.empty) {
-      const batch = db.batch();
-      subcollectionSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-      totalDeleted += subcollectionSnapshot.docs.length;
-      onProgress?.(totalDeleted);
+      for (let i = 0; i < subcollectionSnapshot.docs.length; i += BATCH_SIZE) {
+        const chunk = subcollectionSnapshot.docs.slice(i, i + BATCH_SIZE);
+        const batch = db.batch();
+        chunk.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
+        totalDeleted += chunk.length;
+        onProgress?.(totalDeleted);
+      }
     }
   }
 
@@ -88,10 +91,13 @@ export async function deleteAllData(
         for (const subcollection of subcollections) {
           const subSnapshot = await subcollection.get();
           if (!subSnapshot.empty) {
-            const batch = db.batch();
-            subSnapshot.docs.forEach((subDoc) => batch.delete(subDoc.ref));
-            await batch.commit();
-            totalDeleted += subSnapshot.docs.length;
+            for (let i = 0; i < subSnapshot.docs.length; i += BATCH_SIZE) {
+              const chunk = subSnapshot.docs.slice(i, i + BATCH_SIZE);
+              const batch = db.batch();
+              chunk.forEach((subDoc) => batch.delete(subDoc.ref));
+              await batch.commit();
+              totalDeleted += chunk.length;
+            }
           }
         }
       }
@@ -99,10 +105,13 @@ export async function deleteAllData(
 
     // Delete main collection documents
     if (!snapshot.empty) {
-      const batch = db.batch();
-      snapshot.docs.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-      totalDeleted += snapshot.docs.length;
+      for (let i = 0; i < snapshot.docs.length; i += BATCH_SIZE) {
+        const chunk = snapshot.docs.slice(i, i + BATCH_SIZE);
+        const batch = db.batch();
+        chunk.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
+        totalDeleted += chunk.length;
+      }
       onProgress?.(collection.id, totalDeleted);
     }
   }

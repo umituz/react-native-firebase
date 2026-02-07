@@ -7,6 +7,7 @@
 
 import type { Auth, User } from 'firebase/auth';
 import { getFirebaseAuth } from '../config/FirebaseAuthClient';
+import { userToAuthCheckResult } from '../../presentation/hooks/utils/auth-state-change.handler';
 
 /**
  * Auth check result interface
@@ -24,22 +25,7 @@ export interface AuthCheckResult {
  * Optimized: Single traversal of auth state
  */
 export function checkAuthState(auth: Auth | null): AuthCheckResult {
-  if (!auth || !auth.currentUser) {
-    return {
-      isAuthenticated: false,
-      isAnonymous: false,
-      currentUser: null,
-      userId: null,
-    };
-  }
-
-  const currentUser = auth.currentUser;
-  return {
-    isAuthenticated: true,
-    isAnonymous: currentUser.isAnonymous === true,
-    currentUser,
-    userId: currentUser.uid,
-  };
+  return userToAuthCheckResult(auth?.currentUser ?? null);
 }
 
 /**
@@ -116,6 +102,6 @@ export function verifyUserId(auth: Auth | null, userId: string): boolean {
  * Check if user exists and is valid
  */
 export function isValidUser(user: User | null | undefined): user is User {
-  return user?.uid !== undefined && user.uid.length > 0;
+  return !!user && typeof user.uid === 'string' && user.uid.length > 0;
 }
 

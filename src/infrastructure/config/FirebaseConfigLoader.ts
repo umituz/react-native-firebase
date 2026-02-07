@@ -76,7 +76,7 @@ export function loadFirebaseConfig(): FirebaseConfig | null {
   }
 
   // Validate required fields
-  if (!config.apiKey?.trim() || !config.projectId?.trim()) {
+  if (!config.apiKey?.trim() || !config.authDomain?.trim() || !config.projectId?.trim()) {
     return null;
   }
 

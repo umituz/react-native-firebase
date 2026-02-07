@@ -25,11 +25,17 @@ export type {
   ReauthCredentialResult 
 } from "./reauthentication.types";
 
-function toAuthError(error: unknown): { code: string; message: string } {
-  const err = error as { code?: string; message?: string };
+export function toAuthError(error: unknown): { code: string; message: string } {
+  if (error instanceof Error) {
+    const firebaseErr = error as { code?: string };
+    return {
+      code: firebaseErr.code || "auth/failed",
+      message: error.message,
+    };
+  }
   return {
-    code: err.code || "auth/failed",
-    message: err.message || "Unknown error",
+    code: "auth/failed",
+    message: typeof error === 'string' ? error : "Unknown error",
   };
 }
 

@@ -53,6 +53,9 @@ export class BaseRepository {
    * @throws Error if Firestore is not initialized
    */
   protected getDbOrThrow(): Firestore {
+    if (this.isDestroyed) {
+      throw new Error("Repository has been destroyed");
+    }
     const db = getFirestore();
     if (!db) {
       throw new Error("Firestore is not initialized. Please initialize Firebase App first.");

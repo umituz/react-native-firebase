@@ -53,7 +53,7 @@ export class PaginationHelper<T> {
    * @returns Page limit
    */
   getLimit(params?: PaginationParams, defaultLimit: number = 10): number {
-    return params?.limit || defaultLimit;
+    return params?.limit ?? defaultLimit;
   }
 
   /**

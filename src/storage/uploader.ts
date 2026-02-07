@@ -16,6 +16,7 @@ import type { UploadResult, UploadOptions } from "./types";
  * Extract MIME type from base64 data URL or return default
  */
 export function getMimeType(base64: string): string {
+    if (base64.startsWith("data:image/jpeg") || base64.startsWith("data:image/jpg")) return "image/jpeg";
     if (base64.startsWith("data:image/png")) return "image/png";
     if (base64.startsWith("data:image/webp")) return "image/webp";
     if (base64.startsWith("data:image/gif")) return "image/gif";

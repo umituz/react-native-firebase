@@ -9,18 +9,11 @@ import {
   reauthenticateWithApple,
   reauthenticateWithPassword,
   reauthenticateWithGoogle,
+  toAuthError,
 } from "./reauthentication.service";
 import type { AccountDeletionResult, AccountDeletionOptions } from "./reauthentication.types";
 
 export type { AccountDeletionResult, AccountDeletionOptions } from "./reauthentication.types";
-
-function toAuthError(error: unknown): { code: string; message: string } {
-  const err = error as { code?: string; message?: string };
-  return {
-    code: err.code || "auth/failed",
-    message: err.message || "Unknown error",
-  };
-}
 
 export async function deleteCurrentUser(
   options: AccountDeletionOptions = { autoReauthenticate: true }
@@ -78,7 +71,7 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
   return { success: false, error: { code: res.error?.code || "auth/reauth-failed", message: res.error?.message || "Reauth failed", requiresReauth: true } };
 }
 
-export async function deleteUserAccount(user: User): Promise<AccountDeletionResult> {
+export async function deleteUserAccount(user: User | null): Promise<AccountDeletionResult> {
   if (!user || user.isAnonymous) return { success: false, error: { code: "auth/invalid", message: "Invalid user", requiresReauth: false } };
   try {
     await deleteUser(user);

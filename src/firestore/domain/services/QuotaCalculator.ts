@@ -4,7 +4,7 @@
  */
 
 import type { QuotaMetrics, QuotaLimits, QuotaStatus } from '../entities/QuotaMetrics';
-import { FREE_TIER_LIMITS } from '../constants/QuotaLimits';
+import { FREE_TIER_LIMITS, QUOTA_THRESHOLDS, calculateQuotaUsage } from '../constants/QuotaLimits';
 
 /**
  * Default quota limits (Firebase Spark Plan)
@@ -24,14 +24,15 @@ export class QuotaCalculator {
     metrics: QuotaMetrics,
     limits: QuotaLimits = DEFAULT_QUOTA_LIMITS,
   ): QuotaStatus {
-    const readPercentage = (metrics.readCount / limits.dailyReadLimit) * 100;
-    const writePercentage = (metrics.writeCount / limits.dailyWriteLimit) * 100;
-    const deletePercentage = (metrics.deleteCount / limits.dailyDeleteLimit) * 100;
+    const readPercentage = calculateQuotaUsage(metrics.readCount, limits.dailyReadLimit) * 100;
+    const writePercentage = calculateQuotaUsage(metrics.writeCount, limits.dailyWriteLimit) * 100;
+    const deletePercentage = calculateQuotaUsage(metrics.deleteCount, limits.dailyDeleteLimit) * 100;
 
+    const warningThreshold = QUOTA_THRESHOLDS.WARNING * 100;
     const isNearLimit =
-      readPercentage >= 80 ||
-      writePercentage >= 80 ||
-      deletePercentage >= 80;
+      readPercentage >= warningThreshold ||
+      writePercentage >= warningThreshold ||
+      deletePercentage >= warningThreshold;
 
     const isOverLimit =
       readPercentage >= 100 ||

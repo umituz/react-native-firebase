@@ -4,7 +4,11 @@ import { Timestamp } from 'firebase/firestore';
  * Convert ISO string to Firestore Timestamp
  */
 export function isoToTimestamp(isoString: string): Timestamp {
-    return Timestamp.fromDate(new Date(isoString));
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) {
+        throw new Error(`Invalid ISO date string: ${isoString}`);
+    }
+    return Timestamp.fromDate(date);
 }
 
 /**

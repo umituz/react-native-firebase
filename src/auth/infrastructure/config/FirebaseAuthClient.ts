@@ -25,6 +25,9 @@ class FirebaseAuthClientSingleton {
       const app = getFirebaseApp();
       if (!app) return null;
       this.auth = FirebaseAuthInitializer.initialize(app, config);
+      if (!this.auth) {
+        this.initializationError = "Auth initialization returned null";
+      }
       return this.auth;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Unknown error";

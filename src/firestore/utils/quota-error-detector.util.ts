@@ -9,9 +9,10 @@ const QUOTA_ERROR_CODES = [
 ];
 
 const QUOTA_ERROR_MESSAGES = [
-    'quota',
-    'exceeded',
-    'limit',
+    'quota exceeded',
+    'quota limit',
+    'daily limit',
+    'resource exhausted',
     'too many requests',
 ];
 
@@ -19,11 +20,14 @@ const QUOTA_ERROR_MESSAGES = [
  * Check if error is a Firestore quota error
  */
 export function isQuotaError(error: unknown): boolean {
-    if (!error) return false;
+    if (!error || typeof error !== 'object') return false;
 
-    const errorObj = error as Record<string, unknown>;
-    const code = errorObj.code as string | undefined;
-    const message = errorObj.message as string | undefined;
+    const code = 'code' in error && typeof (error as Record<string, unknown>).code === 'string'
+        ? (error as Record<string, unknown>).code as string
+        : undefined;
+    const message = 'message' in error && typeof (error as Record<string, unknown>).message === 'string'
+        ? (error as Record<string, unknown>).message as string
+        : undefined;
 
     if (code && QUOTA_ERROR_CODES.some((c) => code.includes(c))) {
         return true;
@@ -41,10 +45,11 @@ export function isQuotaError(error: unknown): boolean {
  * Check if error is retryable
  */
 export function isRetryableError(error: unknown): boolean {
-    if (!error) return false;
+    if (!error || typeof error !== 'object') return false;
 
-    const errorObj = error as Record<string, unknown>;
-    const code = errorObj.code as string | undefined;
+    const code = 'code' in error && typeof (error as Record<string, unknown>).code === 'string'
+        ? (error as Record<string, unknown>).code as string
+        : undefined;
 
     const retryableCodes = ['unavailable', 'deadline-exceeded', 'aborted'];
 

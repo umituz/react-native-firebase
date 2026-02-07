@@ -75,6 +75,9 @@ export function getProjectId(options: CLIOptions): string {
   const saPath = path.resolve(process.cwd(), options.serviceAccountPath);
   if (fs.existsSync(saPath)) {
     const sa = JSON.parse(fs.readFileSync(saPath, "utf8"));
+    if (!sa.project_id) {
+      throw new Error("project_id not found in service account file.");
+    }
     return sa.project_id;
   }
 

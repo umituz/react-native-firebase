@@ -22,12 +22,16 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
 
     const currentUser = auth.currentUser;
 
-    if (currentUser) {
+    if (currentUser && currentUser.isAnonymous) {
       return {
         user: currentUser,
         anonymousUser: toAnonymousUser(currentUser),
         wasAlreadySignedIn: true,
       };
+    }
+
+    if (currentUser && !currentUser.isAnonymous) {
+      throw new Error("A non-anonymous user is already signed in. Sign out first before creating an anonymous session.");
     }
 
     try {

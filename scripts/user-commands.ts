@@ -55,16 +55,16 @@ export async function addUserCredits(
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 
-  if (credits.text) {
+  if (credits.text !== undefined) {
     updates.text = admin.firestore.FieldValue.increment(credits.text);
   }
-  if (credits.image) {
+  if (credits.image !== undefined) {
     updates.image = admin.firestore.FieldValue.increment(credits.image);
   }
-  if (credits.video) {
+  if (credits.video !== undefined) {
     updates.video = admin.firestore.FieldValue.increment(credits.video);
   }
-  if (credits.audio) {
+  if (credits.audio !== undefined) {
     updates.audio = admin.firestore.FieldValue.increment(credits.audio);
   }
 

@@ -67,6 +67,7 @@ export const QUOTA_THRESHOLDS = {
  * @returns Percentage (0-1)
  */
 export function calculateQuotaUsage(current: number, limit: number): number {
+  if (limit <= 0) return current > 0 ? 1 : 0;
   return Math.min(1, current / limit);
 }
 

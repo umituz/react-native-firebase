@@ -28,6 +28,7 @@ export function randomDate(daysAgo: number): Date {
  * Get random item from array
  */
 export function randomItem<T>(arr: T[]): T {
+  if (arr.length === 0) throw new Error("Cannot pick random item from empty array");
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -57,9 +58,10 @@ export function sleep(ms: number): Promise<void> {
  */
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 Bytes";
+  if (bytes < 0) return "-" + formatBytes(-bytes);
   const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
