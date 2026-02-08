@@ -16,9 +16,10 @@ export abstract class BaseQueryRepository extends BaseRepository {
    * Prevents duplicate queries and tracks quota usage
    *
    * @param collection - Collection name
-   * @param query - Firestore query
+   * @param query - Firestore query (kept for interface compatibility)
    * @param queryFn - Function to execute the query
    * @param cached - Whether the result is from cache
+   * @param uniqueKey - Unique key for deduplication (critical for correct caching)
    * @returns Query result
    */
   protected async executeQuery<T>(
@@ -26,24 +27,30 @@ export abstract class BaseQueryRepository extends BaseRepository {
     query: Query,
     queryFn: () => Promise<T>,
     cached: boolean = false,
+    uniqueKey?: string
   ): Promise<T> {
+    // FIX: query.toString() returns "[object Object]" which breaks deduplication
+    // We must rely on the caller providing a uniqueKey or fallback to a collection-based key (less efficient but safe)
+    const safeKey = uniqueKey || `${collection}_generic_query_${Date.now()}`;
+
     const queryKey = {
       collection,
-      filters: query.toString(),
+      filters: safeKey, // Use the unique key as the filter identifier
       limit: undefined,
       orderBy: undefined,
     };
 
     return queryDeduplicationMiddleware.deduplicate(queryKey, async () => {
-      return quotaTrackingMiddleware.trackOperation(
-        {
-          type: 'read',
-          collection,
-          count: 1,
-          cached,
-        },
-        queryFn,
-      );
+      // Execute the query function
+      const result = await queryFn();
+      
+      // Track the operation after successful execution
+      // We calculate count based on result if possible, otherwise default to 1 (for list/count queries)
+      const count = Array.isArray(result) ? result.length : 1;
+      
+      this.trackRead(collection, count, cached);
+      
+      return result;
     });
   }
 
