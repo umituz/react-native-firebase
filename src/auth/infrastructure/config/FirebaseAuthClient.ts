@@ -38,7 +38,18 @@ class FirebaseAuthClientSingleton {
   }
 
   getAuth(): Auth | null {
-    if (!this.auth && !this.initializationError && getFirebaseApp()) this.initialize();
+    // Don't retry if we already have an auth instance
+    if (this.auth) return this.auth;
+
+    // Don't retry if we already failed to initialize
+    if (this.initializationError) return null;
+
+    // Don't retry if Firebase app is not available
+    const app = getFirebaseApp();
+    if (!app) return null;
+
+    // Attempt initialization
+    this.initialize();
     return this.auth;
   }
 

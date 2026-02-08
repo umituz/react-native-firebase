@@ -38,15 +38,22 @@ export function isQuotaError(error: unknown): boolean {
 
     if (hasCodeProperty(error)) {
         const code = error.code;
-        if (QUOTA_ERROR_CODES.some((c) => code.includes(c))) {
-            return true;
-        }
+        // Use more specific matching - exact match or ends with pattern
+        return QUOTA_ERROR_CODES.some((c) =>
+            code === c || code.endsWith(`/${c}`) || code.startsWith(`${c}/`)
+        );
     }
 
     if (hasMessageProperty(error)) {
         const message = error.message;
         const lowerMessage = message.toLowerCase();
-        return QUOTA_ERROR_MESSAGES.some((m) => lowerMessage.includes(m));
+        // Use word boundaries to avoid partial matches
+        return QUOTA_ERROR_MESSAGES.some((m) =>
+            lowerMessage.includes(` ${m} `) ||
+            lowerMessage.startsWith(`${m} `) ||
+            lowerMessage.endsWith(` ${m}`) ||
+            lowerMessage === m
+        );
     }
 
     return false;

@@ -31,6 +31,7 @@ export class AppleAuthService {
         return {
           success: false,
           error: "Apple Sign-In is not available on this device",
+          code: "unavailable",
         };
       }
 
@@ -46,7 +47,11 @@ export class AppleAuthService {
       });
 
       if (!appleCredential.identityToken) {
-        return { success: false, error: "No identity token received" };
+        return {
+          success: false,
+          error: "No identity token received",
+          code: "no_token"
+        };
       }
 
       const provider = new OAuthProvider("apple.com");
@@ -67,12 +72,22 @@ export class AppleAuthService {
       };
     } catch (error) {
       if (error instanceof Error && error.message.includes("ERR_CANCELED")) {
-        return { success: false, error: "Apple Sign-In was cancelled" };
+        return {
+          success: false,
+          error: "Apple Sign-In was cancelled",
+          code: "canceled"
+        };
       }
+
       if (__DEV__) console.error('[Firebase Auth] Apple Sign-In failed:', error);
+
+      const errorCode = (error as { code?: string })?.code || 'unknown';
+      const errorMessage = error instanceof Error ? error.message : 'Apple sign-in failed';
+
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Apple sign-in failed",
+        error: errorMessage,
+        code: errorCode,
       };
     }
   }

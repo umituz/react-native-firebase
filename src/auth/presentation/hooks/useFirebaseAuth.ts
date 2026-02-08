@@ -37,7 +37,15 @@ export function useFirebaseAuth(): UseFirebaseAuthResult {
     }
 
     setupListener(auth);
-  }, [setupListener]);
+
+    // Cleanup function - called when component unmounts
+    return () => {
+      // Note: We don't call cleanupListener here because the store manages
+      // the shared listener. Multiple components can use this hook simultaneously,
+      // and we want to keep the listener active until all components are unmounted.
+      // The store will handle cleanup when appropriate.
+    };
+  }, [setupListener]); // setupListener is stable from the store
 
   return {
     user,

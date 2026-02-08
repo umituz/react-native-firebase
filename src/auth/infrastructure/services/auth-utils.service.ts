@@ -4,6 +4,7 @@
  */
 
 import type { User, Auth } from 'firebase/auth';
+import { getFirebaseAuth } from '../config/FirebaseAuthClient';
 
 export interface AuthCheckResult {
   isAuthenticated: boolean;
@@ -67,16 +68,26 @@ export function getCurrentUser(auth: Auth): User | null {
  * Get current user ID from global auth instance
  */
 export function getCurrentUserIdFromGlobal(): string | null {
-  // This would use the global auth instance
-  return null;
+  const auth = getFirebaseAuth();
+
+  if (!auth || !auth.currentUser) {
+    return null;
+  }
+
+  return auth.currentUser.uid;
 }
 
 /**
  * Get current user from global auth instance
  */
 export function getCurrentUserFromGlobal(): User | null {
-  // This would use the global auth instance
-  return null;
+  const auth = getFirebaseAuth();
+
+  if (!auth) {
+    return null;
+  }
+
+  return auth.currentUser;
 }
 
 /**

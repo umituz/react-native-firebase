@@ -51,6 +51,9 @@ export async function uploadBase64Image(
     const storageRef = ref(storage, storagePath);
 
     const response = await fetch(dataUrl);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch base64 data: HTTP ${response.status} ${response.statusText}`);
+    }
     const blob = await response.blob();
 
     const metadata: UploadMetadata = {
@@ -82,6 +85,9 @@ export async function uploadFile(
     const storageRef = ref(storage, storagePath);
 
     const response = await fetch(uri);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch file from URI: HTTP ${response.status} ${response.statusText}`);
+    }
     const blob = await response.blob();
 
     const contentType = options?.mimeType ?? "image/jpeg";

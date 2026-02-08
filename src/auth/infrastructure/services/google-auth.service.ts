@@ -55,9 +55,15 @@ export class GoogleAuthService {
       if (__DEV__) {
         console.error('[Firebase Auth] Google Sign-In failed:', error);
       }
+
+      // Extract error code for better error handling
+      const errorCode = (error as { code?: string })?.code || 'unknown';
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Google sign-in failed",
+        error: errorMessage,
+        code: errorCode,
       };
     }
   }

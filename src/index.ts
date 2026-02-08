@@ -59,23 +59,11 @@ export {
   initializeFirebaseAuth,
 } from "./auth/infrastructure/config/FirebaseAuthClient";
 
-export { anonymousAuthService } from "./auth/infrastructure/services/anonymous-auth.service";
-export { deleteCurrentUser } from "./auth/infrastructure/services/account-deletion.service";
-export { appleAuthService } from "./auth/infrastructure/services/apple-auth.service";
-export { googleAuthService } from "./auth/infrastructure/services/google-auth.service";
-export type { GoogleAuthConfig } from "./auth/infrastructure/services/google-auth.types";
-export { useAnonymousAuth } from "./auth/presentation/hooks/useAnonymousAuth";
-export type { UseAnonymousAuthResult } from "./auth/presentation/hooks/useAnonymousAuth";
-
 // Commonly Used Firestore Exports (for convenience)
 export {
   getFirestore,
   initializeFirestore,
 } from "./firestore/infrastructure/config/FirestoreClient";
-
-export { BaseRepository } from "./firestore/infrastructure/repositories/BaseRepository";
-export { FirestorePathResolver } from "./firestore/utils/path-resolver";
-export { PaginationHelper } from "./firestore/utils/pagination.helper";
 
 export { Timestamp } from "firebase/firestore";
 export type {
@@ -99,20 +87,6 @@ export {
   serverTimestamp,
 } from "./firestore/utils/firestore-helper";
 export type { FirestoreResult, NoDbResult } from "./firestore/utils/firestore-helper";
-
-// Auth Hooks (commonly used)
-export { useSocialAuth } from "./auth/presentation/hooks/useSocialAuth";
-export type {
-  SocialAuthConfig,
-  SocialAuthResult,
-} from "./auth/presentation/hooks/useSocialAuth";
-
-export { updateUserPassword } from "./auth/infrastructure/services/password.service";
-export type { PasswordUpdateResult } from "./auth/infrastructure/services/password.service";
-
-export { reauthenticateWithPassword } from "./auth/infrastructure/services/reauthentication.service";
-
-export { getCurrentUserFromGlobal } from "./auth/infrastructure/services/auth-utils.service";
 
 // Init Module Factory
 export {

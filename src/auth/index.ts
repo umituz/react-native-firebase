@@ -40,6 +40,7 @@ export {
   getCurrentUserId,
   getCurrentUser,
   getCurrentUserIdFromGlobal,
+  getCurrentUserFromGlobal,
   isCurrentUserAuthenticated,
   isCurrentUserAnonymous,
   verifyUserId,

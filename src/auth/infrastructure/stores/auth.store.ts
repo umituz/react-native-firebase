@@ -40,13 +40,15 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
       const state = get();
 
       // Atomic check: both state flag AND in-progress mutex
+      // This prevents multiple simultaneous calls from setting up listeners
       if (state.listenerSetup || unsubscribe || setupInProgress) {
         return;
       }
 
       // Set mutex immediately (synchronous, before any async operation)
+      // This ensures no other call can pass the check above
       setupInProgress = true;
-      set({ listenerSetup: true });
+      set({ listenerSetup: true, loading: true });
 
       try {
         unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
@@ -59,10 +61,14 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
 
         // Listener setup complete - keep mutex locked until cleanup
         // (setupInProgress remains true to indicate active listener)
-      } catch {
+      } catch (error) {
         // On error, release the mutex so retry is possible
         setupInProgress = false;
-        set({ listenerSetup: false });
+        set({ listenerSetup: false, loading: false });
+        if (__DEV__) {
+          console.error('[Auth Store] Failed to setup auth listener:', error);
+        }
+        throw error; // Re-throw to allow caller to handle
       }
     },
 

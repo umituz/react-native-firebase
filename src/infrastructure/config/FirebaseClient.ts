@@ -35,7 +35,8 @@ export type { FirebaseApp, AuthInitializer, ServiceInitializationOptions };
  */
 export interface ServiceInitializationResult {
   app: FirebaseApp | null;
-  auth: unknown;
+  auth: unknown; // Auth result from authInitializer callback (can be Auth, UserCredential, or any custom type)
+  authError?: string; // Error message if auth initialization failed
 }
 
 /**

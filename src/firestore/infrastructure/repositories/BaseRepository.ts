@@ -128,8 +128,25 @@ export class BaseRepository {
 
   /**
    * Destroy repository and cleanup resources
+   * Child classes can override onDestroy() to add custom cleanup logic
    */
   destroy(): void {
+    if (__DEV__) {
+      console.log(`[BaseRepository] Destroying repository for ${this.constructor.name}`);
+    }
+
+    // Call child class cleanup if implemented
+    this.onDestroy();
+
+    // Mark as destroyed
     this.isDestroyed = true;
+  }
+
+  /**
+   * Cleanup hook for child classes
+   * Override this method to add custom cleanup logic (e.g., unsubscribe from listeners)
+   */
+  protected onDestroy(): void {
+    // Override in child classes if needed
   }
 }

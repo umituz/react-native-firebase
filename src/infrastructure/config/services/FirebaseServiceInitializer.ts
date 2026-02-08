@@ -18,19 +18,32 @@ export interface ServiceInitializationResult {
   auth: unknown;
 }
 
+export interface ServiceInitializationResult {
+  auth: unknown;
+  authError?: string;
+}
+
 export class FirebaseServiceInitializer {
   static async initializeServices(
     options?: ServiceInitializationOptions
   ): Promise<ServiceInitializationResult> {
     let auth: unknown = null;
+    let authError: string | undefined;
+
     if (options?.authInitializer) {
       try {
         auth = await options.authInitializer();
-      } catch {
-        // Silently fail, auth initialization is optional
+      } catch (error) {
+        // Auth initialization is optional but we should log the error
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        authError = errorMessage;
+
+        if (__DEV__) {
+          console.error('[FirebaseServiceInitializer] Auth initialization failed:', errorMessage);
+        }
       }
     }
 
-    return { auth };
+    return { auth, authError };
   }
 }

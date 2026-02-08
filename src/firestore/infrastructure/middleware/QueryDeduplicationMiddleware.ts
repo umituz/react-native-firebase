@@ -94,16 +94,24 @@ export class QueryDeduplicationMiddleware {
   }
 
   /**
-   * Add query to pending list
+   * Add query to pending list with guaranteed cleanup
    */
   private addPendingQuery(key: string, promise: Promise<unknown>): void {
-    this.pendingQueries.set(key, {
-      promise,
-      timestamp: Date.now(),
-    });
+    // Wrap the promise to ensure cleanup happens regardless of outcome
+    const wrappedPromise = promise
+      .catch((error) => {
+        // Re-throw to maintain original promise behavior
+        throw error;
+      })
+      .finally(() => {
+        // Guaranteed cleanup - runs for both resolve and reject
+        this.pendingQueries.delete(key);
+      });
 
-    promise.finally(() => {
-      this.pendingQueries.delete(key);
+    // Store the wrapped promise with the finally handler attached
+    this.pendingQueries.set(key, {
+      promise: wrappedPromise,
+      timestamp: Date.now(),
     });
   }
 

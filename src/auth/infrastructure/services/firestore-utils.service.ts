@@ -61,7 +61,13 @@ export function shouldSkipFirestoreQuery(
 
   try {
     if (!auth) {
-      return createResult(true, checkAuthState(null), "no_auth");
+      // Return a default result when no auth instance is available
+      return createResult(true, {
+        isAuthenticated: false,
+        isAnonymous: false,
+        currentUser: null,
+        userId: null,
+      }, "no_auth");
     }
 
     const authState = checkAuthState(auth);
@@ -83,7 +89,13 @@ export function shouldSkipFirestoreQuery(
     if (__DEV__) {
       console.error("[FirestoreUtils] Error checking query", error);
     }
-    return createResult(true, checkAuthState(null), "invalid_options");
+    // Return a default result on error
+    return createResult(true, {
+      isAuthenticated: false,
+      isAnonymous: false,
+      currentUser: null,
+      userId: null,
+    }, "invalid_options");
   }
 }
 

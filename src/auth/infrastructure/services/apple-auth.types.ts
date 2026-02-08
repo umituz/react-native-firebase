@@ -3,13 +3,28 @@
  * Type definitions for Apple authentication
  */
 
-export interface AppleAuthResult {
-  success: boolean;
-  user: User;
-  credential: AppleAuthCredential;
-  wasAlreadySignedIn: boolean;
-  error?: string;
+import type { UserCredential } from 'firebase/auth';
+
+export interface AppleAuthConfig {
+  clientId?: string;
+  scope?: string;
+  redirectURI?: string;
+  state?: string;
 }
+
+export interface AppleAuthSuccessResult {
+  success: true;
+  userCredential: UserCredential;
+  isNewUser: boolean;
+}
+
+export interface AppleAuthErrorResult {
+  success: false;
+  error: string;
+  code?: string;
+}
+
+export type AppleAuthResult = AppleAuthSuccessResult | AppleAuthErrorResult;
 
 export interface AppleAuthCredential {
   idToken: string;

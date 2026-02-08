@@ -36,27 +36,42 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
     const fetchLimit = helper.getFetchLimit(pageLimit);
 
     const collectionRef = collection(db, collectionName);
-    let q = query(
-      collectionRef,
-      orderBy(orderByField, orderDirection),
-      limit(fetchLimit),
-    );
-
+    let q: import("firebase/firestore").Query<DocumentData>;
     let cursorKey = 'start';
+
+    // Handle cursor-based pagination
     if (helper.hasCursor(params) && params?.cursor) {
       cursorKey = params.cursor;
-      const cursorDoc = await getDoc(doc(db, collectionName, params.cursor));
-      if (cursorDoc.exists()) {
-        q = query(
-          collectionRef,
-          orderBy(orderByField, orderDirection),
-          startAfter(cursorDoc),
-          limit(fetchLimit),
-        );
+
+      // Fetch cursor document first
+      const cursorDocRef = doc(db, collectionName, params.cursor);
+      const cursorDoc = await getDoc(cursorDocRef);
+
+      if (!cursorDoc.exists()) {
+        // Cursor document doesn't exist - return empty result
+        if (__DEV__) {
+          console.warn(`[BasePaginatedRepository] Cursor document not found: ${params.cursor}`);
+        }
+        return [];
       }
+
+      // Build query with startAfter using the cursor document
+      q = query(
+        collectionRef,
+        orderBy(orderByField, orderDirection),
+        startAfter(cursorDoc),
+        limit(fetchLimit),
+      );
+    } else {
+      // No cursor - build standard query
+      q = query(
+        collectionRef,
+        orderBy(orderByField, orderDirection),
+        limit(fetchLimit),
+      );
     }
 
-    // Generate a unique key for deduplication
+    // Generate a unique key for deduplication (after cursor is resolved)
     const uniqueKey = `${collectionName}_list_${orderByField}_${orderDirection}_${fetchLimit}_${cursorKey}`;
 
     return this.executeQuery(

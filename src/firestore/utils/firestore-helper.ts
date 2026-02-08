@@ -107,7 +107,13 @@ export async function runTransaction<T>(
     return await fbRunTransaction(db, updateFunction);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    throw new Error(`[runTransaction] Transaction failed: ${errorMessage}`);
+    const errorCode = error instanceof Error ? (error as { code?: string }).code : 'unknown';
+
+    if (__DEV__) {
+      console.error(`[runTransaction] Transaction failed (Code: ${errorCode}):`, errorMessage);
+    }
+
+    throw new Error(`[runTransaction] Transaction failed: ${errorMessage} (Code: ${errorCode})`);
   }
 }
 

@@ -3,25 +3,30 @@
  * Type definitions for reauthentication operations
  */
 
+import type { AuthCredential } from 'firebase/auth';
+
 export interface ReauthenticationCredential {
   provider: 'password' | 'google.com' | 'apple.com';
-  credential: unknown;
+  credential: AuthCredential;
 }
 
 export interface ReauthenticationResult {
   success: boolean;
   error?: {
-    code?: string;
-    message?: string;
+    code: string;
+    message: string;
   };
 }
 
-export type AuthProviderType = 'password' | 'google.com' | 'apple.com';
+export type AuthProviderType = 'anonymous' | 'password' | 'google.com' | 'apple.com' | 'unknown';
 
 export interface ReauthCredentialResult {
   success: boolean;
-  credential?: ReauthenticationCredential;
-  error?: string;
+  credential?: AuthCredential;
+  error?: {
+    code: string;
+    message: string;
+  };
 }
 
 export interface AccountDeletionResult {
