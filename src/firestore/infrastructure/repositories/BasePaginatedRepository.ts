@@ -42,7 +42,9 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
       limit(fetchLimit),
     );
 
+    let cursorKey = 'start';
     if (helper.hasCursor(params) && params?.cursor) {
+      cursorKey = params.cursor;
       const cursorDoc = await getDoc(doc(db, collectionName, params.cursor));
       if (cursorDoc.exists()) {
         q = query(
@@ -54,9 +56,19 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
       }
     }
 
-    const snapshot = await getDocs(q);
-    this.trackRead(collectionName, snapshot.docs.length, snapshot.metadata.fromCache);
-    return snapshot.docs;
+    // Generate a unique key for deduplication
+    const uniqueKey = `${collectionName}_list_${orderByField}_${orderDirection}_${fetchLimit}_${cursorKey}`;
+
+    return this.executeQuery(
+      collectionName,
+      q,
+      async () => {
+        const snapshot = await getDocs(q);
+        return snapshot.docs;
+      },
+      false, // Default to false as we don't know yet
+      uniqueKey
+    );
   }
 
   /**

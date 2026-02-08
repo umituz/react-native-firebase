@@ -24,7 +24,7 @@ export abstract class BaseQueryRepository extends BaseRepository {
    */
   protected async executeQuery<T>(
     collection: string,
-    query: Query,
+    _query: Query,
     queryFn: () => Promise<T>,
     cached: boolean = false,
     uniqueKey?: string

@@ -33,7 +33,7 @@ export class FirebaseFirestoreInitializer {
       return initializeFirestore(app, {
         localCache: memoryLocalCache(),
       });
-    } catch (error: unknown) {
+    } catch {
       // If already initialized, get existing instance
       return getFirestore(app);
     }
