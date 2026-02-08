@@ -35,9 +35,6 @@ export async function withFirestore<T>(
 ): Promise<FirestoreResult<T>> {
   const db = getDb();
   if (!db) {
-    if (__DEV__ && logTag) {
-      console.log(`[${logTag}] No Firestore instance`);
-    }
     return NO_DB_ERROR as FirestoreResult<T>;
   }
   return operation(db);
@@ -52,9 +49,6 @@ export async function withFirestoreVoid(
 ): Promise<void> {
   const db = getDb();
   if (!db) {
-    if (__DEV__ && logTag) {
-      console.log(`[${logTag}] No Firestore instance`);
-    }
     return;
   }
   return operation(db);
@@ -69,9 +63,6 @@ export async function withFirestoreBool(
 ): Promise<boolean> {
   const db = getDb();
   if (!db) {
-    if (__DEV__ && logTag) {
-      console.log(`[${logTag}] No Firestore instance`);
-    }
     return false;
   }
   return operation(db);
@@ -110,9 +101,14 @@ export async function runTransaction<T>(
 ): Promise<T> {
   const db = getDb();
   if (!db) {
-    throw new Error("[runTransaction] Firestore not initialized");
+    throw new Error("[runTransaction] Firestore database is not initialized. Please ensure Firebase is properly initialized before running transactions.");
   }
-  return fbRunTransaction(db, updateFunction);
+  try {
+    return await fbRunTransaction(db, updateFunction);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`[runTransaction] Transaction failed: ${errorMessage}`);
+  }
 }
 
 /**

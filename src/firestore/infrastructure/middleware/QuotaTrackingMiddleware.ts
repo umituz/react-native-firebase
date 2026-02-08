@@ -38,10 +38,6 @@ export class QuotaTrackingMiddleware {
                     this.deleteCount += info.count;
                     break;
             }
-
-            if (__DEV__) {
-                console.log(`[QuotaTracking] ${info.type}: ${info.collection} (${info.count})`);
-            }
         }
     }
 
@@ -52,9 +48,6 @@ export class QuotaTrackingMiddleware {
         if (!cached) {
             this.readCount += count;
         }
-        if (__DEV__) {
-            console.log(`[QuotaTracking] read: ${collection} (${count})`);
-        }
     }
 
     /**
@@ -62,9 +55,6 @@ export class QuotaTrackingMiddleware {
      */
     trackWrite(collection: string, count: number = 1): void {
         this.writeCount += count;
-        if (__DEV__) {
-            console.log(`[QuotaTracking] write: ${collection} (${count})`);
-        }
     }
 
     /**
@@ -72,9 +62,6 @@ export class QuotaTrackingMiddleware {
      */
     trackDelete(collection: string, count: number = 1): void {
         this.deleteCount += count;
-        if (__DEV__) {
-            console.log(`[QuotaTracking] delete: ${collection} (${count})`);
-        }
     }
 
     /**

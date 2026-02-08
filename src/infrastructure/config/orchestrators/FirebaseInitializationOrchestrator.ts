@@ -18,31 +18,17 @@ export class FirebaseInitializationOrchestrator {
     state: FirebaseClientState
   ): FirebaseApp | null {
     if (state.isInitialized()) {
-      if (__DEV__) {
-        console.log('[Firebase] Already initialized, returning existing instance');
-      }
       return state.getApp();
     }
 
     if (state.getInitializationError()) {
-      if (__DEV__) {
-        console.log('[Firebase] Previous initialization failed, skipping retry');
-      }
       return null;
     }
 
     try {
-      if (__DEV__) {
-        console.log('[Firebase] Initializing with projectId:', config.projectId);
-      }
-
       FirebaseConfigValidator.validate(config);
       const app = FirebaseAppInitializer.initialize(config);
       state.setApp(app);
-
-      if (__DEV__) {
-        console.log('[Firebase] Successfully initialized');
-      }
 
       return app;
     } catch (error) {
@@ -67,14 +53,7 @@ export class FirebaseInitializationOrchestrator {
 
     const autoConfig = loadFirebaseConfig();
     if (autoConfig) {
-      if (__DEV__) {
-        console.log('[Firebase] Auto-initializing with environment config');
-      }
       return this.initialize(autoConfig, state);
-    }
-
-    if (__DEV__) {
-      console.log('[Firebase] No configuration found for auto-initialization');
     }
 
     return null;

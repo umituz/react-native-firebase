@@ -63,6 +63,15 @@ function getExpoValue(key: ConfigKey, expoConfig: Record<string, string>): strin
 }
 
 /**
+ * Validate Firebase API key format
+ */
+function validateApiKey(apiKey: string): boolean {
+  // Firebase API keys typically start with "AIza" followed by 35 characters
+  const apiKeyPattern = /^AIza[0-9A-Za-z_-]{35}$/;
+  return apiKeyPattern.test(apiKey);
+}
+
+/**
  * Load Firebase configuration from Constants and environment variables
  */
 export function loadFirebaseConfig(): FirebaseConfig | null {
@@ -76,9 +85,31 @@ export function loadFirebaseConfig(): FirebaseConfig | null {
     config[key] = expoValue || getEnvValue(key);
   }
 
-  // Validate required fields
-  if (!config.apiKey?.trim() || !config.authDomain?.trim() || !config.projectId?.trim()) {
+  // Validate required fields with proper checks
+  const apiKey = config.apiKey?.trim();
+  const authDomain = config.authDomain?.trim();
+  const projectId = config.projectId?.trim();
+
+  if (!apiKey || !authDomain || !projectId) {
+    if (__DEV__) {
+      console.error('[FirebaseConfigLoader] Missing required configuration fields');
+    }
     return null;
+  }
+
+  // Validate API key format
+  if (!validateApiKey(apiKey)) {
+    if (__DEV__) {
+      console.error('[FirebaseConfigLoader] Invalid API key format');
+    }
+    return null;
+  }
+
+  // Validate authDomain format (should be like "projectId.firebaseapp.com")
+  if (!authDomain.includes('.firebaseapp.com') && !authDomain.includes('.web.app')) {
+    if (__DEV__) {
+      console.warn('[FirebaseConfigLoader] Unusual authDomain format, expected "projectId.firebaseapp.com" or similar');
+    }
   }
 
   return config as FirebaseConfig;

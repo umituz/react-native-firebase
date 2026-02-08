@@ -7,18 +7,11 @@
 // DOMAIN LAYER - Business Logic
 // =============================================================================
 
-export {
-  FirebaseAuthError,
-  FirebaseAuthInitializationError,
-} from './domain/errors/FirebaseAuthError';
-
 export type { FirebaseAuthConfig } from './domain/value-objects/FirebaseAuthConfig';
 
 // Anonymous User Entity
 export {
   isAnonymousUser,
-  toAnonymousUser,
-  isValidAnonymousUser,
 } from './domain/entities/AnonymousUser';
 export type { AnonymousUser } from './domain/entities/AnonymousUser';
 
@@ -47,7 +40,6 @@ export {
   getCurrentUserId,
   getCurrentUser,
   getCurrentUserIdFromGlobal,
-  getCurrentUserFromGlobal,
   isCurrentUserAuthenticated,
   isCurrentUserAnonymous,
   verifyUserId,
@@ -57,12 +49,6 @@ export {
 export type {
   AuthCheckResult,
 } from './infrastructure/services/auth-utils.service';
-
-// Auth Guard
-export {
-  AuthGuardService,
-  authGuardService,
-} from './infrastructure/services/auth-guard.service';
 
 // Anonymous Auth Service
 export {

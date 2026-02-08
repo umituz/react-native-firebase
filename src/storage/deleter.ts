@@ -33,7 +33,6 @@ function extractStoragePath(downloadUrl: string): string | null {
 
         return decodeURIComponent(pathMatch[1]);
     } catch (error) {
-        if (__DEV__) console.warn('[StorageDeleter] Failed to parse URL:', error);
         return null;
     }
 }
@@ -45,18 +44,9 @@ function extractStoragePath(downloadUrl: string): string | null {
 export async function deleteStorageFile(
     downloadUrlOrPath: string
 ): Promise<DeleteResult> {
-    if (__DEV__) {
-        console.log("[StorageDeleter] Deleting", { url: downloadUrlOrPath });
-    }
-
     const storagePath = extractStoragePath(downloadUrlOrPath);
 
     if (!storagePath) {
-        if (__DEV__) {
-            console.error("[StorageDeleter] Invalid URL", {
-                url: downloadUrlOrPath,
-            });
-        }
         return { success: false, storagePath: downloadUrlOrPath };
     }
 
@@ -69,20 +59,8 @@ export async function deleteStorageFile(
         const storageRef = ref(storage, storagePath);
         await deleteObject(storageRef);
 
-        if (__DEV__) {
-            console.log("[StorageDeleter] Deleted successfully", {
-                storagePath,
-            });
-        }
-
         return { success: true, storagePath };
     } catch (error) {
-        if (__DEV__) {
-            console.error("[StorageDeleter] Delete failed", {
-                storagePath,
-                error,
-            });
-        }
         return { success: false, storagePath };
     }
 }
@@ -97,10 +75,6 @@ export async function deleteStorageFile(
 export async function deleteStorageFiles(
     urlsOrPaths: string[]
 ): Promise<BatchDeleteResult> {
-    if (__DEV__) {
-        console.log("[StorageDeleter] Batch delete", { count: urlsOrPaths.length });
-    }
-
     const storage = getStorageInstance();
     if (!storage) {
         return {
@@ -130,13 +104,6 @@ export async function deleteStorageFiles(
             failed.push({ path, error: errorMessage });
         }
     });
-
-    if (__DEV__) {
-        console.log("[StorageDeleter] Batch delete complete", {
-            successful: successful.length,
-            failed: failed.length,
-        });
-    }
 
     return { successful, failed };
 }

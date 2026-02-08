@@ -4,10 +4,6 @@
  * Domain-Driven Design: Specialized error types for the Firebase domain
  */
 
-if (__DEV__) {
-  console.log('📍 [LIFECYCLE] FirebaseError.ts - Module loading');
-}
-
 /**
  * Base Firebase error class
  */

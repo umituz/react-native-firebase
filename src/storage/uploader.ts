@@ -20,9 +20,6 @@ export function getMimeType(base64: string): string {
     if (base64.startsWith("data:image/png")) return "image/png";
     if (base64.startsWith("data:image/webp")) return "image/webp";
     if (base64.startsWith("data:image/gif")) return "image/gif";
-    if (__DEV__) {
-        console.warn("[StorageUploader] Could not detect MIME type from base64 prefix, falling back to image/jpeg");
-    }
     return "image/jpeg";
 }
 
@@ -47,13 +44,6 @@ export async function uploadBase64Image(
     const mimeType = options?.mimeType ?? getMimeType(base64);
     const dataUrl = ensureDataUrl(base64, mimeType);
 
-    if (__DEV__) {
-        console.log("[StorageUploader] Starting base64 upload", {
-            storagePath,
-            mimeType,
-        });
-    }
-
     const storage = getStorageInstance();
     if (!storage) {
         throw new Error("Firebase Storage not initialized");
@@ -71,13 +61,6 @@ export async function uploadBase64Image(
     await uploadBytes(storageRef, blob, metadata);
     const downloadUrl = await getDownloadURL(storageRef);
 
-    if (__DEV__) {
-        console.log("[StorageUploader] Upload complete", {
-            storagePath,
-            downloadUrl,
-        });
-    }
-
     return {
         downloadUrl,
         storagePath,
@@ -92,13 +75,6 @@ export async function uploadFile(
     storagePath: string,
     options?: UploadOptions
 ): Promise<UploadResult> {
-    if (__DEV__) {
-        console.log("[StorageUploader] Starting file upload", {
-            uri,
-            storagePath,
-        });
-    }
-
     const storage = getStorageInstance();
     if (!storage) {
         throw new Error("Firebase Storage not initialized");
@@ -109,9 +85,6 @@ export async function uploadFile(
     const blob = await response.blob();
 
     const contentType = options?.mimeType ?? "image/jpeg";
-    if (!options?.mimeType && __DEV__) {
-        console.warn("[StorageUploader] No MIME type provided for file upload, falling back to image/jpeg");
-    }
     const metadata: UploadMetadata = {
         contentType,
         customMetadata: options?.customMetadata,
@@ -119,13 +92,6 @@ export async function uploadFile(
 
     await uploadBytes(storageRef, blob, metadata);
     const downloadUrl = await getDownloadURL(storageRef);
-
-    if (__DEV__) {
-        console.log("[StorageUploader] Upload complete", {
-            storagePath,
-            downloadUrl,
-        });
-    }
 
     return {
         downloadUrl,

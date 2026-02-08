@@ -52,7 +52,6 @@ export function createFirebaseInitModule(
         });
 
         if (__DEV__) {
-          console.log('[createFirebaseInitModule] Firebase initialized');
         }
 
         return true;

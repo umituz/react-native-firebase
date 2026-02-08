@@ -50,12 +50,6 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
 
       try {
         unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
-          if (__DEV__) {
-            console.log(
-              "[FirebaseAuthStore] Auth state changed:",
-              currentUser?.uid || "null"
-            );
-          }
           set({
             user: currentUser,
             loading: false,
@@ -69,9 +63,6 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
         // On error, release the mutex so retry is possible
         setupInProgress = false;
         set({ listenerSetup: false });
-        if (__DEV__) {
-          console.error("[FirebaseAuthStore] Failed to setup listener:", error);
-        }
       }
     },
 

@@ -8,8 +8,6 @@
  * Use @umituz/react-native-firebase to initialize Firebase App.
  */
 
-if (__DEV__) console.log("📍 [LIFECYCLE] FirestoreClient.ts - Module loading");
-
 import type { Firestore } from 'firebase/firestore';
 import { getFirebaseApp } from '../../../infrastructure/config/FirebaseClient';
 import { FirebaseFirestoreInitializer } from './initializers/FirebaseFirestoreInitializer';

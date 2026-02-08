@@ -81,25 +81,12 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
     try {
       // Listen to auth state changes
       unsubscribeRef.current = onAuthStateChanged(auth, (user) => {
-        if (__DEV__) {
-           
-          console.log("[useAnonymousAuth] onAuthStateChanged fired", {
-            hasUser: !!user,
-            uid: user?.uid,
-            isAnonymous: user?.isAnonymous,
-            email: user?.email,
-          });
-        }
         handleAuthStateChange(user);
       });
     } catch (err) {
       const authError = err instanceof Error ? err : new Error('Auth listener setup failed');
       setError(authError);
       setLoading(false);
-      if (__DEV__) {
-         
-        console.error("[useAnonymousAuth] Auth listener setup error", authError);
-      }
     }
 
     // Cleanup function
@@ -122,26 +109,15 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
     setLoading(true);
     setError(null);
 
+    // Additional validation
     try {
       const result = await anonymousAuthService.signInAnonymously(auth);
       handleAuthStateChange(result.user);
-
-      if (__DEV__) {
-         
-        console.log("[useAnonymousAuth] Successfully signed in anonymously", {
-          uid: result.anonymousUser.uid,
-          wasAlreadySignedIn: result.wasAlreadySignedIn,
-        });
-      }
 
       return result;
     } catch (err) {
       const authError = err instanceof Error ? err : new Error('Anonymous sign in failed');
       setError(authError);
-      if (__DEV__) {
-         
-        console.error("[useAnonymousAuth] Sign in error", authError);
-      }
       throw authError;
     } finally {
       setLoading(false);

@@ -38,8 +38,9 @@
     "noImplicitOverride": false,
     /* Completeness */
     "skipLibCheck": true,
-    /* React Native specific */
-    "allowJs": false,
+    "skipDefaultLibCheck": true,
+    /* Advanced - Only check type definitions, not source files */
+    "allowJs": true,
     "checkJs": false,
     "types": [
       "node"
@@ -50,10 +51,15 @@
   ],
   "exclude": [
     "node_modules",
+    "dist",
     "lib",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx"
-  ]
+  ],
+  "ts-node": {
+    "transpileOnly": true,
+    "files": false
+  }
 }

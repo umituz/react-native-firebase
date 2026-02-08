@@ -17,23 +17,34 @@ const QUOTA_ERROR_MESSAGES = [
 ];
 
 /**
+ * Type guard for error with code property
+ */
+function hasCodeProperty(error: unknown): error is { code: string } {
+    return typeof error === 'object' && error !== null && 'code' in error && typeof (error as { code: unknown }).code === 'string';
+}
+
+/**
+ * Type guard for error with message property
+ */
+function hasMessageProperty(error: unknown): error is { message: string } {
+    return typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message: unknown }).message === 'string';
+}
+
+/**
  * Check if error is a Firestore quota error
  */
 export function isQuotaError(error: unknown): boolean {
     if (!error || typeof error !== 'object') return false;
 
-    const code = 'code' in error && typeof (error as Record<string, unknown>).code === 'string'
-        ? (error as Record<string, unknown>).code as string
-        : undefined;
-    const message = 'message' in error && typeof (error as Record<string, unknown>).message === 'string'
-        ? (error as Record<string, unknown>).message as string
-        : undefined;
-
-    if (code && QUOTA_ERROR_CODES.some((c) => code.includes(c))) {
-        return true;
+    if (hasCodeProperty(error)) {
+        const code = error.code;
+        if (QUOTA_ERROR_CODES.some((c) => code.includes(c))) {
+            return true;
+        }
     }
 
-    if (message) {
+    if (hasMessageProperty(error)) {
+        const message = error.message;
         const lowerMessage = message.toLowerCase();
         return QUOTA_ERROR_MESSAGES.some((m) => lowerMessage.includes(m));
     }
@@ -47,13 +58,13 @@ export function isQuotaError(error: unknown): boolean {
 export function isRetryableError(error: unknown): boolean {
     if (!error || typeof error !== 'object') return false;
 
-    const code = 'code' in error && typeof (error as Record<string, unknown>).code === 'string'
-        ? (error as Record<string, unknown>).code as string
-        : undefined;
+    if (hasCodeProperty(error)) {
+        const code = error.code;
+        const retryableCodes = ['unavailable', 'deadline-exceeded', 'aborted'];
+        return retryableCodes.some((c) => code.includes(c));
+    }
 
-    const retryableCodes = ['unavailable', 'deadline-exceeded', 'aborted'];
-
-    return code ? retryableCodes.some((c) => code.includes(c)) : false;
+    return false;
 }
 
 /**

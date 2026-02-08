@@ -4,15 +4,7 @@
  * Domain-Driven Design: Error types for Firestore operations
  */
 
-if (__DEV__) {
-  console.log('📍 [LIFECYCLE] FirebaseFirestoreError.ts - Module loading START');
-}
-
 import { FirebaseError } from '../../../domain/errors/FirebaseError';
-
-if (__DEV__) {
-  console.log('📍 [LIFECYCLE] FirebaseFirestoreError.ts - FirebaseError imported:', typeof FirebaseError);
-}
 
 /**
  * Firestore Error

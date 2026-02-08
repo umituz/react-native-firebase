@@ -3,14 +3,6 @@
  *
  * Generic types for cursor-based pagination in Firestore.
  * Used across hundreds of apps for consistent pagination interface.
- *
- * @example
- * ```typescript
- * const result: PaginatedResult<Post> = await repository.getPosts({ limit: 10 });
- * console.log(result.items); // Post[]
- * console.log(result.hasMore); // boolean
- * console.log(result.nextCursor); // string | null
- * ```
  */
 
 /**

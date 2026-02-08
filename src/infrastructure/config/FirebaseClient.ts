@@ -16,8 +16,6 @@
  * - Dependency Inversion: Depends on abstractions (interfaces), not concrete implementations
  */
 
-if (__DEV__) console.log("📍 [LIFECYCLE] FirebaseClient.ts - Module loading");
-
 import type { FirebaseConfig } from '../../domain/value-objects/FirebaseConfig';
 import type { IFirebaseClient } from '../../application/ports/IFirebaseClient';
 import type { FirebaseApp } from './initializers/FirebaseAppInitializer';
@@ -143,13 +141,6 @@ export async function initializeAllFirebaseServices(
   }
 
   const { auth } = await FirebaseServiceInitializer.initializeServices(options);
-
-  if (__DEV__) {
-    console.log('[Firebase] All services initialized:', {
-      app: !!app,
-      auth: !!auth,
-    });
-  }
 
   return {
     app,

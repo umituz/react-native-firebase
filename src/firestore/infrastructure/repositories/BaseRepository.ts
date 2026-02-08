@@ -14,8 +14,6 @@
  * It provides a consistent interface for Firestore operations.
  */
 
-if (__DEV__) console.log("📍 [LIFECYCLE] BaseRepository.ts - Module loading");
-
 import type { Firestore } from "firebase/firestore";
 import { getFirestore } from "../config/FirestoreClient";
 import {
@@ -119,6 +117,11 @@ export class BaseRepository {
       if (this.isQuotaError(error)) {
         this.handleQuotaError(error);
       }
+      // Log the error for debugging
+      if (__DEV__) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('[BaseRepository] Operation failed:', errorMessage);
+      }
       throw error;
     }
   }
@@ -128,8 +131,5 @@ export class BaseRepository {
    */
   destroy(): void {
     this.isDestroyed = true;
-    if (__DEV__) {
-      console.log('[BaseRepository] Repository destroyed');
-    }
   }
 }

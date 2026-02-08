@@ -22,29 +22,13 @@ export class FirebaseServiceInitializer {
   static async initializeServices(
     options?: ServiceInitializationOptions
   ): Promise<ServiceInitializationResult> {
-    if (__DEV__) {
-      console.log('[Firebase] Initializing auth service...');
-    }
-
     let auth: unknown = null;
     if (options?.authInitializer) {
       try {
         auth = await options.authInitializer();
-        if (__DEV__) {
-          console.log('[Firebase] Auth initialized via callback');
-        }
       } catch (error) {
-        if (__DEV__) {
-          console.warn(
-            '[Firebase] Auth initialization failed:',
-            error instanceof Error ? error.message : 'Unknown error'
-          );
-        }
+        // Silently fail, auth initialization is optional
       }
-    }
-
-    if (__DEV__) {
-      console.log('[Firebase] Auth service initialized:', !!auth);
     }
 
     return { auth };

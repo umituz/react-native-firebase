@@ -11,22 +11,12 @@
  * - @umituz/react-native-firebase/storage
  */
 
-if (__DEV__) {
-  console.log("📍 [LIFECYCLE] @umituz/react-native-firebase/index.ts - START");
-}
-
 // Core Errors
 export {
   FirebaseError,
   FirebaseInitializationError,
   FirebaseConfigurationError,
 } from "./domain/errors/FirebaseError";
-
-if (__DEV__) {
-  console.log(
-    "📍 [LIFECYCLE] @umituz/react-native-firebase/index.ts - Core errors exported",
-  );
-}
 
 // Core Types
 export type { FirebaseConfig } from "./domain/value-objects/FirebaseConfig";

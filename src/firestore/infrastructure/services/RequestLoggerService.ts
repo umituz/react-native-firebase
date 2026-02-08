@@ -26,24 +26,6 @@ export class RequestLoggerService {
       this.logs.shift();
     }
 
-    // Log Firestore operations in development mode
-    if (__DEV__) {
-      const prefix = fullLog.cached ? '[Firestore Cache]' : '[Firestore]';
-      const operation = fullLog.type.toUpperCase();
-      const status = fullLog.success ? '✓' : '✗';
-      const details = fullLog.documentId
-        ? `${fullLog.collection}/${fullLog.documentId}`
-        : fullLog.collection;
-
-      if (fullLog.success) {
-         
-        console.log(`${prefix} ${status} ${operation}: ${details}`);
-      } else {
-         
-        console.error(`${prefix} ${status} ${operation}: ${details}`, fullLog.error);
-      }
-    }
-
     this.notifyListeners(fullLog);
   }
 
@@ -125,11 +107,7 @@ export class RequestLoggerService {
       try {
         listener(log);
       } catch (error) {
-         
-        if (__DEV__) {
-           
-          console.error('[RequestLogger] Listener error:', error);
-        }
+        // Silently ignore listener errors
       }
     });
   }

@@ -26,15 +26,8 @@ export class FirebaseAuthInitializer {
    * Initialize Firebase Auth with persistence support
    */
   static initialize(app: FirebaseApp, config?: FirebaseAuthConfig): Auth | null {
-    if (__DEV__) console.log('[Firebase Auth] Initializing...');
-
     try {
       const auth = this.initializeWithPersistence(app, config);
-
-      if (auth && __DEV__) {
-        console.log('[Firebase Auth] Successfully initialized');
-      }
-
       return auth;
     } catch (error: unknown) {
       return this.handleInitializationError(error, app);
@@ -45,12 +38,7 @@ export class FirebaseAuthInitializer {
     const errorCode = (error as { code?: string })?.code;
 
     if (errorCode === 'auth/already-initialized') {
-      if (__DEV__) console.log('[Firebase Auth] Already initialized, returning existing instance');
       return this.getExistingAuth(app);
-    }
-
-    if (__DEV__) {
-      console.warn('[Firebase Auth] Initialization error:', error);
     }
 
     return this.getExistingAuth(app);
@@ -60,9 +48,6 @@ export class FirebaseAuthInitializer {
     try {
       return getAuth(app);
     } catch (getAuthError) {
-      if (__DEV__) {
-        console.warn('[Firebase Auth] Failed to get auth instance:', getAuthError);
-      }
       return null;
     }
   }
@@ -78,16 +63,10 @@ export class FirebaseAuthInitializer {
         removeItem: (key: string) => AsyncStorage.removeItem(key),
       };
 
-      if (__DEV__) console.log('[Firebase Auth] Initializing with AsyncStorage persistence');
-
       return initializeAuth(app, {
         persistence: getReactNativePersistence(storage),
       });
     } catch (error) {
-      if (__DEV__) {
-        console.warn('[Firebase Auth] Persistence initialization failed:', error);
-      }
-
       return this.getExistingAuth(app);
     }
   }
