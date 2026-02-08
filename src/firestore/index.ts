@@ -120,6 +120,8 @@ export {
   withFirestoreBool,
   createErrorResult,
   createSuccessResult,
+  runTransaction,
+  serverTimestamp,
 } from './utils/firestore-helper';
 export type { FirestoreResult, NoDbResult } from './utils/firestore-helper';
 

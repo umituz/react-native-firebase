@@ -90,3 +90,35 @@ export function createErrorResult<T>(message: string, code: string): FirestoreRe
 export function createSuccessResult<T>(data?: T): FirestoreResult<T> {
   return { success: true, data };
 }
+
+// ---------------------------------------------------------------------------
+// Transaction & Timestamp Wrappers (Facade Pattern)
+// ---------------------------------------------------------------------------
+
+import { 
+  runTransaction as fbRunTransaction, 
+  serverTimestamp as fbServerTimestamp,
+  type Transaction 
+} from "firebase/firestore";
+
+/**
+ * Execute a transaction with automatic DB instance check.
+ * Wraps the Firebase runTransaction to ensure the DB is initialized.
+ */
+export async function runTransaction<T>(
+  updateFunction: (transaction: Transaction) => Promise<T>
+): Promise<T> {
+  const db = getDb();
+  if (!db) {
+    throw new Error("[runTransaction] Firestore not initialized");
+  }
+  return fbRunTransaction(db, updateFunction);
+}
+
+/**
+ * Get the server timestamp (Sentinel value).
+ * Wraps Firebase serverTimestamp to avoid direct dependency.
+ */
+export function serverTimestamp() {
+  return fbServerTimestamp();
+}

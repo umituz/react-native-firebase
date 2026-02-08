@@ -86,7 +86,16 @@ export {
 export { BaseRepository } from "./firestore/infrastructure/repositories/BaseRepository";
 export { FirestorePathResolver } from "./firestore/utils/path-resolver";
 export { PaginationHelper } from "./firestore/utils/pagination.helper";
-export type { Timestamp } from "firebase/firestore";
+
+export { Timestamp } from "firebase/firestore";
+export type {
+  Transaction,
+  DocumentReference,
+  WriteBatch,
+  DocumentSnapshot,
+  QuerySnapshot,
+  Firestore,
+} from "firebase/firestore";
 
 // Firestore Helper Utilities
 export {
@@ -96,6 +105,8 @@ export {
   withFirestoreBool,
   createErrorResult,
   createSuccessResult,
+  runTransaction,
+  serverTimestamp,
 } from "./firestore/utils/firestore-helper";
 export type { FirestoreResult, NoDbResult } from "./firestore/utils/firestore-helper";
 
