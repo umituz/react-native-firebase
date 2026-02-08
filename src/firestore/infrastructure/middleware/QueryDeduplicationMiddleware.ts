@@ -8,8 +8,8 @@ import { generateQueryKey } from '../../utils/deduplication/query-key-generator.
 import { PendingQueryManager } from '../../utils/deduplication/pending-query-manager.util';
 import { TimerManager } from '../../utils/deduplication/timer-manager.util';
 
-const DEDUPLICATION_WINDOW_MS = 1000; // 1 second
-const CLEANUP_INTERVAL_MS = 5000; // 5 seconds
+const DEDUPLICATION_WINDOW_MS = 1000;
+const CLEANUP_INTERVAL_MS = 5000;
 
 export class QueryDeduplicationMiddleware {
   private readonly queryManager: PendingQueryManager;
@@ -24,9 +24,6 @@ export class QueryDeduplicationMiddleware {
     this.timerManager.start();
   }
 
-  /**
-   * Deduplicate a query
-   */
   async deduplicate<T>(
     queryKey: QueryKey,
     queryFn: () => Promise<T>,
@@ -46,31 +43,20 @@ export class QueryDeduplicationMiddleware {
     return promise;
   }
 
-  /**
-   * Clear all pending queries
-   */
   clear(): void {
     this.queryManager.clear();
   }
 
-  /**
-   * Destroy middleware and cleanup resources
-   */
   destroy(): void {
     this.timerManager.destroy();
     this.queryManager.clear();
   }
 
-  /**
-   * Get pending queries count
-   */
   getPendingCount(): number {
     return this.queryManager.size();
   }
 }
 
 export const queryDeduplicationMiddleware = new QueryDeduplicationMiddleware();
-
-// Re-export types for convenience
 export type { QueryKey };
 

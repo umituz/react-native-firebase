@@ -5,7 +5,6 @@
 
 export type { Firestore } from "../infrastructure/config/FirestoreClient";
 
-// Re-export result utilities
 export {
   createErrorResult,
   createSuccessResult,
@@ -16,12 +15,10 @@ export {
   NO_DB_ERROR,
 } from "./result/result.util";
 
-// Re-export operation utilities
 export {
   withFirestore,
   withFirestoreVoid,
   withFirestoreBool,
 } from "./operation/operation-executor.util";
 
-// Re-export transaction utilities
 export { runTransaction, serverTimestamp } from "./transaction/transaction.util";

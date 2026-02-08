@@ -124,5 +124,4 @@ export {
 } from './utils/firestore-helper';
 export type { FirestoreResult, NoDbResult } from './utils/firestore-helper';
 
-// Re-export Firestore types
 export type { Timestamp } from 'firebase/firestore';

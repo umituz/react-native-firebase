@@ -20,9 +20,6 @@ export interface QueryBuilderOptions {
   cursorValue?: number;
 }
 
-/**
- * Build Firestore query with advanced filtering support
- */
 export function buildQuery(
   db: Firestore,
   options: QueryBuilderOptions,
@@ -39,12 +36,10 @@ export function buildQuery(
   const collectionRef = collection(db, collectionName);
   let q: Query = collectionRef;
 
-  // Apply base filters
   for (const filter of baseFilters) {
     q = applyFieldFilter(q, filter);
   }
 
-  // Apply modifiers in correct order
   q = applyDateRange(q, dateRange);
   q = applySort(q, sort);
   q = applyCursor(q, cursorValue);
@@ -53,6 +48,5 @@ export function buildQuery(
   return q;
 }
 
-// Re-export filter utilities for convenience
 export { createInFilter, createEqualFilter, createFieldFilter };
 export type { FieldFilter, SortOptions, DateRangeOptions };
