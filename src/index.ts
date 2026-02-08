@@ -76,7 +76,6 @@ export type {
 
 // Firestore Helper Utilities
 export {
-  getDb,
   withFirestore,
   withFirestoreVoid,
   withFirestoreBool,

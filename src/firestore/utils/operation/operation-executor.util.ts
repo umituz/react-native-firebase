@@ -4,7 +4,7 @@
  */
 
 import type { Firestore } from "../../infrastructure/config/FirestoreClient";
-import { getDb } from "../firestore-helper";
+import { getFirestore } from "../../infrastructure/config/FirestoreClient";
 import type { FirestoreResult } from "../result/result.util";
 import { NO_DB_ERROR } from "../result/result.util";
 
@@ -15,7 +15,7 @@ import { NO_DB_ERROR } from "../result/result.util";
 export async function withFirestore<T>(
   operation: (db: Firestore) => Promise<FirestoreResult<T>>,
 ): Promise<FirestoreResult<T>> {
-  const db = getDb();
+  const db = getFirestore();
   if (!db) {
     return NO_DB_ERROR as FirestoreResult<T>;
   }
@@ -28,7 +28,7 @@ export async function withFirestore<T>(
 export async function withFirestoreVoid(
   operation: (db: Firestore) => Promise<void>,
 ): Promise<void> {
-  const db = getDb();
+  const db = getFirestore();
   if (!db) {
     return;
   }
@@ -41,7 +41,7 @@ export async function withFirestoreVoid(
 export async function withFirestoreBool(
   operation: (db: Firestore) => Promise<boolean>,
 ): Promise<boolean> {
-  const db = getDb();
+  const db = getFirestore();
   if (!db) {
     return false;
   }

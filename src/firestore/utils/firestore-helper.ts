@@ -3,7 +3,6 @@
  * Provides common patterns for Firestore operations with error handling
  */
 
-export { getFirestore } from "../infrastructure/config/FirestoreClient";
 export type { Firestore } from "../infrastructure/config/FirestoreClient";
 
 // Re-export result utilities

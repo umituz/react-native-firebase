@@ -8,7 +8,7 @@ import {
   serverTimestamp as fbServerTimestamp,
   type Transaction,
 } from "firebase/firestore";
-import { getDb } from "../firestore-helper";
+import { getFirestore } from "../../infrastructure/config/FirestoreClient";
 import type { Firestore } from "../../infrastructure/config/FirestoreClient";
 
 /**
@@ -18,7 +18,7 @@ import type { Firestore } from "../../infrastructure/config/FirestoreClient";
 export async function runTransaction<T>(
   updateFunction: (transaction: Transaction) => Promise<T>
 ): Promise<T> {
-  const db = getDb();
+  const db = getFirestore();
   if (!db) {
     throw new Error("[runTransaction] Firestore database is not initialized. Please ensure Firebase is properly initialized before running transactions.");
   }

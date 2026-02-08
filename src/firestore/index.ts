@@ -114,7 +114,6 @@ export {
 
 // Firestore Helper Utilities
 export {
-  getDb,
   withFirestore,
   withFirestoreVoid,
   withFirestoreBool,
