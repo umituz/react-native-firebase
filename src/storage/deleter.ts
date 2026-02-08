@@ -32,7 +32,7 @@ function extractStoragePath(downloadUrl: string): string | null {
         }
 
         return decodeURIComponent(pathMatch[1]);
-    } catch (error) {
+    } catch {
         return null;
     }
 }
@@ -60,7 +60,7 @@ export async function deleteStorageFile(
         await deleteObject(storageRef);
 
         return { success: true, storagePath };
-    } catch (error) {
+    } catch {
         return { success: false, storagePath };
     }
 }

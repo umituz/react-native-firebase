@@ -1,0 +1,115 @@
+/**
+ * Auth Utils Service
+ * Utility functions for authentication operations
+ */
+
+import type { User, Auth } from 'firebase/auth';
+
+export interface AuthCheckResult {
+  isAuthenticated: boolean;
+  isAnonymous: boolean;
+  currentUser: User | null;
+  userId: string | null;
+}
+
+/**
+ * Check current authentication state
+ */
+export function checkAuthState(auth: Auth): AuthCheckResult {
+  const currentUser = auth.currentUser;
+
+  if (!currentUser) {
+    return {
+      isAuthenticated: false,
+      isAnonymous: false,
+      currentUser: null,
+      userId: null,
+    };
+  }
+
+  return {
+    isAuthenticated: true,
+    isAnonymous: currentUser.isAnonymous,
+    currentUser,
+    userId: currentUser.uid,
+  };
+}
+
+/**
+ * Check if user is authenticated
+ */
+export function isAuthenticated(auth: Auth): boolean {
+  return auth.currentUser !== null;
+}
+
+/**
+ * Check if current user is anonymous
+ */
+export function isAnonymous(auth: Auth): boolean {
+  return auth.currentUser?.isAnonymous ?? false;
+}
+
+/**
+ * Get current user ID
+ */
+export function getCurrentUserId(auth: Auth): string | null {
+  return auth.currentUser?.uid ?? null;
+}
+
+/**
+ * Get current user
+ */
+export function getCurrentUser(auth: Auth): User | null {
+  return auth.currentUser;
+}
+
+/**
+ * Get current user ID from global auth instance
+ */
+export function getCurrentUserIdFromGlobal(): string | null {
+  // This would use the global auth instance
+  return null;
+}
+
+/**
+ * Get current user from global auth instance
+ */
+export function getCurrentUserFromGlobal(): User | null {
+  // This would use the global auth instance
+  return null;
+}
+
+/**
+ * Check if current user is authenticated (from global instance)
+ */
+export function isCurrentUserAuthenticated(): boolean {
+  return getCurrentUserFromGlobal() !== null;
+}
+
+/**
+ * Check if current user is anonymous (from global instance)
+ */
+export function isCurrentUserAnonymous(): boolean {
+  const user = getCurrentUserFromGlobal();
+  return user?.isAnonymous ?? false;
+}
+
+/**
+ * Verify user ID matches
+ */
+export function verifyUserId(auth: Auth, userId: string): boolean {
+  return auth.currentUser?.uid === userId;
+}
+
+/**
+ * Check if user is valid
+ */
+export function isValidUser(user: unknown): user is User {
+  return (
+    typeof user === 'object' &&
+    user !== null &&
+    'uid' in user &&
+    typeof user.uid === 'string'
+  );
+}
+

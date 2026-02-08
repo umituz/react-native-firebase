@@ -31,7 +31,7 @@ export function getDb(): Firestore | null {
  */
 export async function withFirestore<T>(
   operation: (db: Firestore) => Promise<FirestoreResult<T>>,
-  logTag?: string
+  _logTag?: string
 ): Promise<FirestoreResult<T>> {
   const db = getDb();
   if (!db) {
@@ -45,7 +45,7 @@ export async function withFirestore<T>(
  */
 export async function withFirestoreVoid(
   operation: (db: Firestore) => Promise<void>,
-  logTag?: string
+  _logTag?: string
 ): Promise<void> {
   const db = getDb();
   if (!db) {
@@ -59,7 +59,7 @@ export async function withFirestoreVoid(
  */
 export async function withFirestoreBool(
   operation: (db: Firestore) => Promise<boolean>,
-  logTag?: string
+  _logTag?: string
 ): Promise<boolean> {
   const db = getDb();
   if (!db) {

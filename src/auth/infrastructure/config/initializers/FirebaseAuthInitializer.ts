@@ -47,7 +47,7 @@ export class FirebaseAuthInitializer {
   private static getExistingAuth(app: FirebaseApp): Auth | null {
     try {
       return getAuth(app);
-    } catch (getAuthError) {
+    } catch {
       return null;
     }
   }
@@ -66,7 +66,7 @@ export class FirebaseAuthInitializer {
       return initializeAuth(app, {
         persistence: getReactNativePersistence(storage),
       });
-    } catch (error) {
+    } catch {
       return this.getExistingAuth(app);
     }
   }

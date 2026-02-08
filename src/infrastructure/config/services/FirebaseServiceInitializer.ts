@@ -26,7 +26,7 @@ export class FirebaseServiceInitializer {
     if (options?.authInitializer) {
       try {
         auth = await options.authInitializer();
-      } catch (error) {
+      } catch {
         // Silently fail, auth initialization is optional
       }
     }

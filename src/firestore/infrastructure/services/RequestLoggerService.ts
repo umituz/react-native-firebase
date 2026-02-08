@@ -106,7 +106,7 @@ export class RequestLoggerService {
     this.listeners.forEach((listener) => {
       try {
         listener(log);
-      } catch (error) {
+      } catch {
         // Silently ignore listener errors
       }
     });
