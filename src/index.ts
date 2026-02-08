@@ -8,7 +8,6 @@
  * Module-specific exports available via:
  * - @umituz/react-native-firebase/auth
  * - @umituz/react-native-firebase/firestore
- * - @umituz/react-native-firebase/storage
  */
 
 // Core Errors

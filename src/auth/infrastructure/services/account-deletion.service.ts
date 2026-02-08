@@ -9,8 +9,8 @@ import {
   reauthenticateWithApple,
   reauthenticateWithPassword,
   reauthenticateWithGoogle,
-  toAuthError,
 } from "./reauthentication.service";
+import { toAuthErrorInfo } from "../../../domain/utils/error-handler.util";
 import type { AccountDeletionResult, AccountDeletionOptions } from "./reauthentication.types";
 
 export type { AccountDeletionResult, AccountDeletionOptions } from "./reauthentication.types";
@@ -34,7 +34,7 @@ export async function deleteCurrentUser(
     await deleteUser(user);
     return { success: true };
   } catch (error: unknown) {
-    const authErr = toAuthError(error);
+    const authErr = toAuthErrorInfo(error);
     if (authErr.code === "auth/requires-recent-login" && (options.autoReauthenticate || options.password || options.googleIdToken)) {
       const reauth = await attemptReauth(user, options);
       if (reauth) return reauth;
@@ -64,7 +64,7 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
       await deleteUser(user);
       return { success: true };
     } catch (err: unknown) {
-      const authErr = toAuthError(err);
+      const authErr = toAuthErrorInfo(err);
       return { success: false, error: { ...authErr, requiresReauth: false } };
     }
   }
@@ -77,7 +77,7 @@ export async function deleteUserAccount(user: User | null): Promise<AccountDelet
     await deleteUser(user);
     return { success: true };
   } catch (error: unknown) {
-    const authErr = toAuthError(error);
+    const authErr = toAuthErrorInfo(error);
     return { success: false, error: { ...authErr, requiresReauth: authErr.code === "auth/requires-recent-login" } };
   }
 }

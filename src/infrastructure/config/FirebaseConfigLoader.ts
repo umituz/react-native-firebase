@@ -7,6 +7,11 @@
  */
 
 import type { FirebaseConfig } from '../../domain/value-objects/FirebaseConfig';
+import {
+  isValidString,
+  isValidFirebaseApiKey,
+  isValidFirebaseAuthDomain,
+} from '../../domain/utils/validation.util';
 
 type ConfigKey = 'apiKey' | 'authDomain' | 'projectId' | 'storageBucket' | 'messagingSenderId' | 'appId';
 
@@ -27,7 +32,7 @@ function getEnvValue(key: ConfigKey): string {
   const keys = ENV_KEYS[key];
   for (const envKey of keys) {
     const value = process.env[`${EXPO_PREFIX}${envKey}`] || process.env[envKey];
-    if (value?.trim()) return value;
+    if (isValidString(value)) return value;
   }
   return '';
 }
@@ -63,15 +68,6 @@ function getExpoValue(key: ConfigKey, expoConfig: Record<string, string>): strin
 }
 
 /**
- * Validate Firebase API key format
- */
-function validateApiKey(apiKey: string): boolean {
-  // Firebase API keys typically start with "AIza" followed by 35 characters
-  const apiKeyPattern = /^AIza[0-9A-Za-z_-]{35}$/;
-  return apiKeyPattern.test(apiKey);
-}
-
-/**
  * Load Firebase configuration from Constants and environment variables
  */
 export function loadFirebaseConfig(): FirebaseConfig | null {
@@ -90,7 +86,7 @@ export function loadFirebaseConfig(): FirebaseConfig | null {
   const authDomain = config.authDomain?.trim();
   const projectId = config.projectId?.trim();
 
-  if (!apiKey || !authDomain || !projectId) {
+  if (!isValidString(apiKey) || !isValidString(authDomain) || !isValidString(projectId)) {
     if (__DEV__) {
       console.error('[FirebaseConfigLoader] Missing required configuration fields');
     }
@@ -98,7 +94,7 @@ export function loadFirebaseConfig(): FirebaseConfig | null {
   }
 
   // Validate API key format
-  if (!validateApiKey(apiKey)) {
+  if (!isValidFirebaseApiKey(apiKey)) {
     if (__DEV__) {
       console.error('[FirebaseConfigLoader] Invalid API key format');
     }
@@ -106,7 +102,7 @@ export function loadFirebaseConfig(): FirebaseConfig | null {
   }
 
   // Validate authDomain format (should be like "projectId.firebaseapp.com")
-  if (!authDomain.includes('.firebaseapp.com') && !authDomain.includes('.web.app')) {
+  if (!isValidFirebaseAuthDomain(authDomain)) {
     if (__DEV__) {
       console.warn('[FirebaseConfigLoader] Unusual authDomain format, expected "projectId.firebaseapp.com" or similar');
     }

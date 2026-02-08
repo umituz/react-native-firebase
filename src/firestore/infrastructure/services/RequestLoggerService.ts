@@ -4,6 +4,7 @@
  */
 
 import type { RequestLog, RequestStats, RequestType } from '../../domain/entities/RequestLog';
+import { generateUniqueId } from '../../../domain/utils/id-generator.util';
 
 export class RequestLoggerService {
   private logs: RequestLog[] = [];
@@ -16,7 +17,7 @@ export class RequestLoggerService {
   logRequest(log: Omit<RequestLog, 'id' | 'timestamp'>): void {
     const fullLog: RequestLog = {
       ...log,
-      id: this.generateId(),
+      id: generateUniqueId(),
       timestamp: Date.now(),
     };
 
@@ -90,13 +91,6 @@ export class RequestLoggerService {
     return () => {
       this.listeners.delete(listener);
     };
-  }
-
-  /**
-   * Generate unique ID
-   */
-  private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   }
 
   /**

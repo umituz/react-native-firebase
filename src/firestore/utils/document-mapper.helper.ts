@@ -22,6 +22,9 @@
  */
 
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { mapDocuments } from './mapper/base-mapper.util';
+import { mapWithEnrichment, mapWithBatchEnrichment } from './mapper/enrichment-mapper.util';
+import { mapWithMultipleEnrichments } from './mapper/multi-enrichment-mapper.util';
 
 export class DocumentMapperHelper<TSource, TEnrichment, TResult> {
   /**
@@ -49,20 +52,41 @@ export class DocumentMapperHelper<TSource, TEnrichment, TResult> {
     fetchEnrichment: (key: string) => Promise<TEnrichment | null>,
     combineData: (source: TSource, enrichment: TEnrichment) => TResult,
   ): Promise<TResult[]> {
-    const results: TResult[] = [];
+    return mapWithEnrichment(
+      docs,
+      extractSource,
+      getEnrichmentKey,
+      fetchEnrichment,
+      combineData,
+    );
+  }
 
-    for (const doc of docs) {
-      const source = extractSource(doc);
-      if (!source) continue;
-
-      const enrichmentKey = getEnrichmentKey(source);
-      const enrichment = await fetchEnrichment(enrichmentKey);
-      if (!enrichment) continue;
-
-      results.push(combineData(source, enrichment));
-    }
-
-    return results;
+  /**
+   * Map documents with batch enrichment (fetch all enrichments at once)
+   *
+   * More efficient than mapWithEnrichment when dealing with multiple documents.
+   *
+   * @param docs - Firestore document snapshots
+   * @param extractSource - Extract source data from document
+   * @param getEnrichmentKey - Get enrichment key from source
+   * @param fetchBatchEnrichments - Fetch all enrichments by keys in batch
+   * @param combineData - Combine source and enrichment into result
+   * @returns Array of enriched results
+   */
+  async mapWithBatchEnrichment(
+    docs: QueryDocumentSnapshot<DocumentData>[],
+    extractSource: (doc: QueryDocumentSnapshot<DocumentData>) => TSource | null,
+    getEnrichmentKey: (source: TSource) => string,
+    fetchBatchEnrichments: (keys: string[]) => Promise<Map<string, TEnrichment>>,
+    combineData: (source: TSource, enrichment: TEnrichment) => TResult,
+  ): Promise<TResult[]> {
+    return mapWithBatchEnrichment(
+      docs,
+      extractSource,
+      getEnrichmentKey,
+      fetchBatchEnrichments,
+      combineData,
+    );
   }
 
   /**
@@ -85,20 +109,13 @@ export class DocumentMapperHelper<TSource, TEnrichment, TResult> {
     fetchEnrichments: (keys: Record<string, string>) => Promise<TEnrichments | null>,
     combineData: (source: TSource, enrichments: TEnrichments) => TResult,
   ): Promise<TResult[]> {
-    const results: TResult[] = [];
-
-    for (const doc of docs) {
-      const source = extractSource(doc);
-      if (!source) continue;
-
-      const enrichmentKeys = getEnrichmentKeys(source);
-      const enrichments = await fetchEnrichments(enrichmentKeys);
-      if (!enrichments) continue;
-
-      results.push(combineData(source, enrichments));
-    }
-
-    return results;
+    return mapWithMultipleEnrichments(
+      docs,
+      extractSource,
+      getEnrichmentKeys,
+      fetchEnrichments,
+      combineData,
+    );
   }
 
   /**
@@ -112,16 +129,7 @@ export class DocumentMapperHelper<TSource, TEnrichment, TResult> {
     docs: QueryDocumentSnapshot<DocumentData>[],
     extractData: (doc: QueryDocumentSnapshot<DocumentData>) => TResult | null,
   ): TResult[] {
-    const results: TResult[] = [];
-
-    for (const doc of docs) {
-      const data = extractData(doc);
-      if (data != null) {
-        results.push(data);
-      }
-    }
-
-    return results;
+    return mapDocuments(docs, extractData);
   }
 }
 

@@ -5,6 +5,7 @@
 
 import type { User, Auth } from 'firebase/auth';
 import { getFirebaseAuth } from '../config/FirebaseAuthClient';
+import { isValidString } from '../../../domain/utils/validation.util';
 
 export interface AuthCheckResult {
   isAuthenticated: boolean;
@@ -120,7 +121,7 @@ export function isValidUser(user: unknown): user is User {
     typeof user === 'object' &&
     user !== null &&
     'uid' in user &&
-    typeof user.uid === 'string'
+    isValidString(user.uid)
   );
 }
 

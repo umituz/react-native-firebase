@@ -3,116 +3,25 @@
  * Prevents duplicate Firestore queries within a short time window
  */
 
-interface PendingQuery {
-  promise: Promise<unknown>;
-  timestamp: number;
-}
+import type { QueryKey } from '../../utils/deduplication/query-key-generator.util';
+import { generateQueryKey } from '../../utils/deduplication/query-key-generator.util';
+import { PendingQueryManager } from '../../utils/deduplication/pending-query-manager.util';
+import { TimerManager } from '../../utils/deduplication/timer-manager.util';
 
-interface QueryKey {
-  collection: string;
-  filters: string;
-  limit?: number;
-  orderBy?: string;
-}
+const DEDUPLICATION_WINDOW_MS = 1000; // 1 second
+const CLEANUP_INTERVAL_MS = 5000; // 5 seconds
 
 export class QueryDeduplicationMiddleware {
-  private pendingQueries = new Map<string, PendingQuery>();
-  private readonly DEDUPLICATION_WINDOW_MS = 1000; // 1 second
-  private readonly CLEANUP_INTERVAL_MS = 5000; // 5 seconds
-  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
+  private readonly queryManager: PendingQueryManager;
+  private readonly timerManager: TimerManager;
 
-  constructor() {
-    this.startCleanupTimer();
-  }
-
-  /**
-   * Start cleanup timer to prevent memory leaks
-   */
-  private startCleanupTimer(): void {
-    if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer);
-    }
-
-    this.cleanupTimer = setInterval(() => {
-      try {
-        this.cleanupExpiredQueries();
-      } catch {
-        // Silently handle cleanup errors to prevent timer from causing issues
-        // Clear all queries if cleanup fails to prevent memory leak
-        this.pendingQueries.clear();
-      }
-    }, this.CLEANUP_INTERVAL_MS);
-  }
-
-  /**
-   * Clean up expired queries to prevent memory leaks
-   */
-  private cleanupExpiredQueries(): void {
-    const now = Date.now();
-    for (const [key, query] of this.pendingQueries.entries()) {
-      if (now - query.timestamp > this.DEDUPLICATION_WINDOW_MS) {
-        this.pendingQueries.delete(key);
-      }
-    }
-  }
-
-  /**
-   * Generate query key from query parameters
-   */
-  private generateQueryKey(key: QueryKey): string {
-    const parts = [
-      key.collection,
-      key.filters,
-      key.limit?.toString() || '',
-      key.orderBy || '',
-    ];
-    return parts.join('|');
-  }
-
-  /**
-   * Check if query is already pending
-   */
-  private isQueryPending(key: string): boolean {
-    const pending = this.pendingQueries.get(key);
-    if (!pending) return false;
-
-    const age = Date.now() - pending.timestamp;
-    if (age > this.DEDUPLICATION_WINDOW_MS) {
-      this.pendingQueries.delete(key);
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Get pending query promise
-   */
-  private getPendingQuery(key: string): Promise<unknown> | null {
-    const pending = this.pendingQueries.get(key);
-    return pending ? pending.promise : null;
-  }
-
-  /**
-   * Add query to pending list with guaranteed cleanup
-   */
-  private addPendingQuery(key: string, promise: Promise<unknown>): void {
-    // Wrap the promise to ensure cleanup happens regardless of outcome
-    const wrappedPromise = promise
-      .catch((error) => {
-        // Re-throw to maintain original promise behavior
-        throw error;
-      })
-      .finally(() => {
-        // Guaranteed cleanup - runs for both resolve and reject
-        this.pendingQueries.delete(key);
-      });
-
-    // Store the wrapped promise with the finally handler attached
-    this.pendingQueries.set(key, {
-      promise: wrappedPromise,
-      timestamp: Date.now(),
+  constructor(deduplicationWindowMs: number = DEDUPLICATION_WINDOW_MS) {
+    this.queryManager = new PendingQueryManager(deduplicationWindowMs);
+    this.timerManager = new TimerManager({
+      cleanupIntervalMs: CLEANUP_INTERVAL_MS,
+      onCleanup: () => this.queryManager.cleanup(),
     });
+    this.timerManager.start();
   }
 
   /**
@@ -122,17 +31,17 @@ export class QueryDeduplicationMiddleware {
     queryKey: QueryKey,
     queryFn: () => Promise<T>,
   ): Promise<T> {
-    const key = this.generateQueryKey(queryKey);
+    const key = generateQueryKey(queryKey);
 
-    if (this.isQueryPending(key)) {
-      const pendingPromise = this.getPendingQuery(key);
+    if (this.queryManager.isPending(key)) {
+      const pendingPromise = this.queryManager.get(key);
       if (pendingPromise) {
         return pendingPromise as Promise<T>;
       }
     }
 
     const promise = queryFn();
-    this.addPendingQuery(key, promise);
+    this.queryManager.add(key, promise);
 
     return promise;
   }
@@ -141,27 +50,27 @@ export class QueryDeduplicationMiddleware {
    * Clear all pending queries
    */
   clear(): void {
-    this.pendingQueries.clear();
+    this.queryManager.clear();
   }
 
   /**
    * Destroy middleware and cleanup resources
    */
   destroy(): void {
-    if (this.cleanupTimer) {
-      clearInterval(this.cleanupTimer);
-      this.cleanupTimer = null;
-    }
-    this.pendingQueries.clear();
+    this.timerManager.destroy();
+    this.queryManager.clear();
   }
 
   /**
    * Get pending queries count
    */
   getPendingCount(): number {
-    return this.pendingQueries.size;
+    return this.queryManager.size();
   }
 }
 
 export const queryDeduplicationMiddleware = new QueryDeduplicationMiddleware();
+
+// Re-export types for convenience
+export type { QueryKey };
 
