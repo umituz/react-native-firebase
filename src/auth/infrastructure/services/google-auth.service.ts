@@ -9,6 +9,11 @@ import {
   type Auth,
 } from "firebase/auth";
 import type { GoogleAuthConfig, GoogleAuthResult } from "./google-auth.types";
+import {
+  createSuccessResult,
+  createFailureResult,
+  logAuthError,
+} from "./base/base-auth.service";
 
 /**
  * Google Auth Service
@@ -41,30 +46,10 @@ export class GoogleAuthService {
     try {
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
-
-      const isNewUser =
-        userCredential.user.metadata.creationTime ===
-        userCredential.user.metadata.lastSignInTime;
-
-      return {
-        success: true,
-        userCredential,
-        isNewUser,
-      };
+      return createSuccessResult(userCredential);
     } catch (error) {
-      if (__DEV__) {
-        console.error('[Firebase Auth] Google Sign-In failed:', error);
-      }
-
-      // Extract error code for better error handling
-      const errorCode = (error as { code?: string })?.code || 'unknown';
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-
-      return {
-        success: false,
-        error: errorMessage,
-        code: errorCode,
-      };
+      logAuthError('Google Sign-In', error);
+      return createFailureResult(error);
     }
   }
 }

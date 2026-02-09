@@ -2,10 +2,12 @@
  * Firebase Configuration Validator
  *
  * Single Responsibility: Validates Firebase configuration
+ * Uses centralized validation utilities from validation.util.ts
  */
 
 import type { FirebaseConfig } from '../../../domain/value-objects/FirebaseConfig';
 import { FirebaseConfigurationError } from '../../../domain/errors/FirebaseError';
+import { isValidString, isValidFirebaseApiKey, isValidFirebaseProjectId } from '../../../domain/utils/validation.util';
 
 /**
  * Validation rule interface
@@ -15,25 +17,28 @@ interface ValidationRule {
 }
 
 /**
- * Required field validation rule
+ * Required field validation rule using centralized validation
  */
 class RequiredFieldRule implements ValidationRule {
   constructor(
     private fieldName: string,
-    private getter: (config: FirebaseConfig) => string | undefined
+    private getter: (config: FirebaseConfig) => string | undefined,
+    private customValidator?: (value: string) => boolean
   ) {}
 
   validate(config: FirebaseConfig): void {
     const value = this.getter(config);
-    
-    if (!value || typeof value !== 'string') {
+
+    if (!isValidString(value)) {
       throw new FirebaseConfigurationError(
-        `Firebase ${this.fieldName} is required and must be a string`
+        `Firebase ${this.fieldName} is required and must be a non-empty string`
       );
     }
 
-    if (value.trim().length === 0) {
-      throw new FirebaseConfigurationError(`Firebase ${this.fieldName} cannot be empty`);
+    if (this.customValidator && !this.customValidator(value)) {
+      throw new FirebaseConfigurationError(
+        `Firebase ${this.fieldName} format is invalid`
+      );
     }
   }
 }
@@ -50,7 +55,7 @@ class PlaceholderRule implements ValidationRule {
 
   validate(config: FirebaseConfig): void {
     const value = this.getter(config);
-    
+
     if (value && value.includes(this.placeholder)) {
       throw new FirebaseConfigurationError(
         `Please replace placeholder values with actual Firebase credentials for ${this.fieldName}`
@@ -64,9 +69,9 @@ class PlaceholderRule implements ValidationRule {
  */
 export class FirebaseConfigValidator {
   private static rules: ValidationRule[] = [
-    new RequiredFieldRule('API Key', config => config.apiKey),
+    new RequiredFieldRule('API Key', config => config.apiKey, isValidFirebaseApiKey),
     new RequiredFieldRule('Auth Domain', config => config.authDomain),
-    new RequiredFieldRule('Project ID', config => config.projectId),
+    new RequiredFieldRule('Project ID', config => config.projectId, isValidFirebaseProjectId),
     new PlaceholderRule('API Key', config => config.apiKey, 'your_firebase_api_key'),
     new PlaceholderRule('Project ID', config => config.projectId, 'your-project-id'),
   ];
@@ -81,11 +86,3 @@ export class FirebaseConfigValidator {
     }
   }
 }
-
-
-
-
-
-
-
-

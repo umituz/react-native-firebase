@@ -12,6 +12,12 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
 import { generateNonce, hashNonce } from "./crypto.util";
 import type { AppleAuthResult } from "./apple-auth.types";
+import {
+  createSuccessResult,
+  createFailureResult,
+  logAuthError,
+  isCancellationError,
+} from "./base/base-auth.service";
 
 export class AppleAuthService {
   async isAvailable(): Promise<boolean> {
@@ -61,17 +67,9 @@ export class AppleAuthService {
       });
 
       const userCredential = await signInWithCredential(auth, credential);
-      const isNewUser =
-        userCredential.user.metadata.creationTime ===
-        userCredential.user.metadata.lastSignInTime;
-
-      return {
-        success: true,
-        userCredential,
-        isNewUser,
-      };
+      return createSuccessResult(userCredential);
     } catch (error) {
-      if (error instanceof Error && error.message.includes("ERR_CANCELED")) {
+      if (isCancellationError(error)) {
         return {
           success: false,
           error: "Apple Sign-In was cancelled",
@@ -79,16 +77,8 @@ export class AppleAuthService {
         };
       }
 
-      if (__DEV__) console.error('[Firebase Auth] Apple Sign-In failed:', error);
-
-      const errorCode = (error as { code?: string })?.code || 'unknown';
-      const errorMessage = error instanceof Error ? error.message : 'Apple sign-in failed';
-
-      return {
-        success: false,
-        error: errorMessage,
-        code: errorCode,
-      };
+      logAuthError('Apple Sign-In', error);
+      return createFailureResult(error);
     }
   }
 

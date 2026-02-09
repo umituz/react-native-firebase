@@ -3,36 +3,18 @@
  * Manages the state of Firebase initialization
  *
  * Single Responsibility: Only manages initialization state
+ * Uses generic ClientStateManager for shared functionality
  */
 
 import type { FirebaseApp } from '../initializers/FirebaseAppInitializer';
+import { ClientStateManager } from '../base/ClientStateManager';
 
-export class FirebaseClientState {
-  private app: FirebaseApp | null = null;
-  private initializationError: string | null = null;
-
+export class FirebaseClientState extends ClientStateManager<FirebaseApp> {
   getApp(): FirebaseApp | null {
-    return this.app;
+    return this.getInstance();
   }
 
   setApp(app: FirebaseApp | null): void {
-    this.app = app;
-  }
-
-  isInitialized(): boolean {
-    return this.app !== null;
-  }
-
-  getInitializationError(): string | null {
-    return this.initializationError;
-  }
-
-  setInitializationError(error: string | null): void {
-    this.initializationError = error;
-  }
-
-  reset(): void {
-    this.app = null;
-    this.initializationError = null;
+    this.setInstance(app);
   }
 }

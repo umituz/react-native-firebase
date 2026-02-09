@@ -1,72 +1,68 @@
 /**
  * Firebase Auth Client - Infrastructure Layer
+ *
+ * Manages Firebase Authentication instance initialization
  */
 
 import type { Auth } from 'firebase/auth';
 import { getFirebaseApp } from '../../../infrastructure/config/FirebaseClient';
 import { FirebaseAuthInitializer } from './initializers/FirebaseAuthInitializer';
 import type { FirebaseAuthConfig } from '../../domain/value-objects/FirebaseAuthConfig';
+import { ServiceClientSingleton } from '../../../infrastructure/config/base/ServiceClientSingleton';
 
-class FirebaseAuthClientSingleton {
+/**
+ * Firebase Auth Client Singleton
+ */
+class FirebaseAuthClientSingleton extends ServiceClientSingleton<Auth, FirebaseAuthConfig> {
+  private constructor() {
+    super({
+      serviceName: 'FirebaseAuth',
+      initializer: (config?: FirebaseAuthConfig) => {
+        const app = getFirebaseApp();
+        if (!app) {
+          this.setError('Firebase App is not initialized');
+          return null;
+        }
+        const auth = FirebaseAuthInitializer.initialize(app, config);
+        if (!auth) {
+          this.setError('Auth initialization returned null');
+        }
+        return auth;
+      },
+    });
+  }
+
   private static instance: FirebaseAuthClientSingleton | null = null;
-  private auth: Auth | null = null;
-  private initializationError: string | null = null;
 
   static getInstance(): FirebaseAuthClientSingleton {
     if (!this.instance) this.instance = new FirebaseAuthClientSingleton();
     return this.instance;
   }
 
+  /**
+   * Initialize Auth with optional configuration
+   */
   initialize(config?: FirebaseAuthConfig): Auth | null {
-    if (this.auth) return this.auth;
-    if (this.initializationError) return null;
-
-    try {
-      const app = getFirebaseApp();
-      if (!app) return null;
-      this.auth = FirebaseAuthInitializer.initialize(app, config);
-      if (!this.auth) {
-        this.initializationError = "Auth initialization returned null";
-      }
-      return this.auth;
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      if (__DEV__) console.error('[FirebaseAuth] Init error:', message);
-      this.initializationError = message;
-      return null;
-    }
+    return super.initialize(config);
   }
 
+  /**
+   * Get Auth instance
+   */
   getAuth(): Auth | null {
-    // Don't retry if we already have an auth instance
-    if (this.auth) return this.auth;
-
-    // Don't retry if we already failed to initialize
-    if (this.initializationError) return null;
-
-    // Don't retry if Firebase app is not available
-    const app = getFirebaseApp();
-    if (!app) return null;
-
-    // Attempt initialization
-    this.initialize();
-    return this.auth;
-  }
-
-  getInitializationError(): string | null {
-    return this.initializationError;
-  }
-
-  reset(): void {
-    this.auth = null;
-    this.initializationError = null;
+    // Attempt initialization if not already initialized
+    if (!this.isInitialized() && !this.getInitializationError()) {
+      const app = getFirebaseApp();
+      if (app) this.initialize();
+    }
+    return this.getInstance();
   }
 }
 
 export const firebaseAuthClient = FirebaseAuthClientSingleton.getInstance();
 export const initializeFirebaseAuth = (c?: FirebaseAuthConfig) => firebaseAuthClient.initialize(c);
 export const getFirebaseAuth = () => firebaseAuthClient.getAuth();
-export const isFirebaseAuthInitialized = () => firebaseAuthClient.getAuth() !== null;
+export const isFirebaseAuthInitialized = () => firebaseAuthClient.isInitialized();
 export const getFirebaseAuthInitializationError = () => firebaseAuthClient.getInitializationError();
 export const resetFirebaseAuthClient = () => firebaseAuthClient.reset();
 

@@ -26,8 +26,15 @@ export function createErrorResult<T>(message: string, code: string): FirestoreRe
 /**
  * Create a standard success result
  */
-export function createSuccessResult<T>(data?: T): FirestoreResult<T> {
+export function createFirestoreSuccessResult<T>(data?: T): FirestoreResult<T> {
   return { success: true, data };
+}
+
+/**
+ * Create no-db error result with proper typing
+ */
+export function createNoDbErrorResult<T>(): FirestoreResult<T> {
+  return { success: false, error: NO_DB_ERROR.error };
 }
 
 /**
@@ -43,3 +50,6 @@ export function isSuccess<T>(result: FirestoreResult<T>): result is FirestoreRes
 export function isError<T>(result: FirestoreResult<T>): result is FirestoreResult<T> & { success: false } {
   return !result.success;
 }
+
+// Keep old function name for backwards compatibility
+export const createSuccessResult = createFirestoreSuccessResult;

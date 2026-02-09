@@ -8,6 +8,15 @@
 
 import type { FirestoreError } from 'firebase/firestore';
 import type { AuthError } from 'firebase/auth';
+import { hasCodeProperty } from '../utils/error-handler.util';
+
+/**
+ * Firebase error base interface
+ */
+interface FirebaseErrorBase {
+  code: string;
+  message: string;
+}
 
 /**
  * Check if error is a Firebase Firestore error
@@ -34,53 +43,53 @@ export function isAuthError(error: unknown): error is AuthError {
 }
 
 /**
+ * Check if error is a Firebase error (either Firestore or Auth)
+ */
+export function isFirebaseError(error: unknown): error is FirebaseErrorBase {
+  return isFirestoreError(error) || isAuthError(error);
+}
+
+/**
+ * Check if error has a specific code
+ */
+export function hasErrorCode(error: unknown, code: string): boolean {
+  return hasCodeProperty(error) && error.code === code;
+}
+
+/**
+ * Check if error code matches any of the provided codes
+ */
+export function hasAnyErrorCode(error: unknown, codes: string[]): boolean {
+  if (!hasCodeProperty(error)) return false;
+  return codes.includes(error.code);
+}
+
+/**
  * Check if error is a network error
  */
 export function isNetworkError(error: unknown): boolean {
-  if (!isFirestoreError(error) && !isAuthError(error)) {
-    return false;
-  }
-
-  const code = (error as FirestoreError | AuthError).code;
-  return (
-    code === 'unavailable' ||
-    code === 'network-request-failed' ||
-    code === 'timeout'
-  );
+  return hasAnyErrorCode(error, ['unavailable', 'network-request-failed', 'timeout']);
 }
 
 /**
  * Check if error is a permission denied error
  */
 export function isPermissionDeniedError(error: unknown): boolean {
-  if (!isFirestoreError(error) && !isAuthError(error)) {
-    return false;
-  }
-
-  const code = (error as FirestoreError | AuthError).code;
-  return code === 'permission-denied' || code === 'unauthorized';
+  return hasAnyErrorCode(error, ['permission-denied', 'unauthorized']);
 }
 
 /**
  * Check if error is a not found error
  */
 export function isNotFoundError(error: unknown): boolean {
-  if (!isFirestoreError(error)) {
-    return false;
-  }
-
-  return (error as FirestoreError).code === 'not-found';
+  return hasErrorCode(error, 'not-found');
 }
 
 /**
  * Check if error is a quota exceeded error
  */
 export function isQuotaExceededError(error: unknown): boolean {
-  if (!isFirestoreError(error)) {
-    return false;
-  }
-
-  return (error as FirestoreError).code === 'resource-exhausted';
+  return hasErrorCode(error, 'resource-exhausted');
 }
 
 /**
@@ -88,7 +97,7 @@ export function isQuotaExceededError(error: unknown): boolean {
  * Returns error message or unknown error message
  */
 export function getSafeErrorMessage(error: unknown): string {
-  if (isFirestoreError(error) || isAuthError(error)) {
+  if (isFirebaseError(error)) {
     return error.message;
   }
 
@@ -108,7 +117,7 @@ export function getSafeErrorMessage(error: unknown): string {
  * Returns error code or unknown error code
  */
 export function getSafeErrorCode(error: unknown): string {
-  if (isFirestoreError(error) || isAuthError(error)) {
+  if (hasCodeProperty(error)) {
     return error.code;
   }
 

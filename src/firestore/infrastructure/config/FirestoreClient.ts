@@ -11,17 +11,33 @@
 import type { Firestore } from 'firebase/firestore';
 import { getFirebaseApp } from '../../../infrastructure/config/FirebaseClient';
 import { FirebaseFirestoreInitializer } from './initializers/FirebaseFirestoreInitializer';
+import { ServiceClientSingleton } from '../../../infrastructure/config/base/ServiceClientSingleton';
 
 /**
  * Firestore Client Singleton
  * Manages Firestore initialization
  */
-class FirestoreClientSingleton {
-  private static instance: FirestoreClientSingleton | null = null;
-  private firestore: Firestore | null = null;
-  private initializationError: string | null = null;
+class FirestoreClientSingleton extends ServiceClientSingleton<Firestore> {
+  private constructor() {
+    super({
+      serviceName: 'Firestore',
+      initializer: () => {
+        const app = getFirebaseApp();
+        if (!app) {
+          this.setError('Firebase App is not initialized');
+          return null;
+        }
+        return FirebaseFirestoreInitializer.initialize(app);
+      },
+      autoInitializer: () => {
+        const app = getFirebaseApp();
+        if (!app) return null;
+        return FirebaseFirestoreInitializer.initialize(app);
+      },
+    });
+  }
 
-  private constructor() {}
+  private static instance: FirestoreClientSingleton | null = null;
 
   static getInstance(): FirestoreClientSingleton {
     if (!FirestoreClientSingleton.instance) {
@@ -30,44 +46,18 @@ class FirestoreClientSingleton {
     return FirestoreClientSingleton.instance;
   }
 
+  /**
+   * Initialize Firestore
+   */
   initialize(): Firestore | null {
-    if (this.firestore) return this.firestore;
-    if (this.initializationError) return null;
-
-    try {
-      const app = getFirebaseApp();
-      if (!app) return null;
-
-      this.firestore = FirebaseFirestoreInitializer.initialize(app);
-      return this.firestore;
-    } catch (error) {
-      this.initializationError =
-        error instanceof Error
-          ? error.message
-          : 'Failed to initialize Firestore client';
-      return null;
-    }
+    return super.initialize();
   }
 
+  /**
+   * Get Firestore instance with auto-initialization
+   */
   getFirestore(): Firestore | null {
-    if (!this.firestore && !this.initializationError) {
-      const app = getFirebaseApp();
-      if (app) this.initialize();
-    }
-    return this.firestore || null;
-  }
-
-  isInitialized(): boolean {
-    return this.firestore !== null;
-  }
-
-  getInitializationError(): string | null {
-    return this.initializationError;
-  }
-
-  reset(): void {
-    this.firestore = null;
-    this.initializationError = null;
+    return this.getInstance(true);
   }
 }
 
@@ -94,4 +84,3 @@ export function resetFirestoreClient(): void {
 }
 
 export type { Firestore } from 'firebase/firestore';
-

@@ -6,7 +6,7 @@
 import type { Firestore } from "../../infrastructure/config/FirestoreClient";
 import { getFirestore } from "../../infrastructure/config/FirestoreClient";
 import type { FirestoreResult } from "../result/result.util";
-import { NO_DB_ERROR } from "../result/result.util";
+import { createNoDbErrorResult } from "../result/result.util";
 
 /**
  * Execute a Firestore operation with automatic null check
@@ -17,7 +17,7 @@ export async function withFirestore<T>(
 ): Promise<FirestoreResult<T>> {
   const db = getFirestore();
   if (!db) {
-    return NO_DB_ERROR as FirestoreResult<T>;
+    return createNoDbErrorResult<T>();
   }
   return operation(db);
 }
