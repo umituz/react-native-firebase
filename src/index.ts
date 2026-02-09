@@ -67,12 +67,7 @@ export {
 // Firestore Repositories
 export {
   BaseRepository,
-  BaseQueryRepository,
-  BasePaginatedRepository,
 } from "./firestore/infrastructure/repositories/BaseRepository";
-export { BaseQueryRepository } from "./firestore/infrastructure/repositories/BaseQueryRepository";
-export { BasePaginatedRepository } from "./firestore/infrastructure/repositories/BasePaginatedRepository";
-
 export { Timestamp } from "firebase/firestore";
 export type {
   Transaction,
