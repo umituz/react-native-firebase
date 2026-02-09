@@ -8,7 +8,7 @@
 
 import type { FirestoreError } from 'firebase/firestore';
 import type { AuthError } from 'firebase/auth';
-import { hasCodeProperty } from '../utils/error-handler.util';
+import { hasCodeProperty } from '../utils/type-guards.util';
 
 /**
  * Firebase error base interface

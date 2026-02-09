@@ -9,7 +9,7 @@ import {
   type Transaction,
 } from "firebase/firestore";
 import { getFirestore } from "../../infrastructure/config/FirestoreClient";
-import type { Firestore } from "../../infrastructure/config/FirestoreClient";
+import { hasCodeProperty } from "../../../domain/utils/type-guards.util";
 
 /**
  * Execute a transaction with automatic DB instance check.
@@ -23,10 +23,10 @@ export async function runTransaction<T>(
     throw new Error("[runTransaction] Firestore database is not initialized. Please ensure Firebase is properly initialized before running transactions.");
   }
   try {
-    return await fbRunTransaction(db as Firestore, updateFunction);
+    return await fbRunTransaction(db, updateFunction);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorCode = error instanceof Error ? (error as { code?: string }).code : 'unknown';
+    const errorCode = hasCodeProperty(error) ? error.code : 'unknown';
 
     if (__DEV__) {
       console.error(`[runTransaction] Transaction failed (Code: ${errorCode}):`, errorMessage);

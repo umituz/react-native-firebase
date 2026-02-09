@@ -3,6 +3,8 @@
  * Centralized error handling utilities for Firebase operations
  */
 
+import { hasCodeProperty, hasMessageProperty, hasCodeAndMessageProperties } from './type-guards.util';
+
 /**
  * Standard error structure with code and message
  */
@@ -35,32 +37,6 @@ const QUOTA_ERROR_MESSAGES = [
  * Retryable error codes
  */
 const RETRYABLE_ERROR_CODES = ['unavailable', 'deadline-exceeded', 'aborted'];
-
-/**
- * Type guard for error with code property
- * Uses proper type predicate instead of 'as' assertion
- */
-export function hasCodeProperty(error: unknown): error is { code: string } {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    typeof (error as { code: unknown }).code === 'string'
-  );
-}
-
-/**
- * Type guard for error with message property
- * Uses proper type predicate instead of 'as' assertion
- */
-export function hasMessageProperty(error: unknown): error is { message: string } {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'message' in error &&
-    typeof (error as { message: unknown }).message === 'string'
-  );
-}
 
 /**
  * Convert unknown error to standard error info
@@ -197,3 +173,6 @@ export function getQuotaErrorMessage(): string {
 export function getRetryableErrorMessage(): string {
   return 'Temporary error occurred. Please try again.';
 }
+
+// Re-export type guards for convenience
+export { hasCodeProperty, hasMessageProperty, hasCodeAndMessageProperties };
