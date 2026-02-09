@@ -47,7 +47,13 @@ export async function reauthenticateWithGoogle(user: User, idToken: string): Pro
 }
 
 export async function reauthenticateWithPassword(user: User, pass: string): Promise<ReauthenticationResult> {
-  if (!user.email) return { success: false, error: { code: "auth/no-email", message: "User has no email" } };
+  if (!user.email) {
+    return {
+      success: false,
+      error: { code: "auth/no-email", message: "User has no email" }
+    };
+  }
+
   try {
     await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, pass));
     return { success: true };
@@ -58,30 +64,62 @@ export async function reauthenticateWithPassword(user: User, pass: string): Prom
 }
 
 export async function getAppleReauthCredential(): Promise<ReauthCredentialResult> {
-  if (Platform.OS !== "ios") return { success: false, error: { code: "auth/ios-only", message: "iOS only" } };
+  if (Platform.OS !== "ios") {
+    return {
+      success: false,
+      error: { code: "auth/ios-only", message: "iOS only" }
+    };
+  }
+
   try {
-    if (!(await AppleAuthentication.isAvailableAsync()))
-      return { success: false, error: { code: "auth/unavailable", message: "Unavailable" } };
+    const isAvailable = await AppleAuthentication.isAvailableAsync();
+    if (!isAvailable) {
+      return {
+        success: false,
+        error: { code: "auth/unavailable", message: "Unavailable" }
+      };
+    }
 
     const nonce = await generateNonce();
     const hashed = await hashNonce(nonce);
     const apple = await AppleAuthentication.signInAsync({
-      requestedScopes: [AppleAuthentication.AppleAuthenticationScope.FULL_NAME, AppleAuthentication.AppleAuthenticationScope.EMAIL],
+      requestedScopes: [
+        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        AppleAuthentication.AppleAuthenticationScope.EMAIL
+      ],
       nonce: hashed,
     });
 
-    if (!apple.identityToken) return { success: false, error: { code: "auth/no-token", message: "No token" } };
-    return { success: true, credential: new OAuthProvider("apple.com").credential({ idToken: apple.identityToken, rawNonce: nonce }) };
+    if (!apple.identityToken) {
+      return {
+        success: false,
+        error: { code: "auth/no-token", message: "No token" }
+      };
+    }
+
+    const credential = new OAuthProvider("apple.com").credential({
+      idToken: apple.identityToken,
+      rawNonce: nonce
+    });
+
+    return {
+      success: true,
+      credential
+    };
   } catch (error: unknown) {
     const err = toAuthErrorInfo(error);
     const code = isCancelledError(err) ? "auth/cancelled" : err.code;
-    return { success: false, error: { code, message: err.message } };
+    return {
+      success: false,
+      error: { code, message: err.message }
+    };
   }
 }
 
 export async function reauthenticateWithApple(user: User): Promise<ReauthenticationResult> {
   const res = await getAppleReauthCredential();
   if (!res.success || !res.credential) return { success: false, error: res.error };
+
   try {
     await reauthenticateWithCredential(user, res.credential);
     return { success: true };

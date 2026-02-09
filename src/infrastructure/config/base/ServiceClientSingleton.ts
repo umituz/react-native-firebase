@@ -67,11 +67,6 @@ export class ServiceClientSingleton<TInstance, TConfig = unknown> {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : `Failed to initialize ${this.options.serviceName}`;
       this.state.initializationError = errorMessage;
-
-      if (__DEV__) {
-        console.error(`[${this.options.serviceName}] Initialization failed:`, errorMessage);
-      }
-
       return null;
     }
   }
@@ -99,10 +94,6 @@ export class ServiceClientSingleton<TInstance, TConfig = unknown> {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : `Failed to initialize ${this.options.serviceName}`;
         this.state.initializationError = errorMessage;
-
-        if (__DEV__) {
-          console.error(`[${this.options.serviceName}] Auto-initialization failed:`, errorMessage);
-        }
       }
     }
 
@@ -130,10 +121,6 @@ export class ServiceClientSingleton<TInstance, TConfig = unknown> {
     this.state.instance = null;
     this.state.initializationError = null;
     this.state.isInitialized = false;
-
-    if (__DEV__) {
-      console.log(`[${this.options.serviceName}] Service reset`);
-    }
   }
 
   /**

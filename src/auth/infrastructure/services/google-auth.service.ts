@@ -12,7 +12,6 @@ import type { GoogleAuthConfig, GoogleAuthResult } from "./google-auth.types";
 import {
   createSuccessResult,
   createFailureResult,
-  logAuthError,
 } from "./base/base-auth.service";
 
 /**
@@ -48,7 +47,6 @@ export class GoogleAuthService {
       const userCredential = await signInWithCredential(auth, credential);
       return createSuccessResult(userCredential);
     } catch (error) {
-      logAuthError('Google Sign-In', error);
       return createFailureResult(error);
     }
   }

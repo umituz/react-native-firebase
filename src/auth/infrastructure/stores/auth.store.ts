@@ -65,9 +65,6 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
         // On error, release the mutex so retry is possible
         setupInProgress = false;
         set({ listenerSetup: false, loading: false });
-        if (__DEV__) {
-          console.error('[Auth Store] Failed to setup auth listener:', error);
-        }
         throw error; // Re-throw to allow caller to handle
       }
     },

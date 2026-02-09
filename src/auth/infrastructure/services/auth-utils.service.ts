@@ -15,12 +15,11 @@ export interface AuthCheckResult {
 }
 
 /**
- * Check current authentication state
+ * Create auth check result from user
+ * Centralized utility for creating AuthCheckResult objects
  */
-export function checkAuthState(auth: Auth): AuthCheckResult {
-  const currentUser = auth.currentUser;
-
-  if (!currentUser) {
+export function createAuthCheckResult(user: User | null): AuthCheckResult {
+  if (!user) {
     return {
       isAuthenticated: false,
       isAnonymous: false,
@@ -31,10 +30,17 @@ export function checkAuthState(auth: Auth): AuthCheckResult {
 
   return {
     isAuthenticated: true,
-    isAnonymous: currentUser.isAnonymous,
-    currentUser,
-    userId: currentUser.uid,
+    isAnonymous: user.isAnonymous,
+    currentUser: user,
+    userId: user.uid,
   };
+}
+
+/**
+ * Check current authentication state
+ */
+export function checkAuthState(auth: Auth): AuthCheckResult {
+  return createAuthCheckResult(auth.currentUser);
 }
 
 /**
@@ -124,4 +130,3 @@ export function isValidUser(user: unknown): user is User {
     isValidString(user.uid)
   );
 }
-

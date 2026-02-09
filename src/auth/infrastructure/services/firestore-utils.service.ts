@@ -85,10 +85,7 @@ export function shouldSkipFirestoreQuery(
     }
 
     return createResult(false, authState);
-  } catch (error) {
-    if (__DEV__) {
-      console.error("[FirestoreUtils] Error checking query", error);
-    }
+  } catch {
     // Return a default result on error
     return createResult(true, {
       isAuthenticated: false,

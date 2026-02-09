@@ -27,11 +27,6 @@ export async function runTransaction<T>(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorCode = hasCodeProperty(error) ? error.code : 'unknown';
-
-    if (__DEV__) {
-      console.error(`[runTransaction] Transaction failed (Code: ${errorCode}):`, errorMessage);
-    }
-
     throw new Error(`[runTransaction] Transaction failed: ${errorMessage} (Code: ${errorCode})`);
   }
 }

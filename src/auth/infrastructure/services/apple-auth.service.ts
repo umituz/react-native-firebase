@@ -15,7 +15,6 @@ import type { AppleAuthResult } from "./apple-auth.types";
 import {
   createSuccessResult,
   createFailureResult,
-  logAuthError,
   isCancellationError,
 } from "./base/base-auth.service";
 
@@ -24,8 +23,7 @@ export class AppleAuthService {
     if (Platform.OS !== "ios") return false;
     try {
       return await AppleAuthentication.isAvailableAsync();
-    } catch (error) {
-      if (__DEV__) console.warn('[AppleAuth] isAvailable check failed:', error);
+    } catch {
       return false;
     }
   }
@@ -37,7 +35,7 @@ export class AppleAuthService {
         return {
           success: false,
           error: "Apple Sign-In is not available on this device",
-          code: "unavailable",
+          code: "unavailable"
         };
       }
 
@@ -77,7 +75,6 @@ export class AppleAuthService {
         };
       }
 
-      logAuthError('Apple Sign-In', error);
       return createFailureResult(error);
     }
   }

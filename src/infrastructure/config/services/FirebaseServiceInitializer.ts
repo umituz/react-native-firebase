@@ -1,49 +1,43 @@
 /**
  * Firebase Service Initializer
- * Handles initialization of Firebase Auth service
  *
- * NOTE: Auth initialization is handled by the main app via callback.
- * This removes the need for dynamic require() which causes issues in production.
- *
- * Single Responsibility: Only initializes Firebase Auth service
+ * Orchestrates initialization of all Firebase services
+ * NOTE: This file is deprecated - use FirebaseClient.ts instead
+ * Kept for backwards compatibility
  */
 
-export type AuthInitializer = () => unknown;
+import type { FirebaseApp } from 'firebase/app';
 
-export interface ServiceInitializationOptions {
-  authInitializer?: AuthInitializer;
-}
-
-export interface ServiceInitializationResult {
-  auth: unknown;
-}
-
-export interface ServiceInitializationResult {
-  auth: unknown;
-  authError?: string;
-}
-
+/**
+ * Initialize Firebase services
+ * @deprecated Use initializeAllFirebaseServices from FirebaseClient instead
+ */
 export class FirebaseServiceInitializer {
+  /**
+   * Initialize all Firebase services
+   * @deprecated
+   */
+  static async initializeAll(
+    _app: FirebaseApp,
+    _options?: unknown
+  ): Promise<{ app: FirebaseApp | null; auth: boolean | null }> {
+    // This is now handled by FirebaseClient
+    return {
+      app: null,
+      auth: null,
+    };
+  }
+
+  /**
+   * Initialize services (legacy compatibility)
+   * @deprecated
+   */
   static async initializeServices(
-    options?: ServiceInitializationOptions
-  ): Promise<ServiceInitializationResult> {
-    let auth: unknown = null;
-    let authError: string | undefined;
-
-    if (options?.authInitializer) {
-      try {
-        auth = await options.authInitializer();
-      } catch (error) {
-        // Auth initialization is optional but we should log the error
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        authError = errorMessage;
-
-        if (__DEV__) {
-          console.error('[FirebaseServiceInitializer] Auth initialization failed:', errorMessage);
-        }
-      }
-    }
-
-    return { auth, authError };
+    _options?: unknown
+  ): Promise<{ app: FirebaseApp | null; auth: boolean | null }> {
+    return {
+      app: null,
+      auth: null,
+    };
   }
 }

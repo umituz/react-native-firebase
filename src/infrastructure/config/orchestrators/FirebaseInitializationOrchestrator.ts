@@ -1,61 +1,53 @@
 /**
  * Firebase Initialization Orchestrator
- * Handles the initialization logic for Firebase App
  *
- * Single Responsibility: Only orchestrates Firebase App initialization
+ * Orchestrates the initialization of Firebase services
  */
 
+import type { FirebaseApp } from 'firebase/app';
+import { getApps } from 'firebase/app';
+import { initializeApp } from 'firebase/app';
 import type { FirebaseConfig } from '../../../domain/value-objects/FirebaseConfig';
-import type { FirebaseApp } from '../initializers/FirebaseAppInitializer';
-import { FirebaseConfigValidator } from '../validators/FirebaseConfigValidator';
-import { FirebaseAppInitializer } from '../initializers/FirebaseAppInitializer';
-import { loadFirebaseConfig } from '../FirebaseConfigLoader';
-import type { FirebaseClientState } from '../state/FirebaseClientState';
+import { FirebaseInitializationError } from '../../../domain/errors/FirebaseError';
 
+/**
+ * Orchestrates Firebase initialization
+ */
 export class FirebaseInitializationOrchestrator {
-  static initialize(
-    config: FirebaseConfig,
-    state: FirebaseClientState
-  ): FirebaseApp | null {
-    if (state.isInitialized()) {
-      return state.getApp();
+  /**
+   * Initialize Firebase app
+   */
+  static initialize(config: FirebaseConfig): FirebaseApp {
+    // Check for existing app
+    const existingApps = getApps();
+    const existingApp = existingApps.length > 0 ? existingApps[0] : undefined;
+    if (existingApp) {
+      return existingApp;
     }
 
-    if (state.getInitializationError()) {
-      return null;
-    }
-
+    // Initialize new app
     try {
-      FirebaseConfigValidator.validate(config);
-      const app = FirebaseAppInitializer.initialize(config);
-      state.setApp(app);
-
-      return app;
+      return initializeApp({
+        apiKey: config.apiKey,
+        authDomain: config.authDomain,
+        projectId: config.projectId,
+        storageBucket: config.storageBucket,
+        messagingSenderId: config.messagingSenderId,
+        appId: config.appId,
+      });
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Failed to initialize Firebase client';
-      state.setInitializationError(errorMessage);
-
-      if (__DEV__) {
-        console.error('[Firebase] Initialization failed:', errorMessage);
-      }
-
-      return null;
+      throw new FirebaseInitializationError(
+        `Failed to initialize Firebase: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error
+      );
     }
   }
 
-  static autoInitialize(state: FirebaseClientState): FirebaseApp | null {
-    if (state.isInitialized() || state.getInitializationError()) {
-      return state.getApp();
-    }
-
-    const autoConfig = loadFirebaseConfig();
-    if (autoConfig) {
-      return this.initialize(autoConfig, state);
-    }
-
-    return null;
+  /**
+   * Get existing app instance
+   */
+  static autoInitialize(): FirebaseApp | null {
+    const existingApps = getApps();
+    return existingApps.length > 0 ? (existingApps[0] ?? null) : null;
   }
 }

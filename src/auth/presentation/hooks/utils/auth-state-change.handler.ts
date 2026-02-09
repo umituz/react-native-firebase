@@ -5,29 +5,7 @@
 
 import type { User } from 'firebase/auth';
 import type { AuthCheckResult } from '../../../infrastructure/services/auth-utils.service';
-
-/**
- * Convert Firebase User to AuthCheckResult
- * @param user - Firebase user or null
- * @returns AuthCheckResult
- */
-export function userToAuthCheckResult(user: User | null): AuthCheckResult {
-  if (!user) {
-    return {
-      isAuthenticated: false,
-      isAnonymous: false,
-      currentUser: null,
-      userId: null,
-    };
-  }
-
-  return {
-    isAuthenticated: true,
-    isAnonymous: user.isAnonymous === true,
-    currentUser: user,
-    userId: user.uid,
-  };
-}
+import { createAuthCheckResult } from '../../../infrastructure/services/auth-utils.service';
 
 /**
  * Create auth state change handler callback
@@ -53,20 +31,21 @@ export function createAuthStateChangeHandler(
 
   return (user: User | null) => {
     try {
-      const authState = userToAuthCheckResult(user);
+      const authState = createAuthCheckResult(user);
       setAuthState(authState);
       setError(null);
     } catch (err) {
       const authError =
         err instanceof Error ? err : new Error('Auth state check failed');
       setError(authError);
-
-      if (__DEV__) {
-         
-        console.error('[AuthStateHandler] Auth state change error', authError);
-      }
     } finally {
       setLoading(false);
     }
   };
 }
+
+/**
+ * Convert Firebase User to AuthCheckResult
+ * Re-exports createAuthCheckResult for convenience
+ */
+export const userToAuthCheckResult = createAuthCheckResult;

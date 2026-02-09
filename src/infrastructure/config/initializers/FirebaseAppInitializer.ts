@@ -44,8 +44,7 @@ class FirebaseAppManager {
     try {
       const existingApps = getApps();
       return existingApps.length > 0;
-    } catch (error) {
-      if (__DEV__) console.warn('[FirebaseAppManager] isInitialized check failed:', error);
+    } catch {
       return false;
     }
   }
@@ -57,8 +56,7 @@ class FirebaseAppManager {
     try {
       const existingApps = getApps();
       return existingApps.length > 0 ? existingApps[0] ?? null : null;
-    } catch (error) {
-      if (__DEV__) console.warn('[FirebaseAppManager] getExistingApp failed:', error);
+    } catch {
       return null;
     }
   }

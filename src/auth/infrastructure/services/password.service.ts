@@ -4,6 +4,7 @@
  */
 
 import { updatePassword, type User } from 'firebase/auth';
+import { toAuthErrorInfo } from '../../../domain/utils/error-handler.util';
 
 /**
  * Result of a password update operation
@@ -25,12 +26,12 @@ export async function updateUserPassword(user: User, newPassword: string): Promi
     await updatePassword(user, newPassword);
     return { success: true };
   } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
+    const errorInfo = toAuthErrorInfo(error);
     return {
       success: false,
       error: {
-        code: err.code || 'auth/password-update-failed',
-        message: err.message || 'Failed to update password',
+        code: errorInfo.code,
+        message: errorInfo.message,
       },
     };
   }

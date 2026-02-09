@@ -6,14 +6,6 @@
  *
  * IMPORTANT: This package does NOT read from .env files.
  * Configuration must be provided by the application.
- *
- * NOTE: Auth initialization is handled by the main app via callback.
- * This removes the need for dynamic require() which causes issues in production.
- *
- * SOLID Principles:
- * - Single Responsibility: Only orchestrates initialization, delegates to specialized classes
- * - Open/Closed: Extensible through configuration, closed for modification
- * - Dependency Inversion: Depends on abstractions (interfaces), not concrete implementations
  */
 
 import type { FirebaseConfig } from '../../domain/value-objects/FirebaseConfig';
@@ -21,22 +13,29 @@ import type { IFirebaseClient } from '../../application/ports/IFirebaseClient';
 import type { FirebaseApp } from './initializers/FirebaseAppInitializer';
 import { FirebaseClientState } from './state/FirebaseClientState';
 import { FirebaseInitializationOrchestrator } from './orchestrators/FirebaseInitializationOrchestrator';
-import {
-  FirebaseServiceInitializer,
-  type AuthInitializer,
-  type ServiceInitializationOptions,
-} from './services/FirebaseServiceInitializer';
 import { loadFirebaseConfig } from './FirebaseConfigLoader';
 
-export type { FirebaseApp, AuthInitializer, ServiceInitializationOptions };
+export type { FirebaseApp };
+
+/**
+ * Auth initializer callback type
+ */
+export type AuthInitializer = () => Promise<void> | ((() => (any | null) | null));
+
+/**
+ * Service initialization options
+ */
+export interface ServiceInitializationOptions {
+  authInitializer?: AuthInitializer;
+}
 
 /**
  * Service initialization result interface
  */
 export interface ServiceInitializationResult {
   app: FirebaseApp | null;
-  auth: unknown; // Auth result from authInitializer callback (can be Auth, UserCredential, or any custom type)
-  authError?: string; // Error message if auth initialization failed
+  auth: boolean | null;
+  authError?: string;
 }
 
 /**
@@ -59,11 +58,11 @@ class FirebaseClientSingleton implements IFirebaseClient {
   }
 
   initialize(config: FirebaseConfig): FirebaseApp | null {
-    return FirebaseInitializationOrchestrator.initialize(config, this.state);
+    return FirebaseInitializationOrchestrator.initialize(config);
   }
 
   getApp(): FirebaseApp | null {
-    return FirebaseInitializationOrchestrator.autoInitialize(this.state);
+    return FirebaseInitializationOrchestrator.autoInitialize();
   }
 
   isInitialized(): boolean {
@@ -109,24 +108,7 @@ export function autoInitializeFirebase(): FirebaseApp | null {
 
 /**
  * Initialize all Firebase services (App and Auth)
- * This is the main entry point for applications - call this once at app startup
- *
- * IMPORTANT: Auth initialization is handled via callback to avoid require() issues.
- * The main app should pass the authInitializer callback from react-native-firebase-auth.
- *
- * @param config - Optional Firebase configuration
- * @param options - Optional service initialization options including authInitializer
- * @returns Object with initialization results for each service
- *
- * @example
- * ```typescript
- * import { initializeAllFirebaseServices } from '@umituz/react-native-firebase';
- * import { initializeFirebaseAuth } from '@umituz/react-native-firebase-auth';
- *
- * const result = await initializeAllFirebaseServices(undefined, {
- *   authInitializer: () => initializeFirebaseAuth(),
- * });
- * ```
+ * This is the main entry point for applications
  */
 export async function initializeAllFirebaseServices(
   config?: FirebaseConfig,
@@ -141,11 +123,23 @@ export async function initializeAllFirebaseServices(
     };
   }
 
-  const { auth } = await FirebaseServiceInitializer.initializeServices(options);
+  // Initialize Auth if provided
+  let authSuccess = null;
+  let authError: string | undefined;
+
+  if (options?.authInitializer) {
+    try {
+      await options.authInitializer();
+      authSuccess = true;
+    } catch (error) {
+      authError = error instanceof Error ? error.message : 'Auth initialization failed';
+    }
+  }
 
   return {
     app,
-    auth,
+    auth: authSuccess,
+    authError,
   };
 }
 

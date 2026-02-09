@@ -30,7 +30,11 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
     orderByField: string = "createdAt",
     orderDirection: "asc" | "desc" = "desc",
   ): Promise<QueryDocumentSnapshot<DocumentData>[]> {
-    const db = this.getDbOrThrow();
+    const db = this.getDb();
+    if (!db) {
+      return [];
+    }
+
     const helper = new PaginationHelper();
     const pageLimit = helper.getLimit(params);
     const fetchLimit = helper.getFetchLimit(pageLimit);
@@ -49,9 +53,6 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
 
       if (!cursorDoc.exists()) {
         // Cursor document doesn't exist - return empty result
-        if (__DEV__) {
-          console.warn(`[BasePaginatedRepository] Cursor document not found: ${params.cursor}`);
-        }
         return [];
       }
 

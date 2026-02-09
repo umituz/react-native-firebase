@@ -46,8 +46,7 @@ function loadExpoConfig(): Record<string, string> {
     const Constants = require('expo-constants');
     const expoConfig = Constants?.expoConfig || Constants?.default?.expoConfig;
     return expoConfig?.extra || {};
-  } catch (error) {
-    if (__DEV__) console.warn('[FirebaseConfigLoader] expo-constants not available:', error);
+  } catch {
     return {};
   }
 }
@@ -87,27 +86,26 @@ export function loadFirebaseConfig(): FirebaseConfig | null {
   const projectId = config.projectId?.trim();
 
   if (!isValidString(apiKey) || !isValidString(authDomain) || !isValidString(projectId)) {
-    if (__DEV__) {
-      console.error('[FirebaseConfigLoader] Missing required configuration fields');
-    }
     return null;
   }
 
   // Validate API key format
   if (!isValidFirebaseApiKey(apiKey)) {
-    if (__DEV__) {
-      console.error('[FirebaseConfigLoader] Invalid API key format');
-    }
     return null;
   }
 
   // Validate authDomain format (should be like "projectId.firebaseapp.com")
   if (!isValidFirebaseAuthDomain(authDomain)) {
-    if (__DEV__) {
-      console.warn('[FirebaseConfigLoader] Unusual authDomain format, expected "projectId.firebaseapp.com" or similar');
-    }
+    // Invalid format but not a critical error - continue
   }
 
-  return config as FirebaseConfig;
+  // Build type-safe FirebaseConfig object
+  return {
+    apiKey,
+    authDomain,
+    projectId,
+    storageBucket: config.storageBucket || undefined,
+    messagingSenderId: config.messagingSenderId || undefined,
+    appId: config.appId || undefined,
+  };
 }
-

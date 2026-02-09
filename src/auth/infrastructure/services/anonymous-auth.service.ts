@@ -43,7 +43,6 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
         wasAlreadySignedIn: false,
       };
     } catch (error) {
-      if (__DEV__) console.error("[AnonymousAuthService] Failed", error);
       throw error;
     }
   }

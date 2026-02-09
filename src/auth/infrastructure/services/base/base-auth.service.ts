@@ -93,12 +93,3 @@ export function createSuccessResult(userCredential: UserCredential): AuthSuccess
     isNewUser: checkIsNewUser(userCredential),
   };
 }
-
-/**
- * Log auth error in development mode
- */
-export function logAuthError(serviceName: string, error: unknown): void {
-  if (__DEV__) {
-    console.error(`[Firebase Auth] ${serviceName} failed:`, error);
-  }
-}
