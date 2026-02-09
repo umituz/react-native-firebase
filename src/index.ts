@@ -52,22 +52,19 @@ export {
   getSafeErrorCode,
 } from "./domain/guards/firebase-error.guard";
 
-// Commonly Used Auth Exports (for convenience)
-export {
-  getFirebaseAuth,
-  initializeFirebaseAuth,
-} from "./auth/infrastructure/config/FirebaseAuthClient";
+// Auth Module Exports
+export * from "./auth";
 
-// Commonly Used Firestore Exports (for convenience)
-export {
-  getFirestore,
-  initializeFirestore,
-} from "./firestore/infrastructure/config/FirestoreClient";
 
-// Firestore Repositories
+
+// Firestore Module Exports
 export {
   BaseRepository,
-} from "./firestore/infrastructure/repositories/BaseRepository";
+  BaseQueryRepository,
+  BasePaginatedRepository,
+  FirestorePathResolver,
+} from "./firestore";
+export * from "./firestore";
 export { Timestamp } from "firebase/firestore";
 export type {
   Transaction,
