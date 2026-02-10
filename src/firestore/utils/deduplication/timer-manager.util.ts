@@ -18,17 +18,23 @@ export class TimerManager {
 
   /**
    * Start the cleanup timer
+   * Idempotent: safe to call multiple times
    */
   start(): void {
+    // Clear existing timer if running (prevents duplicate timers)
     if (this.timer) {
-      clearInterval(this.timer);
+      this.stop();
     }
 
     this.timer = setInterval(() => {
       try {
         this.options.onCleanup();
-      } catch {
+      } catch (error) {
         // Silently handle cleanup errors to prevent timer from causing issues
+        // Log error in development for debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.error('TimerManager cleanup error:', error);
+        }
       }
     }, this.options.cleanupIntervalMs);
   }

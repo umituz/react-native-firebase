@@ -13,7 +13,8 @@ import {
 import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
 import { generateNonce, hashNonce } from "./crypto.util";
-import { toAuthErrorInfo, isCancelledError } from "../../../domain/utils/error-handler.util";
+import { executeOperation, failureResultFrom } from "../../../domain/utils";
+import { isCancelledError } from "../../../domain/utils/error-handler.util";
 import type {
   ReauthenticationResult,
   AuthProviderType,
@@ -37,30 +38,20 @@ export function getUserAuthProvider(user: User): AuthProviderType {
 }
 
 export async function reauthenticateWithGoogle(user: User, idToken: string): Promise<ReauthenticationResult> {
-  try {
+  return executeOperation(async () => {
     await reauthenticateWithCredential(user, GoogleAuthProvider.credential(idToken));
-    return { success: true };
-  } catch (error: unknown) {
-    const err = toAuthErrorInfo(error);
-    return { success: false, error: err };
-  }
+  });
 }
 
 export async function reauthenticateWithPassword(user: User, pass: string): Promise<ReauthenticationResult> {
-  if (!user.email) {
-    return {
-      success: false,
-      error: { code: "auth/no-email", message: "User has no email" }
-    };
+  const email = user.email;
+  if (!email) {
+    return failureResultFrom("auth/no-email", "User has no email");
   }
 
-  try {
-    await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, pass));
-    return { success: true };
-  } catch (error: unknown) {
-    const err = toAuthErrorInfo(error);
-    return { success: false, error: err };
-  }
+  return executeOperation(async () => {
+    await reauthenticateWithCredential(user, EmailAuthProvider.credential(email, pass));
+  });
 }
 
 export async function getAppleReauthCredential(): Promise<ReauthCredentialResult> {
@@ -107,8 +98,8 @@ export async function getAppleReauthCredential(): Promise<ReauthCredentialResult
       credential
     };
   } catch (error: unknown) {
-    const err = toAuthErrorInfo(error);
-    const code = isCancelledError(err) ? "auth/cancelled" : err.code;
+    const err = error instanceof Error ? error : new Error(String(error));
+    const code = isCancelledError({ code: '', message: err.message }) ? "auth/cancelled" : "auth/failed";
     return {
       success: false,
       error: { code, message: err.message }
@@ -118,13 +109,12 @@ export async function getAppleReauthCredential(): Promise<ReauthCredentialResult
 
 export async function reauthenticateWithApple(user: User): Promise<ReauthenticationResult> {
   const res = await getAppleReauthCredential();
-  if (!res.success || !res.credential) return { success: false, error: res.error };
-
-  try {
-    await reauthenticateWithCredential(user, res.credential);
-    return { success: true };
-  } catch (error: unknown) {
-    const err = toAuthErrorInfo(error);
-    return { success: false, error: err };
+  if (!res.success || !res.credential) {
+    return { success: false, error: res.error ?? { code: "auth/failed", message: "Failed to get credential" } };
   }
+
+  const credential = res.credential;
+  return executeOperation(async () => {
+    await reauthenticateWithCredential(user, credential);
+  });
 }

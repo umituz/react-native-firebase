@@ -11,10 +11,14 @@ import {
   reauthenticateWithPassword,
   reauthenticateWithGoogle,
 } from "./reauthentication.service";
-import { toAuthErrorInfo } from "../../../domain/utils/error-handler.util";
-import type { AccountDeletionResult, AccountDeletionOptions } from "./reauthentication.types";
+import { successResult, type Result } from "../../../domain/utils";
+import type { AccountDeletionOptions } from "./reauthentication.types";
 
-export type { AccountDeletionResult, AccountDeletionOptions } from "./reauthentication.types";
+export interface AccountDeletionResult extends Result<void> {
+  requiresReauth?: boolean;
+}
+
+export type { AccountDeletionOptions } from "./reauthentication.types";
 
 export async function deleteCurrentUser(
   options: AccountDeletionOptions = { autoReauthenticate: true }
@@ -25,29 +29,36 @@ export async function deleteCurrentUser(
   if (!auth || !user) {
     return {
       success: false,
-      error: { code: "auth/not-ready", message: "Auth not ready", requiresReauth: false }
+      error: { code: "auth/not-ready", message: "Auth not ready" },
+      requiresReauth: false
     };
   }
 
   if (user.isAnonymous) {
     return {
       success: false,
-      error: { code: "auth/anonymous", message: "Cannot delete anonymous", requiresReauth: false }
+      error: { code: "auth/anonymous", message: "Cannot delete anonymous" },
+      requiresReauth: false
     };
   }
 
   try {
     await deleteUser(user);
-    return { success: true };
+    return successResult();
   } catch (error: unknown) {
-    const authErr = toAuthErrorInfo(error);
-    if (authErr.code === "auth/requires-recent-login" && (options.autoReauthenticate || options.password || options.googleIdToken)) {
+    const authErr = error instanceof Error ? (error as { code?: string; message?: string }) : null;
+    const code = authErr?.code ?? "auth/failed";
+    const message = authErr?.message ?? "Account deletion failed";
+
+    if (code === "auth/requires-recent-login" && (options.autoReauthenticate || options.password || options.googleIdToken)) {
       const reauth = await attemptReauth(user, options);
       if (reauth) return reauth;
     }
+
     return {
       success: false,
-      error: { ...authErr, requiresReauth: authErr.code === "auth/requires-recent-login" }
+      error: { code, message },
+      requiresReauth: code === "auth/requires-recent-login"
     };
   }
 }
@@ -62,7 +73,8 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
     if (!options.googleIdToken) {
       return {
         success: false,
-        error: { code: "auth/google-reauth", message: "Google reauth required", requiresReauth: true }
+        error: { code: "auth/google-reauth", message: "Google reauth required" },
+        requiresReauth: true
       };
     }
     res = await reauthenticateWithGoogle(user, options.googleIdToken);
@@ -70,7 +82,8 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
     if (!options.password) {
       return {
         success: false,
-        error: { code: "auth/password-reauth", message: "Password required", requiresReauth: true }
+        error: { code: "auth/password-reauth", message: "Password required" },
+        requiresReauth: true
       };
     }
     res = await reauthenticateWithPassword(user, options.password);
@@ -81,10 +94,14 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
   if (res.success) {
     try {
       await deleteUser(user);
-      return { success: true };
+      return successResult();
     } catch (err: unknown) {
-      const authErr = toAuthErrorInfo(err);
-      return { success: false, error: { ...authErr, requiresReauth: false } };
+      const authErr = err instanceof Error ? (err as { code?: string; message?: string }) : null;
+      return {
+        success: false,
+        error: { code: authErr?.code ?? "auth/failed", message: authErr?.message ?? "Deletion failed" },
+        requiresReauth: false
+      };
     }
   }
 
@@ -93,8 +110,8 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
     error: {
       code: res.error?.code || "auth/reauth-failed",
       message: res.error?.message || "Reauth failed",
-      requiresReauth: true
-    }
+    },
+    requiresReauth: true
   };
 }
 
@@ -102,18 +119,21 @@ export async function deleteUserAccount(user: User | null): Promise<AccountDelet
   if (!user || user.isAnonymous) {
     return {
       success: false,
-      error: { code: "auth/invalid", message: "Invalid user", requiresReauth: false }
+      error: { code: "auth/invalid", message: "Invalid user" },
+      requiresReauth: false
     };
   }
 
   try {
     await deleteUser(user);
-    return { success: true };
+    return successResult();
   } catch (error: unknown) {
-    const authErr = toAuthErrorInfo(error);
+    const authErr = error instanceof Error ? (error as { code?: string; message?: string }) : null;
+    const code = authErr?.code ?? "auth/failed";
     return {
       success: false,
-      error: { ...authErr, requiresReauth: authErr.code === "auth/requires-recent-login" }
+      error: { code, message: authErr?.message ?? "Deletion failed" },
+      requiresReauth: code === "auth/requires-recent-login"
     };
   }
 }

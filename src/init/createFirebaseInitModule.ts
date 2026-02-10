@@ -46,12 +46,27 @@ export function createFirebaseInitModule(
     critical,
     init: async () => {
       try {
-        await initializeAllFirebaseServices(undefined, {
+        const result = await initializeAllFirebaseServices(undefined, {
           authInitializer: authInitializer ?? (() => Promise.resolve()),
         });
+
+        // Check if initialization was successful
+        if (!result.app) {
+          console.error('[Firebase] Initialization failed: Firebase app not initialized');
+          return false;
+        }
+
+        // Check if auth initialization failed
+        if (result.auth === false && result.authError) {
+          console.error(`[Firebase] Auth initialization failed: ${result.authError}`);
+          // Auth failure is not critical for the app to function
+          // Log the error but don't fail the entire initialization
+        }
+
         return true;
-      } catch {
-        // Return false to indicate failure, let the app initializer handle it
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`[Firebase] Initialization failed: ${errorMessage}`);
         return false;
       }
     },

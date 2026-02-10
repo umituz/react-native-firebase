@@ -30,14 +30,12 @@ export class QueryDeduplicationMiddleware {
   ): Promise<T> {
     const key = generateQueryKey(queryKey);
 
+    // Check if query is already pending
     if (this.queryManager.isPending(key)) {
       const pendingPromise = this.queryManager.get(key);
       if (pendingPromise) {
-        // Type assertion is safe here because the same key was used to store the promise
-        return Promise.race([pendingPromise]).then(() => {
-          // Retry the original query after pending completes
-          return queryFn();
-        });
+        // Return the existing pending promise instead of executing again
+        return pendingPromise as Promise<T>;
       }
     }
 

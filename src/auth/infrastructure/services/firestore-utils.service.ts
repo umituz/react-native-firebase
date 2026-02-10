@@ -55,7 +55,7 @@ export function shouldSkipFirestoreQuery(
   const {
     skipForGuest = true,
     skipIfNotAuthenticated = true,
-    verifyUserId: shouldVerify = true,
+    verifyUserId: shouldVerifyUserId = true,
     userId,
   } = options;
 
@@ -80,7 +80,7 @@ export function shouldSkipFirestoreQuery(
       return createResult(true, authState, "is_guest");
     }
 
-    if (shouldVerify && userId && !verifyUserId(auth, userId)) {
+    if (shouldVerifyUserId && userId && !verifyUserId(auth, userId)) {
       return createResult(true, authState, "user_id_mismatch");
     }
 

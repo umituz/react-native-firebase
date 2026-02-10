@@ -6,39 +6,20 @@
  */
 
 import type { UserCredential } from 'firebase/auth';
-import { toAuthErrorInfo } from '../../../../domain/utils/error-handler.util';
+import { authErrorConverter, type Result } from '../../../../domain/utils';
 
 /**
- * Base authentication result interface
+ * Authentication result with user credential
  */
-export interface BaseAuthResult {
-  readonly success: boolean;
-  readonly error?: string;
-  readonly code?: string;
-}
-
-/**
- * Successful authentication result
- */
-export interface AuthSuccessResult extends BaseAuthResult {
-  readonly success: true;
+export interface AuthSuccessData {
   readonly userCredential: UserCredential;
   readonly isNewUser: boolean;
 }
 
 /**
- * Failed authentication result
+ * Auth result type that extends the base Result
  */
-export interface AuthFailureResult extends BaseAuthResult {
-  readonly success: false;
-  readonly error: string;
-  readonly code: string;
-}
-
-/**
- * Combined auth result type
- */
-export type AuthResult = AuthSuccessResult | AuthFailureResult;
+export type AuthResult = Result<AuthSuccessData>;
 
 /**
  * Check if user is new based on metadata
@@ -48,17 +29,6 @@ export function checkIsNewUser(userCredential: UserCredential): boolean {
     userCredential.user.metadata.creationTime ===
     userCredential.user.metadata.lastSignInTime
   );
-}
-
-/**
- * Extract error information from unknown error
- */
-export function extractAuthError(error: unknown): { code: string; message: string } {
-  const errorInfo = toAuthErrorInfo(error);
-  return {
-    code: errorInfo.code,
-    message: errorInfo.message,
-  };
 }
 
 /**
@@ -74,19 +44,18 @@ export function isCancellationError(error: unknown): boolean {
 /**
  * Create failure result from error
  */
-export function createFailureResult(error: unknown): AuthFailureResult {
-  const { code, message } = extractAuthError(error);
+export function createFailureResult(error: unknown): { success: false; error: { code: string; message: string } } {
+  const errorInfo = authErrorConverter(error);
   return {
     success: false,
-    error: message,
-    code,
+    error: errorInfo,
   };
 }
 
 /**
  * Create success result from user credential
  */
-export function createSuccessResult(userCredential: UserCredential): AuthSuccessResult {
+export function createSuccessResult(userCredential: UserCredential): { success: true; userCredential: UserCredential; isNewUser: boolean } {
   return {
     success: true,
     userCredential,

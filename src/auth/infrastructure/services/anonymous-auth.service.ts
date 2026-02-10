@@ -34,17 +34,13 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
       throw new Error("A non-anonymous user is already signed in. Sign out first before creating an anonymous session.");
     }
 
-    try {
-      const userCredential = await signInAnonymously(auth);
-      const anonymousUser = toAnonymousUser(userCredential.user);
-      return {
-        user: userCredential.user,
-        anonymousUser,
-        wasAlreadySignedIn: false,
-      };
-    } catch (error) {
-      throw error;
-    }
+    const userCredential = await signInAnonymously(auth);
+    const anonymousUser = toAnonymousUser(userCredential.user);
+    return {
+      user: userCredential.user,
+      anonymousUser,
+      wasAlreadySignedIn: false,
+    };
   }
 }
 

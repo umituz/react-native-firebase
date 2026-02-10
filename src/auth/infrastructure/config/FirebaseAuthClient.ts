@@ -52,8 +52,17 @@ class FirebaseAuthClientSingleton extends ServiceClientSingleton<Auth, FirebaseA
   getAuth(): Auth | null {
     // Attempt initialization if not already initialized
     if (!this.isInitialized() && !this.getInitializationError()) {
-      const app = getFirebaseApp();
-      if (app) this.initialize();
+      try {
+        const app = getFirebaseApp();
+        if (app) {
+          this.initialize();
+        }
+      } catch (error) {
+        // Silently handle auto-initialization errors
+        // The error will be stored in state for later retrieval
+        const errorMessage = error instanceof Error ? error.message : 'Auto-initialization failed';
+        this.setError(errorMessage);
+      }
     }
     return this.getInstance();
   }

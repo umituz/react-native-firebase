@@ -13,10 +13,9 @@ import { Platform } from "react-native";
 import { generateNonce, hashNonce } from "./crypto.util";
 import type { AppleAuthResult } from "./apple-auth.types";
 import {
-  createSuccessResult,
-  createFailureResult,
   isCancellationError,
 } from "./base/base-auth.service";
+import { executeAuthOperation, type Result } from "../../../domain/utils";
 
 export class AppleAuthService {
   async isAvailable(): Promise<boolean> {
@@ -28,17 +27,32 @@ export class AppleAuthService {
     }
   }
 
-  async signIn(auth: Auth): Promise<AppleAuthResult> {
-    try {
-      const isAvailable = await this.isAvailable();
-      if (!isAvailable) {
-        return {
-          success: false,
-          error: "Apple Sign-In is not available on this device",
-          code: "unavailable"
-        };
-      }
+  private convertToAppleAuthResult(result: Result<{ userCredential: any; isNewUser: boolean }>): AppleAuthResult {
+    if (result.success && result.data) {
+      return {
+        success: true,
+        userCredential: result.data.userCredential,
+        isNewUser: result.data.isNewUser,
+      };
+    }
+    return {
+      success: false,
+      error: result.error?.message ?? "Apple sign-in failed",
+      code: result.error?.code,
+    };
+  }
 
+  async signIn(auth: Auth): Promise<AppleAuthResult> {
+    const isAvailable = await this.isAvailable();
+    if (!isAvailable) {
+      return {
+        success: false,
+        error: "Apple Sign-In is not available on this device",
+        code: "unavailable"
+      };
+    }
+
+    const result = await executeAuthOperation(async () => {
       const nonce = await generateNonce();
       const hashedNonce = await hashNonce(nonce);
 
@@ -51,11 +65,7 @@ export class AppleAuthService {
       });
 
       if (!appleCredential.identityToken) {
-        return {
-          success: false,
-          error: "No identity token received",
-          code: "no_token"
-        };
+        throw new Error("No identity token received");
       }
 
       const provider = new OAuthProvider("apple.com");
@@ -65,7 +75,22 @@ export class AppleAuthService {
       });
 
       const userCredential = await signInWithCredential(auth, credential);
-      return createSuccessResult(userCredential);
+      return {
+        userCredential,
+        isNewUser: userCredential.user.metadata.creationTime ===
+          userCredential.user.metadata.lastSignInTime
+      };
+    });
+
+    return this.convertToAppleAuthResult(result);
+  }
+
+  /**
+   * Sign in with error handling for cancellation
+   */
+  async signInWithCancellationHandling(auth: Auth): Promise<AppleAuthResult> {
+    try {
+      return await this.signIn(auth);
     } catch (error) {
       if (isCancellationError(error)) {
         return {
@@ -75,7 +100,8 @@ export class AppleAuthService {
         };
       }
 
-      return createFailureResult(error);
+      // Re-throw for executeAuthOperation to handle
+      throw error;
     }
   }
 

@@ -131,3 +131,81 @@ export function isPositive(value: number): boolean {
 export function isNonNegative(value: number): boolean {
   return typeof value === 'number' && value >= 0;
 }
+
+/**
+ * Validate password strength
+ * At least 8 characters, containing uppercase, lowercase, and number
+ */
+export function isStrongPassword(password: string): boolean {
+  if (!isValidString(password) || password.length < 8) {
+    return false;
+  }
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  return hasUpperCase && hasLowerCase && hasNumber;
+}
+
+/**
+ * Validate username format
+ * Alphanumeric, underscores, and hyphens, 3-20 characters
+ */
+export function isValidUsername(username: string): boolean {
+  if (!isValidString(username)) {
+    return false;
+  }
+  const pattern = /^[a-zA-Z0-9_-]{3,20}$/;
+  return pattern.test(username);
+}
+
+/**
+ * Validate phone number format (basic check)
+ */
+export function isValidPhoneNumber(phone: string): boolean {
+  if (!isValidString(phone)) {
+    return false;
+  }
+  const cleaned = phone.replace(/\s+/g, '').replace(/[-+()]/g, '');
+  return /^[0-9]{10,15}$/.test(cleaned);
+}
+
+/**
+ * Validate object has required properties
+ */
+export function hasRequiredProperties<T extends Record<string, unknown>>(
+  obj: unknown,
+  requiredProps: (keyof T)[]
+): obj is T {
+  if (typeof obj !== 'object' || obj === null) {
+    return false;
+  }
+  return requiredProps.every((prop) => prop in obj);
+}
+
+/**
+ * Validate all items in array match predicate
+ */
+export function allMatch<T>(items: unknown[], predicate: (item: unknown) => item is T): boolean {
+  return Array.isArray(items) && items.every(predicate);
+}
+
+/**
+ * Validate at least one item in array matches predicate
+ */
+export function anyMatch<T>(items: unknown[], predicate: (item: unknown) => item is T): boolean {
+  return Array.isArray(items) && items.some(predicate);
+}
+
+/**
+ * Create a validator that combines multiple validators
+ */
+export function combineValidators(...validators: ((value: string) => boolean)[]): (value: string) => boolean {
+  return (value: string) => validators.every((validator) => validator(value));
+}
+
+/**
+ * Create a validator that checks if value matches one of validators
+ */
+export function anyValidator(...validators: ((value: string) => boolean)[]): (value: string) => boolean {
+  return (value: string) => validators.some((validator) => validator(value));
+}

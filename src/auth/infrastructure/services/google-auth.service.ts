@@ -9,46 +9,50 @@ import {
   type Auth,
 } from "firebase/auth";
 import type { GoogleAuthConfig, GoogleAuthResult } from "./google-auth.types";
-import {
-  createSuccessResult,
-  createFailureResult,
-} from "./base/base-auth.service";
+import { executeAuthOperation, type Result } from "../../../domain/utils";
+import { ConfigurableService } from "../../../domain/utils/service-config.util";
 
 /**
  * Google Auth Service
  * Provides Google Sign-In functionality for Firebase
  */
-export class GoogleAuthService {
-  private config: GoogleAuthConfig | null = null;
-
-  configure(config: GoogleAuthConfig): void {
-    this.config = config;
-  }
-
-  isConfigured(): boolean {
+export class GoogleAuthService extends ConfigurableService<GoogleAuthConfig> {
+  protected isValidConfig(config: GoogleAuthConfig): boolean {
     return (
-      this.config !== null &&
-      (!!this.config.webClientId ||
-        !!this.config.iosClientId ||
-        !!this.config.androidClientId)
+      config !== null &&
+      (!!config.webClientId || !!config.iosClientId || !!config.androidClientId)
     );
   }
 
-  getConfig(): GoogleAuthConfig | null {
-    return this.config;
+  private convertToGoogleAuthResult(result: Result<{ userCredential: any; isNewUser: boolean }>): GoogleAuthResult {
+    if (result.success && result.data) {
+      return {
+        success: true,
+        userCredential: result.data.userCredential,
+        isNewUser: result.data.isNewUser,
+      };
+    }
+    return {
+      success: false,
+      error: result.error?.message ?? "Google sign-in failed",
+      code: result.error?.code,
+    };
   }
 
   async signInWithIdToken(
     auth: Auth,
     idToken: string,
   ): Promise<GoogleAuthResult> {
-    try {
+    const result = await executeAuthOperation(async () => {
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
-      return createSuccessResult(userCredential);
-    } catch (error) {
-      return createFailureResult(error);
-    }
+      return {
+        userCredential,
+        isNewUser: userCredential.user.metadata.creationTime ===
+          userCredential.user.metadata.lastSignInTime
+      };
+    });
+    return this.convertToGoogleAuthResult(result);
   }
 }
 

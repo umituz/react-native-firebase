@@ -29,9 +29,9 @@ export abstract class BaseQueryRepository extends BaseRepository {
     cached: boolean = false,
     uniqueKey?: string
   ): Promise<T> {
-    // FIX: query.toString() returns "[object Object]" which breaks deduplication
-    // We must rely on the caller providing a uniqueKey or fallback to a collection-based key (less efficient but safe)
-    const safeKey = uniqueKey || `${collection}_generic_query_${Date.now()}`;
+    // Use provided uniqueKey, or generate a stable key based on collection
+    // IMPORTANT: Don't use Date.now() as it defeats deduplication!
+    const safeKey = uniqueKey || `${collection}_query`;
 
     const queryKey = {
       collection,

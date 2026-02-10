@@ -4,35 +4,20 @@
  */
 
 import { updatePassword, type User } from 'firebase/auth';
-import { toAuthErrorInfo } from '../../../domain/utils/error-handler.util';
+import { executeAuthOperation, type Result } from '../../../domain/utils';
 
 /**
  * Result of a password update operation
+ * @deprecated Use Result<void> instead
  */
-export interface PasswordUpdateResult {
-  success: boolean;
-  error?: {
-    code: string;
-    message: string;
-  };
-}
+export type PasswordUpdateResult = Result<void>;
 
 /**
  * Update the current user's password
  * Note: Requires recent authentication. Re-authenticate before calling if needed.
  */
-export async function updateUserPassword(user: User, newPassword: string): Promise<PasswordUpdateResult> {
-  try {
+export async function updateUserPassword(user: User, newPassword: string): Promise<Result<void>> {
+  return executeAuthOperation(async () => {
     await updatePassword(user, newPassword);
-    return { success: true };
-  } catch (error: unknown) {
-    const errorInfo = toAuthErrorInfo(error);
-    return {
-      success: false,
-      error: {
-        code: errorInfo.code,
-        message: errorInfo.message,
-      },
-    };
-  }
+  });
 }

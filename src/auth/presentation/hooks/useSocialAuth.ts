@@ -48,11 +48,20 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
   }, [googleConfig]);
 
   useEffect(() => {
+    let cancelled = false;
+
     const checkApple = async () => {
       const available = await appleAuthService.isAvailable();
-      setAppleAvailable(available && (config?.apple?.enabled ?? false));
+      if (!cancelled) {
+        setAppleAvailable(available && (config?.apple?.enabled ?? false));
+      }
     };
+
     checkApple();
+
+    return () => {
+      cancelled = true;
+    };
   }, [config?.apple?.enabled]);
 
   const signInWithGoogleToken = useCallback(

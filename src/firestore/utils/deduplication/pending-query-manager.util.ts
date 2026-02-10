@@ -44,13 +44,9 @@ export class PendingQueryManager {
    * Add query to pending list with guaranteed cleanup
    */
   add(key: string, promise: Promise<unknown>): void {
-    const wrappedPromise = promise
-      .catch((error) => {
-        throw error;
-      })
-      .finally(() => {
-        this.pendingQueries.delete(key);
-      });
+    const wrappedPromise = promise.finally(() => {
+      this.pendingQueries.delete(key);
+    });
 
     this.pendingQueries.set(key, {
       promise: wrappedPromise,
