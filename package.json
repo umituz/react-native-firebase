@@ -96,6 +96,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "bin": {
+    "firebase-admin": "./dist/scripts/cli.js"
+  },
   "files": [
     "src",
     "scripts",
