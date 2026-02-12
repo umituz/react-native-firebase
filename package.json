@@ -29,7 +29,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/umituz/react-native-firebase"
+    "url": "git+https://github.com/umituz/react-native-firebase.git"
   },
   "peerDependencies": {
     "@umituz/react-native-design-system": "*",
@@ -97,7 +97,7 @@
     "access": "public"
   },
   "bin": {
-    "firebase-admin": "./dist/scripts/cli.js"
+    "firebase-admin": "dist/scripts/cli.js"
   },
   "files": [
     "src",
