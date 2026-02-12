@@ -125,3 +125,8 @@ export {
 export type { FirestoreResult, NoDbResult } from './utils/firestore-helper';
 
 export { Timestamp } from 'firebase/firestore';
+export type {
+  CollectionReference,
+  QueryDocumentSnapshot,
+  DocumentData,
+} from 'firebase/firestore';

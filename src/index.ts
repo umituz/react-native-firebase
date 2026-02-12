@@ -69,9 +69,12 @@ export { Timestamp } from "firebase/firestore";
 export type {
   Transaction,
   DocumentReference,
+  CollectionReference,
   WriteBatch,
   DocumentSnapshot,
   QuerySnapshot,
+  QueryDocumentSnapshot,
+  DocumentData,
   Firestore,
 } from "firebase/firestore";
 
