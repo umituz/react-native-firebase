@@ -138,3 +138,36 @@ export {
 } from './infrastructure/services/password.service';
 export type { PasswordUpdateResult } from './infrastructure/services/password.service';
 
+// Email/Password Authentication
+export {
+  signInWithEmail,
+  signUpWithEmail,
+  signOut,
+  linkAnonymousWithEmail,
+} from './infrastructure/services/email-auth.service';
+export type {
+  EmailCredentials,
+  EmailAuthResult,
+} from './infrastructure/services/email-auth.service';
+
+// Auth Listener
+export {
+  setupAuthListener,
+} from './infrastructure/services/auth-listener.service';
+export type {
+  AuthListenerConfig,
+  AuthListenerResult,
+} from './infrastructure/services/auth-listener.service';
+
+// User Document Service
+export {
+  ensureUserDocument,
+  markUserDeleted,
+  configureUserDocumentService,
+} from './infrastructure/services/user-document.service';
+export type {
+  UserDocumentUser,
+  UserDocumentConfig,
+  UserDocumentExtras,
+} from './infrastructure/services/user-document.types';
+
