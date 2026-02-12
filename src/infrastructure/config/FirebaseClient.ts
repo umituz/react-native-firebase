@@ -16,7 +16,8 @@ export type { FirebaseApp } from './initializers/FirebaseAppInitializer';
 
 // Export singleton for backward compatibility
 export { FirebaseClientSingleton } from './clients/FirebaseClientSingleton';
-export const firebaseClient = require('./clients/FirebaseClientSingleton').FirebaseClientSingleton.getInstance();
+import { FirebaseClientSingleton as FCSingleton } from './clients/FirebaseClientSingleton';
+export const firebaseClient = FCSingleton.getInstance();
 
 // Re-export types and functions
 export type {

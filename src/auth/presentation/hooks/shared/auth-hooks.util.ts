@@ -3,7 +3,7 @@
  * React hooks for Firebase Auth state management
  */
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect } from 'react';
 import { onAuthStateChanged, type Auth, type User } from 'firebase/auth';
 
 /**
