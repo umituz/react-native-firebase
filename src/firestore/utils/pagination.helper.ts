@@ -33,7 +33,9 @@ export class PaginationHelper<T> {
   ): PaginatedResult<T> {
     const hasMore = items.length > pageLimit;
     const resultItems = hasMore ? items.slice(0, pageLimit) : items;
-    const lastItem = resultItems[resultItems.length - 1];
+
+    // Safe access: check array is not empty before accessing last item
+    const lastItem = resultItems.length > 0 ? resultItems[resultItems.length - 1] : undefined;
     const nextCursor = hasMore && lastItem
       ? getCursor(lastItem)
       : null;

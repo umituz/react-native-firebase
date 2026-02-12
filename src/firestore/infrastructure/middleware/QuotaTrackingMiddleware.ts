@@ -43,8 +43,11 @@ export class QuotaTrackingMiddleware {
 
     /**
      * Track read operation
+     * @param _collection - Collection name (reserved for future per-collection tracking)
+     * @param count - Number of documents read
+     * @param cached - Whether result was from cache
      */
-    trackRead(collection: string, count: number = 1, cached: boolean = false): void {
+    trackRead(_collection: string, count: number = 1, cached: boolean = false): void {
         if (!cached) {
             this.readCount += count;
         }
@@ -52,15 +55,19 @@ export class QuotaTrackingMiddleware {
 
     /**
      * Track write operation
+     * @param _collection - Collection name (reserved for future per-collection tracking)
+     * @param count - Number of documents written
      */
-    trackWrite(collection: string, count: number = 1): void {
+    trackWrite(_collection: string, count: number = 1): void {
         this.writeCount += count;
     }
 
     /**
      * Track delete operation
+     * @param _collection - Collection name (reserved for future per-collection tracking)
+     * @param count - Number of documents deleted
      */
-    trackDelete(collection: string, count: number = 1): void {
+    trackDelete(_collection: string, count: number = 1): void {
         this.deleteCount += count;
     }
 

@@ -75,10 +75,18 @@ export class AppleAuthService {
       });
 
       const userCredential = await signInWithCredential(auth, credential);
+
+      // Check if user is new by comparing metadata timestamps
+      // Convert to timestamps for reliable comparison (string comparison can be unreliable)
+      const creationTime = userCredential.user.metadata.creationTime;
+      const lastSignInTime = userCredential.user.metadata.lastSignInTime;
+      const isNewUser = creationTime && lastSignInTime
+        ? new Date(creationTime).getTime() === new Date(lastSignInTime).getTime()
+        : false;
+
       return {
         userCredential,
-        isNewUser: userCredential.user.metadata.creationTime ===
-          userCredential.user.metadata.lastSignInTime
+        isNewUser
       };
     });
 

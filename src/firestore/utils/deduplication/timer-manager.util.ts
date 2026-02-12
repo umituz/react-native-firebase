@@ -31,8 +31,8 @@ export class TimerManager {
         this.options.onCleanup();
       } catch (error) {
         // Silently handle cleanup errors to prevent timer from causing issues
-        // Log error in development for debugging
-        if (process.env.NODE_ENV === 'development') {
+        // Log error in development for debugging (use __DEV__ for React Native)
+        if (__DEV__) {
           console.error('TimerManager cleanup error:', error);
         }
       }

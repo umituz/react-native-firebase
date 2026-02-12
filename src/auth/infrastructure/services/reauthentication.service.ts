@@ -99,7 +99,11 @@ export async function getAppleReauthCredential(): Promise<ReauthCredentialResult
     };
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
-    const code = isCancelledError({ code: '', message: err.message }) ? "auth/cancelled" : "auth/failed";
+    const errorInfo = {
+      code: (err as { code?: string }).code ?? '',
+      message: err.message
+    };
+    const code = isCancelledError(errorInfo) ? "auth/cancelled" : "auth/failed";
     return {
       success: false,
       error: { code, message: err.message }

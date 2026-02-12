@@ -52,13 +52,17 @@ export function createFirebaseInitModule(
 
         // Check if initialization was successful
         if (!result.app) {
-          console.error('[Firebase] Initialization failed: Firebase app not initialized');
+          if (__DEV__) {
+            console.error('[Firebase] Initialization failed: Firebase app not initialized');
+          }
           return false;
         }
 
         // Check if auth initialization failed
         if (result.auth === false && result.authError) {
-          console.error(`[Firebase] Auth initialization failed: ${result.authError}`);
+          if (__DEV__) {
+            console.error(`[Firebase] Auth initialization failed: ${result.authError}`);
+          }
           // Auth failure is not critical for the app to function
           // Log the error but don't fail the entire initialization
         }
@@ -66,7 +70,9 @@ export function createFirebaseInitModule(
         return true;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error(`[Firebase] Initialization failed: ${errorMessage}`);
+        if (__DEV__) {
+          console.error(`[Firebase] Initialization failed: ${errorMessage}`);
+        }
         return false;
       }
     },
