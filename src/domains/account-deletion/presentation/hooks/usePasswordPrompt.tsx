@@ -55,7 +55,7 @@ export const usePasswordPrompt = (options: UsePasswordPromptOptions = {}): UsePa
       confirmText={options.confirmText}
       cancelText={options.cancelText}
     />
-  ), [isVisible, handleConfirm, handleCancel, options]);
+  ), [isVisible, handleConfirm, handleCancel, options.title, options.message, options.confirmText, options.cancelText]);
 
   return {
     showPasswordPrompt,

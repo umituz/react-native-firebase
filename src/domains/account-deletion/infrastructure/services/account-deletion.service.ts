@@ -74,23 +74,47 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
   if (provider === "apple.com") {
     res = await reauthenticateWithApple(user);
   } else if (provider === "google.com") {
-    if (!options.googleIdToken) {
+    let googleToken = options.googleIdToken;
+    if (!googleToken && options.onGoogleReauthRequired) {
+      const token = await options.onGoogleReauthRequired();
+      if (!token) {
+        return {
+          success: false,
+          error: { code: "auth/google-reauth-cancelled", message: "Google reauth cancelled" },
+          requiresReauth: true
+        };
+      }
+      googleToken = token;
+    }
+    if (!googleToken) {
       return {
         success: false,
         error: { code: "auth/google-reauth", message: "Google reauth required" },
         requiresReauth: true
       };
     }
-    res = await reauthenticateWithGoogle(user, options.googleIdToken);
+    res = await reauthenticateWithGoogle(user, googleToken);
   } else if (provider === "password") {
-    if (!options.password) {
+    let password = options.password;
+    if (!password && options.onPasswordRequired) {
+      const pwd = await options.onPasswordRequired();
+      if (!pwd) {
+        return {
+          success: false,
+          error: { code: "auth/password-reauth-cancelled", message: "Password reauth cancelled" },
+          requiresReauth: true
+        };
+      }
+      password = pwd;
+    }
+    if (!password) {
       return {
         success: false,
         error: { code: "auth/password-reauth", message: "Password required" },
         requiresReauth: true
       };
     }
-    res = await reauthenticateWithPassword(user, options.password);
+    res = await reauthenticateWithPassword(user, password);
   } else {
     return null;
   }
