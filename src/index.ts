@@ -15,10 +15,10 @@ export {
   FirebaseError,
   FirebaseInitializationError,
   FirebaseConfigurationError,
-} from "./domain/errors/FirebaseError";
+} from "./shared/domain/errors/FirebaseError";
 
 // Core Types
-export type { FirebaseConfig } from "./domain/value-objects/FirebaseConfig";
+export type { FirebaseConfig } from "./shared/domain/value-objects/FirebaseConfig";
 export type { IFirebaseClient } from "./application/ports/IFirebaseClient";
 
 // Core Client
@@ -31,14 +31,14 @@ export {
   getFirebaseInitializationError,
   resetFirebaseClient,
   firebaseClient,
-} from "./infrastructure/config/FirebaseClient";
+} from "./shared/infrastructure/config/FirebaseClient";
 
 export type {
   FirebaseApp,
   AuthInitializer,
   ServiceInitializationOptions,
   ServiceInitializationResult,
-} from "./infrastructure/config/FirebaseClient";
+} from "./shared/infrastructure/config/FirebaseClient";
 
 // Type Guards
 export {
@@ -50,10 +50,11 @@ export {
   isQuotaExceededError,
   getSafeErrorMessage,
   getSafeErrorCode,
-} from "./domain/guards/firebase-error.guard";
+} from "./shared/domain/guards/firebase-error.guard";
 
-// Auth Module Exports
-export * from "./auth";
+// Domain Exports
+export * from "./domains/auth";
+export * from "./domains/account-deletion";
 
 
 
@@ -62,8 +63,8 @@ export {
   BaseRepository,
   BaseQueryRepository,
   BasePaginatedRepository,
-} from "./firestore";
-export * from "./firestore";
+} from "./domains/firestore";
+export * from "./domains/firestore";
 export { Timestamp } from "firebase/firestore";
 export type {
   Transaction,
@@ -86,8 +87,8 @@ export {
   createSuccessResult,
   runTransaction,
   serverTimestamp,
-} from "./firestore/utils/firestore-helper";
-export type { FirestoreResult, NoDbResult } from "./firestore/utils/firestore-helper";
+} from "./domains/firestore/utils/firestore-helper";
+export type { FirestoreResult, NoDbResult } from "./domains/firestore/utils/firestore-helper";
 
 // Init Module Factory
 export {

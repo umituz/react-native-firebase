@@ -4,7 +4,7 @@
  */
 
 import type { InitModule } from '@umituz/react-native-design-system';
-import { initializeAllFirebaseServices } from '../infrastructure/config/FirebaseClient';
+import { initializeAllFirebaseServices } from '../shared/infrastructure/config/FirebaseClient';
 
 export interface FirebaseInitModuleConfig {
   /**
