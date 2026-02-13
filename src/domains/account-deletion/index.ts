@@ -27,8 +27,8 @@ export {
   getAppleReauthCredential,
 } from './infrastructure/services/reauthentication.service';
 
-export { PasswordPromptModal } from './presentation/components/PasswordPromptModal';
-export type { PasswordPromptModalProps } from './presentation/components/PasswordPromptModal';
+export { PasswordPromptScreen } from './presentation/components/PasswordPromptScreen';
+export type { PasswordPromptScreenProps } from './presentation/components/PasswordPromptScreen';
 
 export { usePasswordPrompt } from './presentation/hooks/usePasswordPrompt';
 export type { UsePasswordPromptOptions, UsePasswordPromptReturn } from './presentation/hooks/usePasswordPrompt';
