@@ -144,6 +144,7 @@ export { useGoogleOAuth } from './presentation/hooks/useGoogleOAuth';
 export type {
   UseGoogleOAuthResult,
 } from './presentation/hooks/useGoogleOAuth';
+export type { GoogleOAuthConfig } from './infrastructure/services/google-oauth.service';
 
 // Password Management
 export {
