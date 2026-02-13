@@ -23,9 +23,11 @@ export const usePasswordPrompt = (options: UsePasswordPromptOptions = {}): UsePa
   const [resolvePromise, setResolvePromise] = useState<((value: string | null) => void) | null>(null);
 
   const showPasswordPrompt = useCallback((): Promise<string | null> => {
+    console.log("[usePasswordPrompt] showPasswordPrompt called - opening modal");
     return new Promise((resolve) => {
       setResolvePromise(() => resolve);
       setIsVisible(true);
+      console.log("[usePasswordPrompt] Modal visibility set to true");
     });
   }, []);
 
