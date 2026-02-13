@@ -49,7 +49,7 @@ class FirestoreClientSingleton extends ServiceClientSingleton<Firestore> {
   /**
    * Initialize Firestore
    */
-  initialize(): Firestore | null {
+  override initialize(): Firestore | null {
     return super.initialize();
   }
 

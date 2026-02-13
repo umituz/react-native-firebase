@@ -17,7 +17,7 @@ import { ConfigurableService } from "../../../domain/utils/service-config.util";
  * Provides Google Sign-In functionality for Firebase
  */
 export class GoogleAuthService extends ConfigurableService<GoogleAuthConfig> {
-  protected isValidConfig(config: GoogleAuthConfig): boolean {
+  protected override isValidConfig(config: GoogleAuthConfig): boolean {
     return (
       config !== null &&
       (!!config.webClientId || !!config.iosClientId || !!config.androidClientId)

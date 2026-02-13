@@ -42,7 +42,7 @@ class FirebaseAuthClientSingleton extends ServiceClientSingleton<Auth, FirebaseA
   /**
    * Initialize Auth with optional configuration
    */
-  initialize(config?: FirebaseAuthConfig): Auth | null {
+  override initialize(config?: FirebaseAuthConfig): Auth | null {
     return super.initialize(config);
   }
 

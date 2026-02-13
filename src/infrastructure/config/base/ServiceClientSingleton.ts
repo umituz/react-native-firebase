@@ -31,8 +31,6 @@ export interface ServiceClientOptions<TInstance, TConfig = unknown> {
  * Provides common initialization, state management, and error handling
  */
 export class ServiceClientSingleton<TInstance, TConfig = unknown> {
-  private static instances = new Map<string, ServiceClientSingleton<unknown, unknown>>();
-
   protected state: ServiceClientState<TInstance>;
   private readonly options: ServiceClientOptions<TInstance, TConfig>;
 
