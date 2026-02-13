@@ -13,7 +13,7 @@ import {
   useAppDesignTokens
 } from '@umituz/react-native-design-system';
 
-export interface PasswordPromptModalProps {
+export interface PasswordPromptScreenProps {
   visible: boolean;
   onConfirm: (password: string) => void;
   onCancel: () => void;
@@ -23,7 +23,7 @@ export interface PasswordPromptModalProps {
   cancelText?: string;
 }
 
-export const PasswordPromptModal: React.FC<PasswordPromptModalProps> = ({
+export const PasswordPromptScreen: React.FC<PasswordPromptScreenProps> = ({
   visible,
   onConfirm,
   onCancel,

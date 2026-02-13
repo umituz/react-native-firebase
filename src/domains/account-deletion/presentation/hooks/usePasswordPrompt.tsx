@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { PasswordPromptModal } from '../components/PasswordPromptModal';
+import { PasswordPromptScreen } from '../components/PasswordPromptScreen';
 
 export interface UsePasswordPromptOptions {
   title?: string;
@@ -46,7 +46,7 @@ export const usePasswordPrompt = (options: UsePasswordPromptOptions = {}): UsePa
   }, [resolvePromise]);
 
   const PasswordPromptComponent = useMemo(() => (
-    <PasswordPromptModal
+    <PasswordPromptScreen
       visible={isVisible}
       onConfirm={handleConfirm}
       onCancel={handleCancel}
