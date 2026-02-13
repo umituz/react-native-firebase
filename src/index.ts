@@ -62,7 +62,6 @@ export {
   BaseRepository,
   BaseQueryRepository,
   BasePaginatedRepository,
-  FirestorePathResolver,
 } from "./firestore";
 export * from "./firestore";
 export { Timestamp } from "firebase/firestore";

@@ -82,11 +82,17 @@ export async function signUpWithEmail(
       );
     }
 
-    // Update display name if provided
+    // Update display name if provided (non-critical operation)
     if (credentials.displayName && userCredential.user) {
-      await updateProfile(userCredential.user, {
-        displayName: credentials.displayName.trim(),
-      });
+      try {
+        await updateProfile(userCredential.user, {
+          displayName: credentials.displayName.trim(),
+        });
+      } catch (profileError) {
+        // Profile update failed but account was created successfully
+        // Log the error but don't fail the signup
+        console.warn("Profile update failed after account creation:", profileError);
+      }
     }
 
     return { success: true, data: userCredential.user };

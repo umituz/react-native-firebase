@@ -23,6 +23,7 @@ export type { Firestore } from './infrastructure/config/FirestoreClient';
 
 // Repositories
 export { BaseRepository } from './infrastructure/repositories/BaseRepository';
+export type { IPathResolver } from './infrastructure/repositories/BaseRepository';
 export { BaseQueryRepository } from './infrastructure/repositories/BaseQueryRepository';
 export { BasePaginatedRepository } from './infrastructure/repositories/BasePaginatedRepository';
 
@@ -61,9 +62,6 @@ export {
   DocumentMapperHelper,
   createDocumentMapper,
 } from './utils/document-mapper.helper';
-
-// Path Resolver
-export { FirestorePathResolver } from './utils/path-resolver';
 
 // Domain Constants
 export {

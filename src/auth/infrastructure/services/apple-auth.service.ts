@@ -1,6 +1,7 @@
 /**
  * Apple Auth Service
  * Handles Apple Sign-In with Firebase Authentication
+ * This service is optional and requires expo-apple-authentication to be installed
  */
 
 import {
@@ -8,7 +9,6 @@ import {
   signInWithCredential,
   type Auth,
 } from "firebase/auth";
-import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
 import { generateNonce, hashNonce } from "./crypto.util";
 import type { AppleAuthResult } from "./apple-auth.types";
@@ -17,9 +17,23 @@ import {
 } from "./base/base-auth.service";
 import { executeAuthOperation, type Result } from "../../../domain/utils";
 
+// Conditional import - expo-apple-authentication is optional
+let AppleAuthentication: any = null;
+let isAppleAuthAvailable = false;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  AppleAuthentication = require("expo-apple-authentication");
+  isAppleAuthAvailable = true;
+} catch {
+  // expo-apple-authentication not available - this is fine if not using Apple auth
+  console.info("expo-apple-authentication is not installed. Apple authentication will not be available.");
+}
+
 export class AppleAuthService {
   async isAvailable(): Promise<boolean> {
     if (Platform.OS !== "ios") return false;
+    if (!isAppleAuthAvailable || !AppleAuthentication?.isAvailableAsync) return false;
     try {
       return await AppleAuthentication.isAvailableAsync();
     } catch {
@@ -43,6 +57,14 @@ export class AppleAuthService {
   }
 
   async signIn(auth: Auth): Promise<AppleAuthResult> {
+    if (!isAppleAuthAvailable) {
+      return {
+        success: false,
+        error: "expo-apple-authentication is not available. Please install expo-apple-authentication.",
+        code: "unavailable"
+      };
+    }
+
     const isAvailable = await this.isAvailable();
     if (!isAvailable) {
       return {

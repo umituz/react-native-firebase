@@ -50,7 +50,11 @@ export async function deleteCurrentUser(
     const code = authErr?.code ?? "auth/failed";
     const message = authErr?.message ?? "Account deletion failed";
 
-    if (code === "auth/requires-recent-login" && (options.autoReauthenticate || options.password || options.googleIdToken)) {
+    // Determine if we should attempt reauthentication
+    const hasCredentials = !!(options.password || options.googleIdToken);
+    const shouldReauth = options.autoReauthenticate === true || hasCredentials;
+
+    if (code === "auth/requires-recent-login" && shouldReauth) {
       const reauth = await attemptReauth(user, options);
       if (reauth) return reauth;
     }
@@ -93,7 +97,10 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
 
   if (res.success) {
     try {
-      await deleteUser(user);
+      // After reauthentication, get fresh user reference from auth
+      const auth = getFirebaseAuth();
+      const currentUser = auth?.currentUser || user;
+      await deleteUser(currentUser);
       return successResult();
     } catch (err: unknown) {
       const authErr = err instanceof Error ? (err as { code?: string; message?: string }) : null;

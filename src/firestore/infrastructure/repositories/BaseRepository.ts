@@ -2,27 +2,33 @@
  * Base Repository - Core Firestore Operations
  *
  * Provides base functionality for all Firestore repositories.
- * Handles initialization checks, error handling, and quota tracking.
+ * Standard pattern: users/{userId}/{collectionName}
+ *
+ * Subclasses must provide collectionName via constructor.
+ * This class handles all path resolution, eliminating need for FirestorePathResolver.
  */
 
-import type { Firestore } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
+import type { Firestore, CollectionReference, DocumentReference, DocumentData } from 'firebase/firestore';
+import { getFirestore, collection, doc } from 'firebase/firestore';
 import { isQuotaError as checkQuotaError } from '../../utils/quota-error-detector.util';
 
-/**
- * Repository destruction state
- */
 export enum RepositoryState {
   ACTIVE = 'active',
   DESTROYED = 'destroyed',
 }
 
-/**
- * Base repository for Firestore operations
- * Provides common functionality for all repositories
- */
-export abstract class BaseRepository {
+export interface IPathResolver {
+  getUserCollection(userId: string): CollectionReference<DocumentData> | null;
+  getDocRef(userId: string, documentId: string): DocumentReference<DocumentData> | null;
+}
+
+export abstract class BaseRepository implements IPathResolver {
   protected state: RepositoryState = RepositoryState.ACTIVE;
+  protected readonly collectionName: string;
+
+  constructor(collectionName: string) {
+    this.collectionName = collectionName;
+  }
 
   /**
    * Get the Firestore instance
@@ -33,6 +39,18 @@ export abstract class BaseRepository {
       return null;
     }
     return getFirestore();
+  }
+
+  getUserCollection(userId: string): CollectionReference<DocumentData> | null {
+    const db = this.getDb();
+    if (!db) return null;
+    return collection(db, 'users', userId, this.collectionName);
+  }
+
+  getDocRef(userId: string, documentId: string): DocumentReference<DocumentData> | null {
+    const db = this.getDb();
+    if (!db) return null;
+    return doc(db, 'users', userId, this.collectionName, documentId);
   }
 
   /**
@@ -49,13 +67,11 @@ export abstract class BaseRepository {
 
   /**
    * Execute operation with error handling
-   * @param collection - Collection name for tracking
    * @param operation - Operation to execute
    * @returns Operation result
    * @throws Error if operation fails
    */
   protected async executeOperation<T>(
-    collection: string,
     operation: () => Promise<T>
   ): Promise<T> {
     if (this.state === RepositoryState.DESTROYED) {
@@ -74,27 +90,6 @@ export abstract class BaseRepository {
 
       throw error;
     }
-  }
-
-  /**
-   * Track read operation
-   */
-  protected trackRead(_collection: string, _count: number = 1): void {
-    // Quota tracking delegated to middleware
-  }
-
-  /**
-   * Track write operation
-   */
-  protected trackWrite(_collection: string, _count: number = 1): void {
-    // Quota tracking delegated to middleware
-  }
-
-  /**
-   * Track delete operation
-   */
-  protected trackDelete(_collection: string, _count: number = 1): void {
-    // Quota tracking delegated to middleware
   }
 
   /**

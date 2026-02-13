@@ -6,7 +6,7 @@
 import { onIdTokenChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "../config/FirebaseAuthClient";
 import type { Result } from "../../../domain/utils";
-import { successResult, failureResultFrom } from "../../../domain/utils";
+import { failureResultFrom } from "../../../domain/utils";
 
 export interface AuthListenerConfig {
   /**

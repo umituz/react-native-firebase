@@ -110,6 +110,14 @@ export type {
 } from './infrastructure/services/google-auth.types';
 
 export {
+  GoogleOAuthService,
+  googleOAuthService,
+} from './infrastructure/services/google-oauth.service';
+export type {
+  GoogleOAuthConfig,
+} from './infrastructure/services/google-oauth.service';
+
+export {
   AppleAuthService,
   appleAuthService,
 } from './infrastructure/services/apple-auth.service';
@@ -131,6 +139,11 @@ export type {
   SocialAuthResult,
   UseSocialAuthResult,
 } from './presentation/hooks/useSocialAuth';
+
+export { useGoogleOAuth } from './presentation/hooks/useGoogleOAuth';
+export type {
+  UseGoogleOAuthResult,
+} from './presentation/hooks/useGoogleOAuth';
 
 // Password Management
 export {
