@@ -32,6 +32,7 @@
     "url": "git+https://github.com/umituz/react-native-firebase.git"
   },
   "peerDependencies": {
+    "@gorhom/portal": "*",
     "@umituz/react-native-design-system": "*",
     "expo": ">=54.0.0",
     "expo-apple-authentication": ">=6.0.0",

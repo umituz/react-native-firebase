@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { View, StyleSheet, Modal, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
+import { Portal } from '@gorhom/portal';
 import {
   AtomicInput,
   AtomicButton,
@@ -53,13 +54,16 @@ export const PasswordPromptScreen: React.FC<PasswordPromptScreenProps> = ({
     onCancel();
   };
 
+  if (!visible) return null;
+
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleCancel}
-    >
+    <Portal>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={handleCancel}
+      >
       <SafeAreaView style={[styles.safeArea, { backgroundColor: tokens.colors.background }]} edges={['top', 'bottom']}>
         <View style={[styles.headerBar, { borderBottomColor: tokens.colors.border }]}>
           <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
@@ -115,7 +119,8 @@ export const PasswordPromptScreen: React.FC<PasswordPromptScreenProps> = ({
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </Modal>
+      </Modal>
+    </Portal>
   );
 };
 
