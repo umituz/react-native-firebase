@@ -67,13 +67,30 @@ export async function deleteCurrentUser(
     if (typeof __DEV__ !== "undefined" && __DEV__) {
       console.log("[deleteCurrentUser] attemptReauth result:", reauth);
     }
-    if (reauth) return reauth;
+    if (reauth) {
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        console.log("[deleteCurrentUser] Reauth returned result, returning:", reauth);
+      }
+      return reauth;
+    }
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[deleteCurrentUser] Reauth returned null, continuing to deleteUser");
+    }
   }
 
   try {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[deleteCurrentUser] Calling deleteUser");
+    }
     await deleteUser(user);
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[deleteCurrentUser] deleteUser successful");
+    }
     return successResult();
   } catch (error: unknown) {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.error("[deleteCurrentUser] deleteUser failed:", error);
+    }
     const errorInfo = toAuthErrorInfo(error);
     const code = errorInfo.code;
     const message = errorInfo.message;
@@ -149,34 +166,57 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
         console.log("[attemptReauth] onPasswordRequired returned:", pwd ? "password received" : "null/cancelled");
       }
       if (!pwd) {
+        if (typeof __DEV__ !== "undefined" && __DEV__) {
+          console.log("[attemptReauth] Password was null/cancelled, returning error");
+        }
         return {
           success: false,
           error: { code: "auth/password-reauth-cancelled", message: "Password reauth cancelled" },
           requiresReauth: true
         };
       }
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        console.log("[attemptReauth] Password received, setting password variable");
+      }
       password = pwd;
     }
     if (!password) {
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        console.log("[attemptReauth] No password available after callback, returning error");
+      }
       return {
         success: false,
         error: { code: "auth/password-reauth", message: "Password required" },
         requiresReauth: true
       };
     }
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[attemptReauth] Calling reauthenticateWithPassword");
+    }
     res = await reauthenticateWithPassword(user, password);
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[attemptReauth] reauthenticateWithPassword result:", res);
+    }
   } else {
     return null;
   }
 
   if (res.success) {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[attemptReauth] Reauthentication successful, calling deleteUser");
+    }
     try {
-      // After reauthentication, get fresh user reference from auth
       const auth = getFirebaseAuth();
       const currentUser = auth?.currentUser || user;
       await deleteUser(currentUser);
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        console.log("[attemptReauth] deleteUser successful after reauth");
+      }
       return successResult();
     } catch (err: unknown) {
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        console.error("[attemptReauth] deleteUser failed after reauth:", err);
+      }
       const errorInfo = toAuthErrorInfo(err);
       return {
         success: false,
@@ -186,6 +226,9 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
     }
   }
 
+  if (typeof __DEV__ !== "undefined" && __DEV__) {
+    console.log("[attemptReauth] Reauthentication failed, returning error");
+  }
   return {
     success: false,
     error: {
