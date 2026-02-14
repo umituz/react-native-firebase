@@ -4,6 +4,8 @@
  */
 
 import { deleteUser, type User } from "firebase/auth";
+
+declare const __DEV__: boolean;
 import { getFirebaseAuth } from "../../../auth/infrastructure/config/FirebaseAuthClient";
 import {
   getUserAuthProvider,
@@ -11,7 +13,7 @@ import {
   reauthenticateWithPassword,
   reauthenticateWithGoogle,
 } from "./reauthentication.service";
-import { successResult, type Result } from "../../../../shared/domain/utils";
+import { successResult, type Result, toAuthErrorInfo } from "../../../../shared/domain/utils";
 import type { AccountDeletionOptions } from "../../application/ports/reauthentication.types";
 
 export interface AccountDeletionResult extends Result<void> {
@@ -23,10 +25,17 @@ export type { AccountDeletionOptions } from "../../application/ports/reauthentic
 export async function deleteCurrentUser(
   options: AccountDeletionOptions = { autoReauthenticate: true }
 ): Promise<AccountDeletionResult> {
+  if (typeof __DEV__ !== "undefined" && __DEV__) {
+    console.log("[deleteCurrentUser] Called with options:", options);
+  }
+
   const auth = getFirebaseAuth();
   const user = auth?.currentUser;
 
   if (!auth || !user) {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[deleteCurrentUser] Auth not ready");
+    }
     return {
       success: false,
       error: { code: "auth/not-ready", message: "Auth not ready" },
@@ -35,6 +44,9 @@ export async function deleteCurrentUser(
   }
 
   if (user.isAnonymous) {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[deleteCurrentUser] Cannot delete anonymous user");
+    }
     return {
       success: false,
       error: { code: "auth/anonymous", message: "Cannot delete anonymous" },
@@ -42,15 +54,30 @@ export async function deleteCurrentUser(
     };
   }
 
+  const provider = getUserAuthProvider(user);
+  if (typeof __DEV__ !== "undefined" && __DEV__) {
+    console.log("[deleteCurrentUser] User provider:", provider);
+  }
+
+  if (provider === "password" && options.autoReauthenticate && options.onPasswordRequired) {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[deleteCurrentUser] Password provider, calling attemptReauth");
+    }
+    const reauth = await attemptReauth(user, options);
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[deleteCurrentUser] attemptReauth result:", reauth);
+    }
+    if (reauth) return reauth;
+  }
+
   try {
     await deleteUser(user);
     return successResult();
   } catch (error: unknown) {
-    const authErr = error instanceof Error ? (error as { code?: string; message?: string }) : null;
-    const code = authErr?.code ?? "auth/failed";
-    const message = authErr?.message ?? "Account deletion failed";
+    const errorInfo = toAuthErrorInfo(error);
+    const code = errorInfo.code;
+    const message = errorInfo.message;
 
-    // Determine if we should attempt reauthentication
     const hasCredentials = !!(options.password || options.googleIdToken);
     const shouldReauth = options.autoReauthenticate === true || hasCredentials;
 
@@ -68,12 +95,26 @@ export async function deleteCurrentUser(
 }
 
 async function attemptReauth(user: User, options: AccountDeletionOptions): Promise<AccountDeletionResult | null> {
+  if (typeof __DEV__ !== "undefined" && __DEV__) {
+    console.log("[attemptReauth] Called");
+  }
+
   const provider = getUserAuthProvider(user);
+  if (typeof __DEV__ !== "undefined" && __DEV__) {
+    console.log("[attemptReauth] Provider:", provider);
+  }
+
   let res: { success: boolean; error?: { code?: string; message?: string } };
 
   if (provider === "apple.com") {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[attemptReauth] Apple provider");
+    }
     res = await reauthenticateWithApple(user);
   } else if (provider === "google.com") {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[attemptReauth] Google provider");
+    }
     let googleToken = options.googleIdToken;
     if (!googleToken && options.onGoogleReauthRequired) {
       const token = await options.onGoogleReauthRequired();
@@ -95,9 +136,18 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
     }
     res = await reauthenticateWithGoogle(user, googleToken);
   } else if (provider === "password") {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.log("[attemptReauth] Password provider, calling onPasswordRequired...");
+    }
     let password = options.password;
     if (!password && options.onPasswordRequired) {
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        console.log("[attemptReauth] Calling onPasswordRequired callback");
+      }
       const pwd = await options.onPasswordRequired();
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        console.log("[attemptReauth] onPasswordRequired returned:", pwd ? "password received" : "null/cancelled");
+      }
       if (!pwd) {
         return {
           success: false,
@@ -127,10 +177,10 @@ async function attemptReauth(user: User, options: AccountDeletionOptions): Promi
       await deleteUser(currentUser);
       return successResult();
     } catch (err: unknown) {
-      const authErr = err instanceof Error ? (err as { code?: string; message?: string }) : null;
+      const errorInfo = toAuthErrorInfo(err);
       return {
         success: false,
-        error: { code: authErr?.code ?? "auth/failed", message: authErr?.message ?? "Deletion failed" },
+        error: { code: errorInfo.code, message: errorInfo.message },
         requiresReauth: false
       };
     }
@@ -159,12 +209,11 @@ export async function deleteUserAccount(user: User | null): Promise<AccountDelet
     await deleteUser(user);
     return successResult();
   } catch (error: unknown) {
-    const authErr = error instanceof Error ? (error as { code?: string; message?: string }) : null;
-    const code = authErr?.code ?? "auth/failed";
+    const errorInfo = toAuthErrorInfo(error);
     return {
       success: false,
-      error: { code, message: authErr?.message ?? "Deletion failed" },
-      requiresReauth: code === "auth/requires-recent-login"
+      error: { code: errorInfo.code, message: errorInfo.message },
+      requiresReauth: errorInfo.code === "auth/requires-recent-login"
     };
   }
 }

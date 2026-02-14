@@ -11,6 +11,7 @@ import {
   getCurrentUserId,
   getCurrentUser,
 } from './auth-utils.service';
+import { ERROR_MESSAGES } from '../../../../shared/domain/utils/error-handlers/error-messages';
 
 /**
  * Auth Guard Service
@@ -24,22 +25,21 @@ export class AuthGuardService {
   async requireAuthenticatedUser(): Promise<string> {
     const auth = getFirebaseAuth();
     if (!auth) {
-      throw new Error('Firebase Auth is not initialized');
+      throw new Error(ERROR_MESSAGES.AUTH.NOT_INITIALIZED);
     }
 
     const userId = getCurrentUserId(auth);
     if (!userId) {
-      throw new Error('User must be authenticated to perform this action');
+      throw new Error(ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED);
     }
 
     const currentUser = getCurrentUser(auth);
     if (!currentUser) {
-      throw new Error('User must be authenticated to perform this action');
+      throw new Error(ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED);
     }
 
-    // Check if user is anonymous (guest)
     if (currentUser.isAnonymous) {
-      throw new Error('Guest users cannot perform this action');
+      throw new Error(ERROR_MESSAGES.AUTH.NON_ANONYMOUS_ONLY);
     }
 
     return userId;

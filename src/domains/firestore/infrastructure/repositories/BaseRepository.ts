@@ -11,6 +11,7 @@
 import type { Firestore, CollectionReference, DocumentReference, DocumentData } from 'firebase/firestore';
 import { getFirestore, collection, doc } from 'firebase/firestore';
 import { isQuotaError as checkQuotaError } from '../../utils/quota-error-detector.util';
+import { ERROR_MESSAGES } from '../../../../shared/domain/utils/error-handlers/error-messages';
 
 export enum RepositoryState {
   ACTIVE = 'active',
@@ -75,19 +76,15 @@ export abstract class BaseRepository implements IPathResolver {
     operation: () => Promise<T>
   ): Promise<T> {
     if (this.state === RepositoryState.DESTROYED) {
-      throw new Error('Repository has been destroyed');
+      throw new Error(ERROR_MESSAGES.REPOSITORY.DESTROYED);
     }
 
     try {
       return await operation();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-      // Check if this is a quota error
       if (checkQuotaError(error)) {
-        throw new Error(`Firestore quota exceeded: ${errorMessage}`);
+        throw new Error(ERROR_MESSAGES.FIRESTORE.QUOTA_EXCEEDED);
       }
-
       throw error;
     }
   }

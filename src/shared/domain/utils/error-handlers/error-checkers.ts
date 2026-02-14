@@ -84,8 +84,8 @@ export function isQuotaError(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false;
 
   if (hasCodeProperty(error)) {
-    const code = error.code;
-    return QUOTA_ERROR_CODES.some(
+    const code = error.code.toLowerCase();
+    return QUOTA_ERROR_CODES.map(c => c.toLowerCase()).some(
       (c) => code === c || code.endsWith(`/${c}`) || code.startsWith(`${c}/`)
     );
   }
@@ -94,12 +94,10 @@ export function isQuotaError(error: unknown): boolean {
     const message = error.message.toLowerCase();
     return QUOTA_ERROR_MESSAGES.some((m) => {
       const pattern = m.toLowerCase();
-      return (
-        message.includes(` ${pattern} `) ||
-        message.startsWith(`${pattern} `) ||
-        message.endsWith(` ${pattern}`) ||
-        message === pattern
-      );
+      // More flexible matching: handle hyphens, underscores, and no spaces
+      const normalizedMessage = message.replace(/[-_\s]+/g, ' ');
+      const normalizedPattern = pattern.replace(/[-_\s]+/g, ' ');
+      return normalizedMessage.includes(normalizedPattern);
     });
   }
 

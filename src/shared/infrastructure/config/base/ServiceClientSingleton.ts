@@ -33,6 +33,7 @@ export interface ServiceClientOptions<TInstance, TConfig = unknown> {
 export class ServiceClientSingleton<TInstance, TConfig = unknown> {
   protected state: ServiceClientState<TInstance>;
   private readonly options: ServiceClientOptions<TInstance, TConfig>;
+  private initInProgress = false;
 
   constructor(options: ServiceClientOptions<TInstance, TConfig>) {
     this.options = options;
@@ -55,6 +56,12 @@ export class ServiceClientSingleton<TInstance, TConfig = unknown> {
       return null;
     }
 
+    // Prevent concurrent initialization attempts
+    if (this.initInProgress) {
+      return null;
+    }
+
+    this.initInProgress = true;
     try {
       const instance = this.options.initializer ? this.options.initializer(config) : null;
       if (instance) {
@@ -66,6 +73,8 @@ export class ServiceClientSingleton<TInstance, TConfig = unknown> {
       const errorMessage = error instanceof Error ? error.message : `Failed to initialize ${this.options.serviceName}`;
       this.state.initializationError = errorMessage;
       return null;
+    } finally {
+      this.initInProgress = false;
     }
   }
 
@@ -81,7 +90,13 @@ export class ServiceClientSingleton<TInstance, TConfig = unknown> {
       return null;
     }
 
+    // Prevent concurrent auto-initialization attempts
+    if (this.initInProgress) {
+      return null;
+    }
+
     if (autoInit && this.options.autoInitializer) {
+      this.initInProgress = true;
       try {
         const instance = this.options.autoInitializer();
         if (instance) {
@@ -92,6 +107,8 @@ export class ServiceClientSingleton<TInstance, TConfig = unknown> {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : `Failed to initialize ${this.options.serviceName}`;
         this.state.initializationError = errorMessage;
+      } finally {
+        this.initInProgress = false;
       }
     }
 
@@ -119,6 +136,7 @@ export class ServiceClientSingleton<TInstance, TConfig = unknown> {
     this.state.instance = null;
     this.state.initializationError = null;
     this.state.isInitialized = false;
+    this.initInProgress = false;
   }
 
   /**

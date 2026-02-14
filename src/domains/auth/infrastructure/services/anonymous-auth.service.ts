@@ -5,6 +5,7 @@
 
 import { signInAnonymously, type Auth, type User } from "firebase/auth";
 import { toAnonymousUser, type AnonymousUser } from "../../domain/entities/AnonymousUser";
+import { ERROR_MESSAGES } from "../../../../shared/domain/utils/error-handlers/error-messages";
 
 export interface AnonymousAuthResult {
   readonly user: User;
@@ -18,7 +19,7 @@ export interface AnonymousAuthServiceInterface {
 
 export class AnonymousAuthService implements AnonymousAuthServiceInterface {
   async signInAnonymously(auth: Auth): Promise<AnonymousAuthResult> {
-    if (!auth) throw new Error("Firebase Auth instance is required");
+    if (!auth) throw new Error(ERROR_MESSAGES.AUTH.NOT_INITIALIZED);
 
     const currentUser = auth.currentUser;
 
@@ -31,10 +32,15 @@ export class AnonymousAuthService implements AnonymousAuthServiceInterface {
     }
 
     if (currentUser && !currentUser.isAnonymous) {
-      throw new Error("A non-anonymous user is already signed in. Sign out first before creating an anonymous session.");
+      throw new Error(ERROR_MESSAGES.AUTH.SIGN_OUT_REQUIRED);
     }
 
     const userCredential = await signInAnonymously(auth);
+
+    if (!userCredential.user.isAnonymous) {
+      throw new Error(ERROR_MESSAGES.AUTH.INVALID_USER);
+    }
+
     const anonymousUser = toAnonymousUser(userCredential.user);
     return {
       user: userCredential.user,

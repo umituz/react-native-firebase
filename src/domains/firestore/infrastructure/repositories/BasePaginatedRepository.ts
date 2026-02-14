@@ -13,6 +13,19 @@ import { BaseQueryRepository } from "./BaseQueryRepository";
 
 export abstract class BasePaginatedRepository extends BaseQueryRepository {
   /**
+   * Validate cursor format
+   * Cursors must be non-empty strings without path separators
+   */
+  private isValidCursor(cursor: string): boolean {
+    if (!cursor || typeof cursor !== 'string') return false;
+    // Check for invalid characters (path separators, null bytes)
+    if (cursor.includes('/') || cursor.includes('\\') || cursor.includes('\0')) return false;
+    // Check length (Firestore document IDs can't be longer than 1500 bytes)
+    if (cursor.length > 1500) return false;
+    return true;
+  }
+
+  /**
    * Execute paginated query with cursor support
    *
    * Generic helper for cursor-based pagination queries.
@@ -46,6 +59,12 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
     // Handle cursor-based pagination
     if (helper.hasCursor(params) && params?.cursor) {
       cursorKey = params.cursor;
+
+      // Validate cursor format to prevent Firestore errors
+      if (!this.isValidCursor(params.cursor)) {
+        // Invalid cursor format - return empty result
+        return [];
+      }
 
       // Fetch cursor document first
       const cursorDocRef = doc(db, collectionName, params.cursor);

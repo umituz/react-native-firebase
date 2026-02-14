@@ -7,7 +7,7 @@
 
 import type { FirebaseConfig } from '../../../domain/value-objects/FirebaseConfig';
 import { FirebaseConfigurationError } from '../../../domain/errors/FirebaseError';
-import { isValidString, isValidFirebaseApiKey, isValidFirebaseProjectId } from '../../../domain/utils/validation.util';
+import { isValidString, isValidFirebaseApiKey, isValidFirebaseProjectId, isValidFirebaseAuthDomain } from '../../../domain/utils/validation.util';
 
 /**
  * Validation rule interface
@@ -70,7 +70,7 @@ class PlaceholderRule implements ValidationRule {
 export class FirebaseConfigValidator {
   private static rules: ValidationRule[] = [
     new RequiredFieldRule('API Key', config => config.apiKey, isValidFirebaseApiKey),
-    new RequiredFieldRule('Auth Domain', config => config.authDomain),
+    new RequiredFieldRule('Auth Domain', config => config.authDomain, isValidFirebaseAuthDomain),
     new RequiredFieldRule('Project ID', config => config.projectId, isValidFirebaseProjectId),
     new PlaceholderRule('API Key', config => config.apiKey, 'your_firebase_api_key'),
     new PlaceholderRule('Project ID', config => config.projectId, 'your-project-id'),

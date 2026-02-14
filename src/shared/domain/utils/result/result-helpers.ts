@@ -17,7 +17,7 @@ export function isSuccess<T>(result: Result<T>): result is SuccessResult<T> {
  * Check if result is a failure
  */
 export function isFailure<T>(result: Result<T>): result is FailureResult {
-  return result.success === false;
+  return result.success === false && result.error !== undefined;
 }
 
 /**

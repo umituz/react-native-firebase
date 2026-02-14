@@ -62,7 +62,11 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
         // Listener setup complete - keep mutex locked until cleanup
         // (setupInProgress remains true to indicate active listener)
       } catch (error) {
-        // On error, release the mutex so retry is possible
+        // On error, clean up partially initialized listener and release the mutex
+        if (unsubscribe) {
+          unsubscribe();
+          unsubscribe = null;
+        }
         setupInProgress = false;
         set({ listenerSetup: false, loading: false });
         throw error; // Re-throw to allow caller to handle

@@ -96,7 +96,7 @@ export function loadFirebaseConfig(): FirebaseConfig | null {
 
   // Validate authDomain format (should be like "projectId.firebaseapp.com")
   if (!isValidFirebaseAuthDomain(authDomain)) {
-    // Invalid format but not a critical error - continue
+    return null;
   }
 
   // Build type-safe FirebaseConfig object

@@ -1,8 +1,4 @@
-/**
- * Configurable Service Base Class
- * Provides common service configuration pattern
- * Eliminates code duplication across services
- */
+import { ERROR_MESSAGES } from './error-handlers/error-messages';
 
 /**
  * Configuration state management
@@ -78,12 +74,9 @@ export class ConfigurableService<TConfig = unknown> implements IConfigurableServ
     return true;
   }
 
-  /**
-   * Get required configuration or throw error
-   */
   protected requireConfig(): TConfig {
     if (!this.configState.config) {
-      throw new Error('Service is not configured');
+      throw new Error(ERROR_MESSAGES.SERVICE.NOT_CONFIGURED);
     }
     return this.configState.config;
   }

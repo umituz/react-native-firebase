@@ -64,7 +64,8 @@ class FirebaseAuthClientSingleton extends ServiceClientSingleton<Auth, FirebaseA
         this.setError(errorMessage);
       }
     }
-    return this.getInstance();
+    // Enable auto-initialization flag when getting instance
+    return this.getInstance(true);
   }
 }
 
