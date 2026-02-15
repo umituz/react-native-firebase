@@ -71,14 +71,11 @@ export abstract class BaseRepository implements IPathResolver {
    * @param operation - Operation to execute
    * @returns Operation result
    * @throws Error if operation fails
+   * @note State check is handled by getDb() - all Firestore operations must go through getDb()
    */
   protected async executeOperation<T>(
     operation: () => Promise<T>
   ): Promise<T> {
-    if (this.state === RepositoryState.DESTROYED) {
-      throw new Error(ERROR_MESSAGES.REPOSITORY.DESTROYED);
-    }
-
     try {
       return await operation();
     } catch (error) {

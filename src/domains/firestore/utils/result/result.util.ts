@@ -3,13 +3,9 @@
  * Utilities for creating Firestore result objects
  */
 
-export interface FirestoreResult<T> {
-  success: boolean;
-  data?: T;
-  error?: { message: string; code: string };
-}
+import type { Result, FailureResult } from '../../../../shared/domain/utils/result/result-types';
 
-export type NoDbResult = FirestoreResult<never>;
+export type NoDbResult = FailureResult;
 
 export const NO_DB_ERROR: NoDbResult = {
   success: false,
@@ -19,37 +15,23 @@ export const NO_DB_ERROR: NoDbResult = {
 /**
  * Create a standard error result
  */
-export function createErrorResult<T>(message: string, code: string): FirestoreResult<T> {
+export function createErrorResult<T>(message: string, code: string): Result<T> {
   return { success: false, error: { message, code } };
 }
 
 /**
  * Create a standard success result
  */
-export function createFirestoreSuccessResult<T>(data?: T): FirestoreResult<T> {
-  return { success: true, data };
+export function createFirestoreSuccessResult<T>(data?: T): Result<T> {
+  return { success: true, data: data as T };
 }
 
 /**
  * Create no-db error result with proper typing
  */
-export function createNoDbErrorResult<T>(): FirestoreResult<T> {
+export function createNoDbErrorResult<T>(): Result<T> {
   return { success: false, error: NO_DB_ERROR.error };
 }
 
-/**
- * Check if result is successful
- */
-export function isSuccess<T>(result: FirestoreResult<T>): result is FirestoreResult<T> & { success: true } {
-  return result.success;
-}
-
-/**
- * Check if result is an error
- */
-export function isError<T>(result: FirestoreResult<T>): result is FirestoreResult<T> & { success: false } {
-  return !result.success;
-}
-
-// Keep old function name for backwards compatibility
+// Alias for backward compatibility
 export const createSuccessResult = createFirestoreSuccessResult;

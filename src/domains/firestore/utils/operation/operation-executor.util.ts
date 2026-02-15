@@ -5,7 +5,7 @@
 
 import type { Firestore } from "../../infrastructure/config/FirestoreClient";
 import { getFirestore } from "../../infrastructure/config/FirestoreClient";
-import type { FirestoreResult } from "../result/result.util";
+import type { Result } from "../../../../shared/domain/utils/result/result-types";
 import { createNoDbErrorResult } from "../result/result.util";
 
 /**
@@ -13,8 +13,8 @@ import { createNoDbErrorResult } from "../result/result.util";
  * Returns error result if db is not available
  */
 export async function withFirestore<T>(
-  operation: (db: Firestore) => Promise<FirestoreResult<T>>,
-): Promise<FirestoreResult<T>> {
+  operation: (db: Firestore) => Promise<Result<T>>,
+): Promise<Result<T>> {
   const db = getFirestore();
   if (!db) {
     return createNoDbErrorResult<T>();

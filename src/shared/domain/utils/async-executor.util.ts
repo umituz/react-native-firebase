@@ -1,12 +1,7 @@
 /**
  * Async Operation Executor Utility
- * Re-exports all async executors for backward compatibility
- * @deprecated Import from specific executor files instead
+ * Re-exports all async executors
  */
-
-// Error Converters
-export type { ErrorConverter } from './executors/error-converters.util';
-export { authErrorConverter, defaultErrorConverter } from './executors/error-converters.util';
 
 // Basic Executors
 export {

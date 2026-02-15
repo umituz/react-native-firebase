@@ -13,7 +13,7 @@ import {
 import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
 import { generateNonce, hashNonce } from "../../../auth/infrastructure/services/crypto.util";
-import { executeOperation, failureResultFrom, toAuthErrorInfo, ERROR_MESSAGES } from "../../../../shared/domain/utils";
+import { executeOperation, failureResultFrom, toErrorInfo, ERROR_MESSAGES } from "../../../../shared/domain/utils";
 import { isCancelledError } from "../../../../shared/domain/utils/error-handler.util";
 import type {
   ReauthenticationResult,
@@ -123,7 +123,7 @@ export async function getAppleReauthCredential(): Promise<ReauthCredentialResult
       credential
     };
   } catch (error: unknown) {
-    const errorInfo = toAuthErrorInfo(error);
+    const errorInfo = toErrorInfo(error, 'auth/failed');
     const code = isCancelledError(errorInfo) ? "auth/cancelled" : errorInfo.code;
     return {
       success: false,

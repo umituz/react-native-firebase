@@ -38,25 +38,12 @@ class FirestoreClientSingleton extends ServiceClientSingleton<Firestore> {
   }
 
   private static instance: FirestoreClientSingleton | null = null;
-  private static initInProgress = false;
 
   static getInstance(): FirestoreClientSingleton {
-    if (!FirestoreClientSingleton.instance && !FirestoreClientSingleton.initInProgress) {
-      FirestoreClientSingleton.initInProgress = true;
-      try {
-        FirestoreClientSingleton.instance = new FirestoreClientSingleton();
-      } finally {
-        FirestoreClientSingleton.initInProgress = false;
-      }
+    if (!this.instance) {
+      this.instance = new FirestoreClientSingleton();
     }
-
-    // Wait for initialization to complete if in progress
-    while (FirestoreClientSingleton.initInProgress && !FirestoreClientSingleton.instance) {
-      // Busy wait - in practice this should be very brief
-      // Consider using a Promise-based approach for better async handling
-    }
-
-    return FirestoreClientSingleton.instance!;
+    return this.instance;
   }
 
   /**

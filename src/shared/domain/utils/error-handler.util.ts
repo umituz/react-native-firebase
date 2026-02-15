@@ -4,9 +4,11 @@
  * @deprecated Import from specific error-handler files instead
  */
 
+// Error Types
+export type { ErrorInfo } from './result/result-types';
+
 // Error Converters
-export type { ErrorInfo } from './error-handlers/error-converters';
-export { toErrorInfo, toAuthErrorInfo } from './error-handlers/error-converters';
+export { toErrorInfo } from './error-handlers/error-converters';
 
 // Error Checkers
 export {

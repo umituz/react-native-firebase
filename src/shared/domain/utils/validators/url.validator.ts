@@ -13,7 +13,7 @@ export function isValidUrl(url: string): boolean {
     return false;
   }
   try {
-    new URL(url.trim());
+    new URL(url);
     return true;
   } catch {
     return false;
@@ -28,7 +28,7 @@ export function isValidHttpsUrl(url: string): boolean {
     return false;
   }
   try {
-    const urlObj = new URL(url.trim());
+    const urlObj = new URL(url);
     return urlObj.protocol === 'https:';
   } catch {
     return false;

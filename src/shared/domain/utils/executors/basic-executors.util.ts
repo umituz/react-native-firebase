@@ -4,9 +4,13 @@
  */
 
 import type { Result } from '../result.util';
-import { successResult } from '../result.util';
-import type { ErrorConverter } from './error-converters.util';
-import { authErrorConverter, defaultErrorConverter } from './error-converters.util';
+import { successResult, failureResultFromError } from '../result.util';
+import { toErrorInfo } from '../error-handlers/error-converters';
+
+/**
+ * Error converter function type
+ */
+export type ErrorConverter = (error: unknown) => { code: string; message: string };
 
 /**
  * Execute async operation with error handling
@@ -20,7 +24,7 @@ export async function executeOperation<T>(
     const data = await operation();
     return successResult(data);
   } catch (error) {
-    const converter = errorConverter ?? defaultErrorConverter;
+    const converter = errorConverter ?? ((err: unknown) => toErrorInfo(err, 'operation/failed'));
     return { success: false, error: converter(error) };
   }
 }
@@ -32,7 +36,7 @@ export async function executeOperationWithCode<T>(
   operation: () => Promise<T>,
   defaultErrorCode = 'operation/failed'
 ): Promise<Result<T>> {
-  return executeOperation(operation, (error) => defaultErrorConverter(error, defaultErrorCode));
+  return executeOperation(operation, (error: unknown) => toErrorInfo(error, defaultErrorCode));
 }
 
 /**
@@ -52,5 +56,5 @@ export async function executeVoidOperation(
 export async function executeAuthOperation<T>(
   operation: () => Promise<T>
 ): Promise<Result<T>> {
-  return executeOperation(operation, authErrorConverter);
+  return executeOperation(operation, (error: unknown) => toErrorInfo(error, 'auth/failed'));
 }

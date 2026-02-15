@@ -13,7 +13,8 @@ import {
   type User,
 } from "firebase/auth";
 import { getFirebaseAuth } from "../config/FirebaseAuthClient";
-import { executeOperation, failureResultFrom, successResult, toAuthErrorInfo, type Result, ERROR_MESSAGES } from "../../../../shared/domain/utils";
+import { executeOperation, failureResultFrom, successResult, type Result, ERROR_MESSAGES } from "../../../../shared/domain/utils";
+import { withAuth } from "../utils/auth-guard.util";
 
 export interface EmailCredentials {
   email: string;
@@ -30,22 +31,14 @@ export async function signInWithEmail(
   email: string,
   password: string
 ): Promise<EmailAuthResult> {
-  const auth = getFirebaseAuth();
-  if (!auth) {
-    return failureResultFrom("auth/not-ready", ERROR_MESSAGES.AUTH.NOT_INITIALIZED);
-  }
-
-  try {
+  return withAuth(async (auth) => {
     const userCredential = await signInWithEmailAndPassword(
       auth,
       email.trim(),
       password
     );
-    return { success: true, data: userCredential.user };
-  } catch (error) {
-    // FIX: Use toAuthErrorInfo() instead of unsafe cast
-    return { success: false, error: toAuthErrorInfo(error) };
-  }
+    return userCredential.user;
+  });
 }
 
 /**
@@ -55,12 +48,7 @@ export async function signInWithEmail(
 export async function signUpWithEmail(
   credentials: EmailCredentials
 ): Promise<EmailAuthResult> {
-  const auth = getFirebaseAuth();
-  if (!auth) {
-    return failureResultFrom("auth/not-ready", ERROR_MESSAGES.AUTH.NOT_INITIALIZED);
-  }
-
-  try {
+  return withAuth(async (auth) => {
     const currentUser = auth.currentUser;
     const isAnonymous = currentUser?.isAnonymous ?? false;
     let userCredential;
@@ -84,7 +72,6 @@ export async function signUpWithEmail(
     // Update display name if provided (non-critical operation)
     if (credentials.displayName && userCredential.user) {
       const trimmedName = credentials.displayName.trim();
-      // FIX: Only update if non-empty after trim
       if (trimmedName.length > 0) {
         try {
           await updateProfile(userCredential.user, {
@@ -98,11 +85,8 @@ export async function signUpWithEmail(
       }
     }
 
-    return { success: true, data: userCredential.user };
-  } catch (error) {
-    // FIX: Use toAuthErrorInfo() instead of unsafe cast
-    return { success: false, error: toAuthErrorInfo(error) };
-  }
+    return userCredential.user;
+  });
 }
 
 /**
@@ -126,22 +110,18 @@ export async function linkAnonymousWithEmail(
   email: string,
   password: string
 ): Promise<EmailAuthResult> {
-  const auth = getFirebaseAuth();
-  if (!auth || !auth.currentUser) {
-    return failureResultFrom("auth/not-ready", ERROR_MESSAGES.AUTH.NO_USER);
-  }
+  return withAuth(async (auth) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error(ERROR_MESSAGES.AUTH.NO_USER);
+    }
 
-  const currentUser = auth.currentUser;
-  if (!currentUser.isAnonymous) {
-    return failureResultFrom("auth/invalid-action", ERROR_MESSAGES.AUTH.INVALID_USER);
-  }
+    if (!currentUser.isAnonymous) {
+      throw new Error(ERROR_MESSAGES.AUTH.INVALID_USER);
+    }
 
-  try {
     const credential = EmailAuthProvider.credential(email.trim(), password);
     const userCredential = await linkWithCredential(currentUser, credential);
-    return { success: true, data: userCredential.user };
-  } catch (error) {
-    // FIX: Use toAuthErrorInfo() instead of unsafe cast
-    return { success: false, error: toAuthErrorInfo(error) };
-  }
+    return userCredential.user;
+  });
 }

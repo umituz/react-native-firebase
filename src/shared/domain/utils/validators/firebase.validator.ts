@@ -14,7 +14,7 @@ export function isValidFirebaseApiKey(apiKey: string): boolean {
     return false;
   }
   const apiKeyPattern = /^AIza[0-9A-Za-z_-]{35}$/;
-  return apiKeyPattern.test(apiKey.trim());
+  return apiKeyPattern.test(apiKey);
 }
 
 /**
@@ -25,10 +25,9 @@ export function isValidFirebaseAuthDomain(authDomain: string): boolean {
   if (!isValidString(authDomain)) {
     return false;
   }
-  const trimmed = authDomain.trim();
   return (
-    trimmed.includes('.firebaseapp.com') ||
-    trimmed.includes('.web.app')
+    authDomain.includes('.firebaseapp.com') ||
+    authDomain.includes('.web.app')
   );
 }
 
@@ -41,5 +40,5 @@ export function isValidFirebaseProjectId(projectId: string): boolean {
     return false;
   }
   const pattern = /^[a-z0-9][a-z0-9-]{4,28}[a-z0-9]$/;
-  return pattern.test(projectId.trim());
+  return pattern.test(projectId);
 }

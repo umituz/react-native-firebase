@@ -6,13 +6,41 @@
  */
 
 /**
+ * Type guard for non-null objects
+ * Eliminates duplicate object checking pattern throughout the codebase
+ *
+ * @example
+ * ```typescript
+ * if (isObject(value)) {
+ *   // value is Record<string, unknown>
+ * }
+ * ```
+ */
+export function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * Type guard for objects with a specific property
+ *
+ * @param value - Value to check
+ * @param key - Property key to check for
+ * @returns True if value is an object with the specified property
+ */
+export function hasProperty<K extends string>(
+  value: unknown,
+  key: K
+): value is Record<K, unknown> {
+  return isObject(value) && key in value;
+}
+
+/**
  * Type guard for objects with a 'code' property of type string
  * Commonly used for Firebase errors and other error objects
  */
 export function hasCodeProperty(error: unknown): error is { code: string } {
   return (
-    typeof error === 'object' &&
-    error !== null &&
+    isObject(error) &&
     'code' in error &&
     typeof (error as { code: unknown }).code === 'string'
   );
@@ -24,8 +52,7 @@ export function hasCodeProperty(error: unknown): error is { code: string } {
  */
 export function hasMessageProperty(error: unknown): error is { message: string } {
   return (
-    typeof error === 'object' &&
-    error !== null &&
+    isObject(error) &&
     'message' in error &&
     typeof (error as { message: unknown }).message === 'string'
   );
@@ -45,8 +72,7 @@ export function hasCodeAndMessageProperties(error: unknown): error is { code: st
  */
 export function hasNameProperty(error: unknown): error is { name: string } {
   return (
-    typeof error === 'object' &&
-    error !== null &&
+    isObject(error) &&
     'name' in error &&
     typeof (error as { name: unknown }).name === 'string'
   );
@@ -58,8 +84,7 @@ export function hasNameProperty(error: unknown): error is { name: string } {
  */
 export function hasStackProperty(error: unknown): error is { stack: string } {
   return (
-    typeof error === 'object' &&
-    error !== null &&
+    isObject(error) &&
     'stack' in error &&
     typeof (error as { stack: unknown }).stack === 'string'
   );

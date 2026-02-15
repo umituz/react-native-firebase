@@ -120,7 +120,7 @@ export {
   runTransaction,
   serverTimestamp,
 } from './utils/firestore-helper';
-export type { FirestoreResult, NoDbResult } from './utils/firestore-helper';
+export type { NoDbResult } from './utils/firestore-helper';
 
 // Validation Utilities
 export {

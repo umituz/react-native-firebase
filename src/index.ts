@@ -88,7 +88,7 @@ export {
   runTransaction,
   serverTimestamp,
 } from "./domains/firestore/utils/firestore-helper";
-export type { FirestoreResult, NoDbResult } from "./domains/firestore/utils/firestore-helper";
+export type { NoDbResult } from "./domains/firestore/utils/firestore-helper";
 
 // Init Module Factory
 export {

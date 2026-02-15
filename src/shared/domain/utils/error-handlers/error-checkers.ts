@@ -3,7 +3,7 @@
  * Check error types and categories
  */
 
-import type { ErrorInfo } from './error-converters';
+import type { ErrorInfo } from '../result/result-types';
 import { hasCodeProperty, hasMessageProperty } from '../type-guards.util';
 
 /**

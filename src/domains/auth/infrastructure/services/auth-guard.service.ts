@@ -12,6 +12,7 @@ import {
   getCurrentUser,
 } from './auth-utils.service';
 import { ERROR_MESSAGES } from '../../../../shared/domain/utils/error-handlers/error-messages';
+import { withAuth, withAuthSync } from '../utils/auth-guard.util';
 
 /**
  * Auth Guard Service
@@ -23,26 +24,33 @@ export class AuthGuardService {
    * @throws Error if user is not authenticated
    */
   async requireAuthenticatedUser(): Promise<string> {
-    const auth = getFirebaseAuth();
-    if (!auth) {
-      throw new Error(ERROR_MESSAGES.AUTH.NOT_INITIALIZED);
+    const result = await withAuth(async (auth) => {
+      const userId = getCurrentUserId(auth);
+      if (!userId) {
+        throw new Error(ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED);
+      }
+
+      const currentUser = getCurrentUser(auth);
+      if (!currentUser) {
+        throw new Error(ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED);
+      }
+
+      if (currentUser.isAnonymous) {
+        throw new Error(ERROR_MESSAGES.AUTH.NON_ANONYMOUS_ONLY);
+      }
+
+      return userId;
+    });
+
+    if (!result.success) {
+      throw new Error(result.error?.message || 'Authentication failed');
     }
 
-    const userId = getCurrentUserId(auth);
-    if (!userId) {
-      throw new Error(ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED);
+    if (!result.data) {
+      throw new Error('No user ID returned');
     }
 
-    const currentUser = getCurrentUser(auth);
-    if (!currentUser) {
-      throw new Error(ERROR_MESSAGES.AUTH.NOT_AUTHENTICATED);
-    }
-
-    if (currentUser.isAnonymous) {
-      throw new Error(ERROR_MESSAGES.AUTH.NON_ANONYMOUS_ONLY);
-    }
-
-    return userId;
+    return result.data;
   }
 
   /**
@@ -61,35 +69,33 @@ export class AuthGuardService {
    * Check if current user is authenticated (not guest)
    */
   isAuthenticated(): boolean {
-    const auth = getFirebaseAuth();
-    if (!auth) {
-      return false;
-    }
+    const result = withAuthSync((auth) => {
+      const currentUser = getCurrentUser(auth);
+      if (!currentUser) {
+        return false;
+      }
 
-    const currentUser = getCurrentUser(auth);
-    if (!currentUser) {
-      return false;
-    }
+      // User must not be anonymous
+      return !currentUser.isAnonymous;
+    });
 
-    // User must not be anonymous
-    return !currentUser.isAnonymous;
+    return result.success && result.data ? result.data : false;
   }
 
   /**
    * Check if current user is guest (anonymous)
    */
   isGuest(): boolean {
-    const auth = getFirebaseAuth();
-    if (!auth) {
-      return false;
-    }
+    const result = withAuthSync((auth) => {
+      const currentUser = getCurrentUser(auth);
+      if (!currentUser) {
+        return false;
+      }
 
-    const currentUser = getCurrentUser(auth);
-    if (!currentUser) {
-      return false;
-    }
+      return currentUser.isAnonymous;
+    });
 
-    return currentUser.isAnonymous;
+    return result.success && result.data ? result.data : false;
   }
 }
 

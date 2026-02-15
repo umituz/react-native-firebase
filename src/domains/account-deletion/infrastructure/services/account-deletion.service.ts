@@ -14,8 +14,9 @@ import {
   reauthenticateWithPassword,
   reauthenticateWithGoogle,
 } from "./reauthentication.service";
-import { successResult, type Result, toAuthErrorInfo } from "../../../../shared/domain/utils";
+import { successResult, type Result, toErrorInfo } from "../../../../shared/domain/utils";
 import type { AccountDeletionOptions } from "../../application/ports/reauthentication.types";
+import { validateUserUnchanged } from "../../../auth/domain/utils/user-validation.util";
 
 export interface AccountDeletionResult extends Result<void> {
   requiresReauth?: boolean;
@@ -101,15 +102,16 @@ export async function deleteCurrentUser(
     }
 
     try {
-      // FIX: Verify user hasn't changed before deletion
-      const currentUserId = auth.currentUser?.uid;
-      if (currentUserId !== originalUserId) {
+      // Verify user hasn't changed before deletion
+      const validation = validateUserUnchanged(auth, originalUserId);
+      if (!('valid' in validation)) {
+        // User changed - validation is a FailureResult
         if (typeof __DEV__ !== "undefined" && __DEV__) {
           console.log("[deleteCurrentUser] User changed during operation");
         }
         return {
           success: false,
-          error: { code: "auth/user-changed", message: "User changed during operation" },
+          error: validation.error,
           requiresReauth: false
         };
       }
@@ -131,7 +133,7 @@ export async function deleteCurrentUser(
       if (typeof __DEV__ !== "undefined" && __DEV__) {
         console.error("[deleteCurrentUser] deleteUser failed:", error);
       }
-      const errorInfo = toAuthErrorInfo(error);
+      const errorInfo = toErrorInfo(error, 'auth/failed');
       const code = errorInfo.code;
       const message = errorInfo.message;
 
@@ -160,17 +162,18 @@ async function attemptReauth(user: User, options: AccountDeletionOptions, origin
     console.log("[attemptReauth] Called");
   }
 
-  // FIX: Verify user hasn't changed if originalUserId provided
+  // Verify user hasn't changed if originalUserId provided
   if (originalUserId) {
     const auth = getFirebaseAuth();
-    const currentUserId = auth?.currentUser?.uid;
-    if (currentUserId && currentUserId !== originalUserId) {
+    const validation = validateUserUnchanged(auth, originalUserId);
+    if (!('valid' in validation)) {
+      // User changed - validation is a FailureResult
       if (typeof __DEV__ !== "undefined" && __DEV__) {
         console.log("[attemptReauth] User changed during reauthentication");
       }
       return {
         success: false,
-        error: { code: "auth/user-changed", message: "User changed during operation" },
+        error: validation.error,
         requiresReauth: false
       };
     }
@@ -269,16 +272,21 @@ async function attemptReauth(user: User, options: AccountDeletionOptions, origin
       const auth = getFirebaseAuth();
       const currentUser = auth?.currentUser || user;
 
-      // FIX: Final verification before deletion
-      if (originalUserId && currentUser.uid !== originalUserId) {
-        if (typeof __DEV__ !== "undefined" && __DEV__) {
-          console.log("[attemptReauth] User changed after reauthentication");
+      // Final verification before deletion
+      if (originalUserId) {
+        const auth = getFirebaseAuth();
+        const validation = validateUserUnchanged(auth, originalUserId);
+        if (!('valid' in validation)) {
+          // User changed - validation is a FailureResult
+          if (typeof __DEV__ !== "undefined" && __DEV__) {
+            console.log("[attemptReauth] User changed after reauthentication");
+          }
+          return {
+            success: false,
+            error: validation.error,
+            requiresReauth: false
+          };
         }
-        return {
-          success: false,
-          error: { code: "auth/user-changed", message: "User changed during operation" },
-          requiresReauth: false
-        };
       }
 
       if (typeof __DEV__ !== "undefined" && __DEV__) {
@@ -295,7 +303,7 @@ async function attemptReauth(user: User, options: AccountDeletionOptions, origin
       if (typeof __DEV__ !== "undefined" && __DEV__) {
         console.error("[attemptReauth] deleteUser failed after reauth:", err);
       }
-      const errorInfo = toAuthErrorInfo(err);
+      const errorInfo = toErrorInfo(err, 'auth/failed');
       return {
         success: false,
         error: { code: errorInfo.code, message: errorInfo.message },
@@ -330,7 +338,7 @@ export async function deleteUserAccount(user: User | null): Promise<AccountDelet
     await deleteUser(user);
     return successResult();
   } catch (error: unknown) {
-    const errorInfo = toAuthErrorInfo(error);
+    const errorInfo = toErrorInfo(error, 'auth/failed');
     return {
       success: false,
       error: { code: errorInfo.code, message: errorInfo.message },

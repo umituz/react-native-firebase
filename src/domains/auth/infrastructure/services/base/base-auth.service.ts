@@ -6,7 +6,7 @@
  */
 
 import type { UserCredential } from 'firebase/auth';
-import { authErrorConverter, type Result } from '../../../../../shared/domain/utils';
+import { toErrorInfo, type Result } from '../../../../../shared/domain/utils';
 
 /**
  * Authentication result with user credential
@@ -45,7 +45,7 @@ export function isCancellationError(error: unknown): boolean {
  * Create failure result from error
  */
 export function createFailureResult(error: unknown): { success: false; error: { code: string; message: string } } {
-  const errorInfo = authErrorConverter(error);
+  const errorInfo = toErrorInfo(error, 'auth/failed');
   return {
     success: false,
     error: errorInfo,

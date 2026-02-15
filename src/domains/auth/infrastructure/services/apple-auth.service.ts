@@ -15,7 +15,9 @@ import type { AppleAuthResult } from "./apple-auth.types";
 import {
   isCancellationError,
 } from "./base/base-auth.service";
-import { executeAuthOperation, isSuccess, type Result } from "../../../../shared/domain/utils";
+import { executeAuthOperation, type Result } from "../../../../shared/domain/utils";
+import { isNewUser as checkIsNewUser } from "../../domain/utils/user-metadata.util";
+import { convertToOAuthResult } from "./utils/auth-result-converter.util";
 
 // Conditional import - expo-apple-authentication is optional
 let AppleAuthentication: any = null;
@@ -42,19 +44,7 @@ export class AppleAuthService {
   }
 
   private convertToAppleAuthResult(result: Result<{ userCredential: any; isNewUser: boolean }>): AppleAuthResult {
-    // FIX: Use isSuccess() type guard instead of manual check
-    if (isSuccess(result) && result.data) {
-      return {
-        success: true,
-        userCredential: result.data.userCredential,
-        isNewUser: result.data.isNewUser,
-      };
-    }
-    return {
-      success: false,
-      error: result.error?.message ?? "Apple sign-in failed",
-      code: result.error?.code,
-    };
+    return convertToOAuthResult(result, "Apple sign-in failed");
   }
 
   async signIn(auth: Auth): Promise<AppleAuthResult> {
@@ -99,19 +89,8 @@ export class AppleAuthService {
 
       const userCredential = await signInWithCredential(auth, credential);
 
-      // Check if user is new by comparing metadata timestamps
-      // Convert to timestamps for reliable comparison (string comparison can be unreliable)
-      const creationTime = userCredential.user.metadata.creationTime;
-      const lastSignInTime = userCredential.user.metadata.lastSignInTime;
-
-      // FIX: Add typeof validation for metadata timestamps
-      const isNewUser =
-        creationTime &&
-        lastSignInTime &&
-        typeof creationTime === 'string' &&
-        typeof lastSignInTime === 'string'
-          ? new Date(creationTime).getTime() === new Date(lastSignInTime).getTime()
-          : false;
+      // Check if user is new using shared utility
+      const isNewUser = checkIsNewUser(userCredential);
 
       return {
         userCredential,

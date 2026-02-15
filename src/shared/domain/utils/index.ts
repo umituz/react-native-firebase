@@ -30,9 +30,6 @@ export {
   executeSequence,
   executeWithRetry,
   executeWithTimeout,
-  authErrorConverter,
-  defaultErrorConverter,
-  type ErrorConverter,
 } from './async-executor.util';
 
 // Service configuration
@@ -57,7 +54,6 @@ export {
 // Error handling
 export {
   toErrorInfo,
-  toAuthErrorInfo,
   hasErrorCode,
   isCancelledError,
   isQuotaErrorInfo,

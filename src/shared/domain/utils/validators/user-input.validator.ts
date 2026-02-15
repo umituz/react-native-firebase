@@ -13,7 +13,7 @@ export function isValidEmail(email: string): boolean {
     return false;
   }
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailPattern.test(email.trim());
+  return emailPattern.test(email);
 }
 
 /**

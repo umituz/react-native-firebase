@@ -4,6 +4,7 @@
  */
 
 import type { SuccessResult, FailureResult, ErrorInfo } from './result-types';
+import { toErrorInfo } from '../error-handlers/error-converters';
 
 /**
  * Create a success result with optional data
@@ -28,22 +29,8 @@ export function failureResultFrom(code: string, message: string): FailureResult 
 
 /**
  * Create a failure result from an unknown error
+ * Uses consolidated error converter for consistency
  */
 export function failureResultFromError(error: unknown, defaultCode = 'operation/failed'): FailureResult {
-  if (error instanceof Error) {
-    return {
-      success: false,
-      error: {
-        code: (error as { code?: string }).code ?? defaultCode,
-        message: error.message,
-      },
-    };
-  }
-  return {
-    success: false,
-    error: {
-      code: defaultCode,
-      message: typeof error === 'string' ? error : 'Unknown error occurred',
-    },
-  };
+  return failureResult(toErrorInfo(error, defaultCode));
 }

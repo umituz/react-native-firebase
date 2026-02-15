@@ -8,9 +8,6 @@ export type { Firestore } from "../infrastructure/config/FirestoreClient";
 export {
   createErrorResult,
   createSuccessResult,
-  isSuccess,
-  isError,
-  type FirestoreResult,
   type NoDbResult,
   NO_DB_ERROR,
 } from "./result/result.util";
