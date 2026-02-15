@@ -7,6 +7,7 @@ import { deleteUser, type User } from "firebase/auth";
 
 declare const __DEV__: boolean;
 import { getFirebaseAuth } from "../../../auth/infrastructure/config/FirebaseAuthClient";
+import { markUserDeleted } from "../../../auth/infrastructure/services/user-document.service";
 import {
   getUserAuthProvider,
   reauthenticateWithApple,
@@ -112,6 +113,11 @@ export async function deleteCurrentUser(
           requiresReauth: false
         };
       }
+
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        console.log("[deleteCurrentUser] Marking user as deleted in Firestore");
+      }
+      await markUserDeleted(user.uid);
 
       if (typeof __DEV__ !== "undefined" && __DEV__) {
         console.log("[deleteCurrentUser] Calling deleteUser");
@@ -274,6 +280,11 @@ async function attemptReauth(user: User, options: AccountDeletionOptions, origin
           requiresReauth: false
         };
       }
+
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        console.log("[attemptReauth] Marking user as deleted in Firestore");
+      }
+      await markUserDeleted(currentUser.uid);
 
       await deleteUser(currentUser);
       if (typeof __DEV__ !== "undefined" && __DEV__) {
