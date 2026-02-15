@@ -15,7 +15,7 @@ import type { AppleAuthResult } from "./apple-auth.types";
 import {
   isCancellationError,
 } from "./base/base-auth.service";
-import { executeAuthOperation, type Result } from "../../../../shared/domain/utils";
+import { executeAuthOperation, isSuccess, type Result } from "../../../../shared/domain/utils";
 
 // Conditional import - expo-apple-authentication is optional
 let AppleAuthentication: any = null;
@@ -42,7 +42,8 @@ export class AppleAuthService {
   }
 
   private convertToAppleAuthResult(result: Result<{ userCredential: any; isNewUser: boolean }>): AppleAuthResult {
-    if (result.success && result.data) {
+    // FIX: Use isSuccess() type guard instead of manual check
+    if (isSuccess(result) && result.data) {
       return {
         success: true,
         userCredential: result.data.userCredential,
@@ -102,9 +103,15 @@ export class AppleAuthService {
       // Convert to timestamps for reliable comparison (string comparison can be unreliable)
       const creationTime = userCredential.user.metadata.creationTime;
       const lastSignInTime = userCredential.user.metadata.lastSignInTime;
-      const isNewUser = creationTime && lastSignInTime
-        ? new Date(creationTime).getTime() === new Date(lastSignInTime).getTime()
-        : false;
+
+      // FIX: Add typeof validation for metadata timestamps
+      const isNewUser =
+        creationTime &&
+        lastSignInTime &&
+        typeof creationTime === 'string' &&
+        typeof lastSignInTime === 'string'
+          ? new Date(creationTime).getTime() === new Date(lastSignInTime).getTime()
+          : false;
 
       return {
         userCredential,

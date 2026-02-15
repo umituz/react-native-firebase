@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { getFirestore } from "../../infrastructure/config/FirestoreClient";
 import { hasCodeProperty } from "../../../../shared/domain/utils/type-guards.util";
+import { ERROR_MESSAGES } from "../../../../shared/domain/utils/error-handlers/error-messages";
 
 /**
  * Execute a transaction with automatic DB instance check.
@@ -20,7 +21,7 @@ export async function runTransaction<T>(
 ): Promise<T> {
   const db = getFirestore();
   if (!db) {
-    throw new Error("[runTransaction] Firestore database is not initialized. Please ensure Firebase is properly initialized before running transactions.");
+    throw new Error(`[runTransaction] ${ERROR_MESSAGES.FIRESTORE.NOT_INITIALIZED}`);
   }
   try {
     return await fbRunTransaction(db, updateFunction);

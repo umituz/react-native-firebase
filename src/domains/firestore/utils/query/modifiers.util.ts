@@ -12,6 +12,7 @@ import {
   type Query,
   Timestamp,
 } from "firebase/firestore";
+import { validateDateRangeOrThrow } from "../validation/date-validator.util";
 
 export interface SortOptions {
   field: string;
@@ -29,6 +30,11 @@ export interface DateRangeOptions {
  */
 export function applyDateRange(q: Query, dateRange: DateRangeOptions | undefined): Query {
   if (!dateRange) return q;
+
+  // FIX: Validate date range if both dates are provided
+  if (dateRange.startDate !== undefined && dateRange.endDate !== undefined) {
+    validateDateRangeOrThrow(dateRange.startDate, dateRange.endDate);
+  }
 
   if (dateRange.startDate) {
     q = query(q, where(dateRange.field, ">=", Timestamp.fromMillis(dateRange.startDate)));

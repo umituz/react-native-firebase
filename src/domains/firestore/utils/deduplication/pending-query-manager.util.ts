@@ -55,6 +55,13 @@ export class PendingQueryManager {
   }
 
   /**
+   * Remove a specific query from pending list
+   */
+  remove(key: string): void {
+    this.pendingQueries.delete(key);
+  }
+
+  /**
    * Clean up expired queries
    */
   cleanup(): void {

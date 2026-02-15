@@ -1,5 +1,5 @@
 import type { Result, FailureResult } from '../result.util';
-import { failureResultFromError, successResult, isSuccess } from '../result.util';
+import { failureResultFromError, successResult, isSuccess, isFailure } from '../result.util';
 
 export async function executeAll<T>(
   ...operations: (() => Promise<Result<T>>)[]
@@ -7,9 +7,10 @@ export async function executeAll<T>(
   try {
     const results = await Promise.all(operations.map((op) => op()));
 
+    // FIX: Use isFailure() type guard instead of manual check
     for (const result of results) {
-      if (!result.success && result.error !== undefined) {
-        return result as FailureResult;
+      if (isFailure(result)) {
+        return result;
       }
     }
 
@@ -31,7 +32,8 @@ export async function executeSequence<T>(
 ): Promise<Result<void>> {
   for (const operation of operations) {
     const result = await operation();
-    if (!result.success && result.error !== undefined) {
+    // FIX: Use isFailure() type guard instead of manual check
+    if (isFailure(result)) {
       return { success: false, error: result.error };
     }
   }

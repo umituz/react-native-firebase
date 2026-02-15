@@ -70,6 +70,11 @@ export {
   type ErrorInfo as ErrorHandlerErrorInfo,
 } from './error-handler.util';
 
+// Error messages
+export {
+  ERROR_MESSAGES,
+} from './error-handlers/error-messages';
+
 // Type guards
 export {
   hasCodeProperty,

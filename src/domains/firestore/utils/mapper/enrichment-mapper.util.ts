@@ -8,6 +8,10 @@ import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 /**
  * Map documents with enrichment from related data
  *
+ * @deprecated Use mapWithBatchEnrichment for better performance with large datasets.
+ * This function fetches enrichments in parallel but doesn't deduplicate keys,
+ * and uses sequential async operations which can be slower than batch fetching.
+ *
  * Process flow:
  * 1. Extract source data from document
  * 2. Skip if extraction fails or source is invalid
@@ -65,8 +69,11 @@ export async function mapWithBatchEnrichment<TSource, TEnrichment, TResult>(
     return [];
   }
 
-  // Fetch all enrichments in batch
-  const enrichmentMap = await fetchBatchEnrichments(keys);
+  // FIX: Deduplicate keys before batch fetch to reduce redundant fetches
+  const uniqueKeys = [...new Set(keys)];
+
+  // Fetch all enrichments in batch (deduplicated)
+  const enrichmentMap = await fetchBatchEnrichments(uniqueKeys);
 
   // Combine sources with enrichments
   const results: TResult[] = [];

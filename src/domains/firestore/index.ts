@@ -122,6 +122,20 @@ export {
 } from './utils/firestore-helper';
 export type { FirestoreResult, NoDbResult } from './utils/firestore-helper';
 
+// Validation Utilities
+export {
+  isValidCursor,
+  validateCursorOrThrow,
+  CursorValidationError,
+} from './utils/validation/cursor-validator.util';
+export {
+  isValidFieldName,
+} from './utils/validation/field-validator.util';
+export {
+  isValidDateRange,
+  validateDateRangeOrThrow,
+} from './utils/validation/date-validator.util';
+
 export { Timestamp } from 'firebase/firestore';
 export type {
   CollectionReference,

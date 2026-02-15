@@ -26,7 +26,10 @@ export function isFirestoreError(error: unknown): error is FirestoreError {
     typeof error === 'object' &&
     error !== null &&
     'code' in error &&
-    'message' in error
+    'message' in error &&
+    // FIX: Also check that properties are strings
+    typeof (error as any).code === 'string' &&
+    typeof (error as any).message === 'string'
   );
 }
 
@@ -38,7 +41,10 @@ export function isAuthError(error: unknown): error is AuthError {
     typeof error === 'object' &&
     error !== null &&
     'code' in error &&
-    'message' in error
+    'message' in error &&
+    // FIX: Also check that properties are strings
+    typeof (error as any).code === 'string' &&
+    typeof (error as any).message === 'string'
   );
 }
 

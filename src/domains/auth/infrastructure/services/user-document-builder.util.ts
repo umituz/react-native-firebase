@@ -10,16 +10,26 @@ import type {
 } from "./user-document.types";
 
 /**
+ * Type guard to check if user has provider data
+ */
+function hasProviderData(user: unknown): user is { providerData: { providerId: string }[] } {
+  return (
+    typeof user === 'object' &&
+    user !== null &&
+    'providerData' in user &&
+    Array.isArray((user as any).providerData)
+  );
+}
+
+/**
  * Gets the sign-up method from user provider data
  */
 export function getSignUpMethod(user: UserDocumentUser): string | undefined {
   if (user.isAnonymous) return "anonymous";
   if (user.email) {
-    const providerData = (
-      user as unknown as { providerData?: { providerId: string }[] }
-    ).providerData;
-    if (providerData && providerData.length > 0) {
-      const providerId = providerData[0]?.providerId;
+    // FIX: Use type guard instead of unsafe cast
+    if (hasProviderData(user) && user.providerData.length > 0) {
+      const providerId = user.providerData[0]?.providerId;
       if (providerId === "google.com") return "google";
       if (providerId === "apple.com") return "apple";
       if (providerId === "password") return "email";

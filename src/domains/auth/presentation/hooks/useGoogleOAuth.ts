@@ -71,6 +71,7 @@ export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult
           const auth = getFirebaseAuth();
           if (!auth) {
             setGoogleError("Firebase Auth not initialized");
+            setIsLoading(false); // FIX: Reset loading state before early return
             return;
           }
 

@@ -13,7 +13,7 @@ import {
 import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
 import { generateNonce, hashNonce } from "../../../auth/infrastructure/services/crypto.util";
-import { executeOperation, failureResultFrom, toAuthErrorInfo } from "../../../../shared/domain/utils";
+import { executeOperation, failureResultFrom, toAuthErrorInfo, ERROR_MESSAGES } from "../../../../shared/domain/utils";
 import { isCancelledError } from "../../../../shared/domain/utils/error-handler.util";
 import type {
   ReauthenticationResult,
@@ -26,6 +26,21 @@ export type {
   AuthProviderType,
   ReauthCredentialResult
 } from "../../application/ports/reauthentication.types";
+
+/**
+ * Validates email format
+ */
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+/**
+ * Validates password (Firebase minimum is 6 characters)
+ */
+function isValidPassword(password: string): boolean {
+  return password.length >= 6;
+}
 
 export function getUserAuthProvider(user: User): AuthProviderType {
   if (user.isAnonymous) return "anonymous";
@@ -46,7 +61,17 @@ export async function reauthenticateWithGoogle(user: User, idToken: string): Pro
 export async function reauthenticateWithPassword(user: User, pass: string): Promise<ReauthenticationResult> {
   const email = user.email;
   if (!email) {
-    return failureResultFrom("auth/no-email", "User has no email");
+    return failureResultFrom("auth/no-email", ERROR_MESSAGES.AUTH.NO_USER);
+  }
+
+  // FIX: Add email validation
+  if (!isValidEmail(email)) {
+    return failureResultFrom("auth/invalid-email", ERROR_MESSAGES.AUTH.INVALID_EMAIL);
+  }
+
+  // FIX: Add password validation
+  if (!isValidPassword(pass)) {
+    return failureResultFrom("auth/invalid-password", ERROR_MESSAGES.AUTH.INVALID_PASSWORD);
   }
 
   return executeOperation(async () => {

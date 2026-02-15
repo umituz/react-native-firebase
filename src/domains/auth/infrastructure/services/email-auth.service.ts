@@ -13,7 +13,7 @@ import {
   type User,
 } from "firebase/auth";
 import { getFirebaseAuth } from "../config/FirebaseAuthClient";
-import { executeOperation, failureResultFrom, successResult, type Result } from "../../../../shared/domain/utils";
+import { executeOperation, failureResultFrom, successResult, toAuthErrorInfo, type Result, ERROR_MESSAGES } from "../../../../shared/domain/utils";
 
 export interface EmailCredentials {
   email: string;
@@ -32,7 +32,7 @@ export async function signInWithEmail(
 ): Promise<EmailAuthResult> {
   const auth = getFirebaseAuth();
   if (!auth) {
-    return failureResultFrom("auth/not-ready", "Firebase Auth not initialized");
+    return failureResultFrom("auth/not-ready", ERROR_MESSAGES.AUTH.NOT_INITIALIZED);
   }
 
   try {
@@ -43,9 +43,8 @@ export async function signInWithEmail(
     );
     return { success: true, data: userCredential.user };
   } catch (error) {
-    const err = error instanceof Error ? error : new Error(String(error));
-    const code = (err as any).code || "auth/unknown";
-    return { success: false, error: { code, message: err.message } };
+    // FIX: Use toAuthErrorInfo() instead of unsafe cast
+    return { success: false, error: toAuthErrorInfo(error) };
   }
 }
 
@@ -58,7 +57,7 @@ export async function signUpWithEmail(
 ): Promise<EmailAuthResult> {
   const auth = getFirebaseAuth();
   if (!auth) {
-    return failureResultFrom("auth/not-ready", "Firebase Auth not initialized");
+    return failureResultFrom("auth/not-ready", ERROR_MESSAGES.AUTH.NOT_INITIALIZED);
   }
 
   try {
@@ -84,22 +83,25 @@ export async function signUpWithEmail(
 
     // Update display name if provided (non-critical operation)
     if (credentials.displayName && userCredential.user) {
-      try {
-        await updateProfile(userCredential.user, {
-          displayName: credentials.displayName.trim(),
-        });
-      } catch (profileError) {
-        // Profile update failed but account was created successfully
-        // Log the error but don't fail the signup
-        console.warn("Profile update failed after account creation:", profileError);
+      const trimmedName = credentials.displayName.trim();
+      // FIX: Only update if non-empty after trim
+      if (trimmedName.length > 0) {
+        try {
+          await updateProfile(userCredential.user, {
+            displayName: trimmedName,
+          });
+        } catch (profileError) {
+          // Profile update failed but account was created successfully
+          // Log the error but don't fail the signup
+          console.warn("Profile update failed after account creation:", profileError);
+        }
       }
     }
 
     return { success: true, data: userCredential.user };
   } catch (error) {
-    const err = error instanceof Error ? error : new Error(String(error));
-    const code = (err as any).code || "auth/unknown";
-    return { success: false, error: { code, message: err.message } };
+    // FIX: Use toAuthErrorInfo() instead of unsafe cast
+    return { success: false, error: toAuthErrorInfo(error) };
   }
 }
 
@@ -126,12 +128,12 @@ export async function linkAnonymousWithEmail(
 ): Promise<EmailAuthResult> {
   const auth = getFirebaseAuth();
   if (!auth || !auth.currentUser) {
-    return failureResultFrom("auth/not-ready", "No current user");
+    return failureResultFrom("auth/not-ready", ERROR_MESSAGES.AUTH.NO_USER);
   }
 
   const currentUser = auth.currentUser;
   if (!currentUser.isAnonymous) {
-    return failureResultFrom("auth/invalid-action", "User is not anonymous");
+    return failureResultFrom("auth/invalid-action", ERROR_MESSAGES.AUTH.INVALID_USER);
   }
 
   try {
@@ -139,8 +141,7 @@ export async function linkAnonymousWithEmail(
     const userCredential = await linkWithCredential(currentUser, credential);
     return { success: true, data: userCredential.user };
   } catch (error) {
-    const err = error instanceof Error ? error : new Error(String(error));
-    const code = (err as any).code || "auth/unknown";
-    return { success: false, error: { code, message: err.message } };
+    // FIX: Use toAuthErrorInfo() instead of unsafe cast
+    return { success: false, error: toAuthErrorInfo(error) };
   }
 }

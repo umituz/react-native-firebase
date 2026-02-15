@@ -72,7 +72,13 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
       setAuthState(userToAuthCheckResult(null));
       setLoading(false);
       setError(null);
-      return;
+      // FIX: Always return cleanup function to prevent memory leaks
+      return () => {
+        if (unsubscribeRef.current) {
+          unsubscribeRef.current();
+          unsubscribeRef.current = null;
+        }
+      };
     }
 
     // Keep loading true until onAuthStateChanged fires
@@ -87,6 +93,8 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
       const authError = err instanceof Error ? err : new Error('Auth listener setup failed');
       setError(authError);
       setLoading(false);
+      // FIX: Reset auth state on error to prevent stale data
+      setAuthState(userToAuthCheckResult(null));
     }
 
     // Cleanup function

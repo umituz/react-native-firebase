@@ -10,20 +10,9 @@ import { collection, query, orderBy, limit, startAfter, getDoc, doc, getDocs } f
 import { PaginationHelper } from "../../utils/pagination.helper";
 import type { PaginatedResult, PaginationParams } from "../../types/pagination.types";
 import { BaseQueryRepository } from "./BaseQueryRepository";
+import { validateCursorOrThrow, CursorValidationError } from "../../utils/validation/cursor-validator.util";
 
 export abstract class BasePaginatedRepository extends BaseQueryRepository {
-  /**
-   * Validate cursor format
-   * Cursors must be non-empty strings without path separators
-   */
-  private isValidCursor(cursor: string): boolean {
-    if (!cursor || typeof cursor !== 'string') return false;
-    // Check for invalid characters (path separators, null bytes)
-    if (cursor.includes('/') || cursor.includes('\\') || cursor.includes('\0')) return false;
-    // Check length (Firestore document IDs can't be longer than 1500 bytes)
-    if (cursor.length > 1500) return false;
-    return true;
-  }
 
   /**
    * Execute paginated query with cursor support
@@ -60,19 +49,16 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
     if (helper.hasCursor(params) && params?.cursor) {
       cursorKey = params.cursor;
 
-      // Validate cursor format to prevent Firestore errors
-      if (!this.isValidCursor(params.cursor)) {
-        // Invalid cursor format - return empty result
-        return [];
-      }
+      // FIX: Validate cursor and throw error instead of silent failure
+      validateCursorOrThrow(params.cursor);
 
       // Fetch cursor document first
       const cursorDocRef = doc(db, collectionName, params.cursor);
       const cursorDoc = await getDoc(cursorDocRef);
 
       if (!cursorDoc.exists()) {
-        // Cursor document doesn't exist - return empty result
-        return [];
+        // FIX: Throw error instead of silent failure
+        throw new CursorValidationError('Cursor document does not exist');
       }
 
       // Build query with startAfter using the cursor document

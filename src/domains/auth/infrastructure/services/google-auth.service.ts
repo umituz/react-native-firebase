@@ -9,7 +9,7 @@ import {
   type Auth,
 } from "firebase/auth";
 import type { GoogleAuthConfig, GoogleAuthResult } from "./google-auth.types";
-import { executeAuthOperation, type Result } from "../../../../shared/domain/utils";
+import { executeAuthOperation, isSuccess, type Result } from "../../../../shared/domain/utils";
 import { ConfigurableService } from "../../../../shared/domain/utils/service-config.util";
 
 /**
@@ -25,7 +25,8 @@ export class GoogleAuthService extends ConfigurableService<GoogleAuthConfig> {
   }
 
   private convertToGoogleAuthResult(result: Result<{ userCredential: any; isNewUser: boolean }>): GoogleAuthResult {
-    if (result.success && result.data) {
+    // FIX: Use isSuccess() type guard instead of manual check
+    if (isSuccess(result) && result.data) {
       return {
         success: true,
         userCredential: result.data.userCredential,
@@ -51,9 +52,15 @@ export class GoogleAuthService extends ConfigurableService<GoogleAuthConfig> {
       // Convert to timestamps for reliable comparison (string comparison can be unreliable)
       const creationTime = userCredential.user.metadata.creationTime;
       const lastSignInTime = userCredential.user.metadata.lastSignInTime;
-      const isNewUser = creationTime && lastSignInTime
-        ? new Date(creationTime).getTime() === new Date(lastSignInTime).getTime()
-        : false;
+
+      // FIX: Add typeof validation for metadata timestamps
+      const isNewUser =
+        creationTime &&
+        lastSignInTime &&
+        typeof creationTime === 'string' &&
+        typeof lastSignInTime === 'string'
+          ? new Date(creationTime).getTime() === new Date(lastSignInTime).getTime()
+          : false;
 
       return {
         userCredential,

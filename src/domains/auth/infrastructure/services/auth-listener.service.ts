@@ -6,7 +6,7 @@
 import { onIdTokenChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "../config/FirebaseAuthClient";
 import type { Result } from "../../../../shared/domain/utils";
-import { failureResultFrom } from "../../../../shared/domain/utils";
+import { failureResultFrom, ERROR_MESSAGES } from "../../../../shared/domain/utils";
 
 export interface AuthListenerConfig {
   /**
@@ -36,7 +36,7 @@ export function setupAuthListener(
 ): AuthListenerResult {
   const auth = getFirebaseAuth();
   if (!auth) {
-    return failureResultFrom("auth/not-ready", "Firebase Auth not initialized");
+    return failureResultFrom("auth/not-ready", ERROR_MESSAGES.AUTH.NOT_INITIALIZED);
   }
 
   const {

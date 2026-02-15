@@ -16,7 +16,6 @@ import { FirebaseInitializationOrchestrator } from '../orchestrators/FirebaseIni
 export class FirebaseClientSingleton implements IFirebaseClient {
   private static instance: FirebaseClientSingleton | null = null;
   private state: FirebaseClientState;
-  private lastError: string | null = null;
 
   private constructor() {
     this.state = new FirebaseClientState();
@@ -34,11 +33,9 @@ export class FirebaseClientSingleton implements IFirebaseClient {
       const result = FirebaseInitializationOrchestrator.initialize(config);
       // Sync state with orchestrator result
       this.state.setInstance(result);
-      this.lastError = null;
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.lastError = errorMessage;
       this.state.setInitializationError(errorMessage);
       return null;
     }
@@ -66,17 +63,12 @@ export class FirebaseClientSingleton implements IFirebaseClient {
   }
 
   getInitializationError(): string | null {
-    // Check local state first
-    const localError = this.state.getInitializationError();
-    if (localError) return localError;
-    // Return last error
-    return this.lastError;
+    return this.state.getInitializationError();
   }
 
   reset(): void {
     // Reset local state
     this.state.reset();
-    this.lastError = null;
     // Note: We don't reset Firebase apps as they might be in use
   }
 }

@@ -30,16 +30,23 @@ export class QueryDeduplicationMiddleware {
   ): Promise<T> {
     const key = generateQueryKey(queryKey);
 
-    // Check if query is already pending
-    if (this.queryManager.isPending(key)) {
-      const pendingPromise = this.queryManager.get(key);
-      if (pendingPromise) {
-        // Return the existing pending promise instead of executing again
-        return pendingPromise as Promise<T>;
-      }
+    // FIX: Atomic get-or-create pattern to prevent race conditions
+    const existingPromise = this.queryManager.get(key);
+    if (existingPromise) {
+      return existingPromise as Promise<T>;
     }
 
-    const promise = queryFn();
+    // Create promise with cleanup on completion
+    const promise = (async () => {
+      try {
+        return await queryFn();
+      } finally {
+        // Cleanup after completion (success or error)
+        this.queryManager.remove(key);
+      }
+    })();
+
+    // Add before any await - this prevents race between check and add
     this.queryManager.add(key, promise);
 
     return promise;

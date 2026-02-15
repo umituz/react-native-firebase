@@ -94,6 +94,22 @@ export class RequestLoggerService {
   }
 
   /**
+   * Remove all listeners
+   * Prevents memory leaks when service is destroyed
+   */
+  removeAllListeners(): void {
+    this.listeners.clear();
+  }
+
+  /**
+   * Destroy service and cleanup resources
+   */
+  destroy(): void {
+    this.removeAllListeners();
+    this.clearLogs();
+  }
+
+  /**
    * Notify all listeners
    */
   private notifyListeners(log: RequestLog): void {
