@@ -12,6 +12,7 @@ import type { Firestore, CollectionReference, DocumentReference, DocumentData } 
 import { getFirestore, collection, doc } from 'firebase/firestore';
 import { isQuotaError as checkQuotaError } from '../../utils/quota-error-detector.util';
 import { ERROR_MESSAGES } from '../../../../shared/domain/utils/error-handlers/error-messages';
+import { quotaTrackingMiddleware } from '../middleware/QuotaTrackingMiddleware';
 
 export enum RepositoryState {
   ACTIVE = 'active',
@@ -40,6 +41,21 @@ export abstract class BaseRepository implements IPathResolver {
       return null;
     }
     return getFirestore();
+  }
+
+  /**
+   * Get the Firestore instance or throw error
+   * @throws Error if repository is destroyed or Firestore is not initialized
+   */
+  protected getDbOrThrow(): Firestore {
+    if (this.state === RepositoryState.DESTROYED) {
+      throw new Error(ERROR_MESSAGES.REPOSITORY.DESTROYED);
+    }
+    const db = getFirestore();
+    if (!db) {
+      throw new Error(ERROR_MESSAGES.FIRESTORE.NOT_INITIALIZED);
+    }
+    return db;
   }
 
   getUserCollection(userId: string): CollectionReference<DocumentData> | null {
@@ -84,6 +100,47 @@ export abstract class BaseRepository implements IPathResolver {
       }
       throw error;
     }
+  }
+
+  /**
+   * Track read operation for quota monitoring
+   *
+   * @param collection - Collection name
+   * @param count - Number of documents read
+   * @param cached - Whether the result is from cache
+   */
+  protected trackRead(
+    collection: string,
+    count: number = 1,
+    cached: boolean = false,
+  ): void {
+    quotaTrackingMiddleware.trackRead(collection, count, cached);
+  }
+
+  /**
+   * Track write operation for quota monitoring
+   *
+   * @param collection - Collection name
+   * @param count - Number of documents written
+   */
+  protected trackWrite(
+    collection: string,
+    count: number = 1,
+  ): void {
+    quotaTrackingMiddleware.trackWrite(collection, count);
+  }
+
+  /**
+   * Track delete operation for quota monitoring
+   *
+   * @param collection - Collection name
+   * @param count - Number of documents deleted
+   */
+  protected trackDelete(
+    collection: string,
+    count: number = 1,
+  ): void {
+    quotaTrackingMiddleware.trackDelete(collection, count);
   }
 
   /**
