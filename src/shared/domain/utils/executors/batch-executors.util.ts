@@ -1,4 +1,4 @@
-import type { Result, FailureResult } from '../result.util';
+import type { Result } from '../result.util';
 import { failureResultFromError, successResult, isSuccess, isFailure } from '../result.util';
 
 export async function executeAll<T>(

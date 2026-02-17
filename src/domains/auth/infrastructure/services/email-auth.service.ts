@@ -13,7 +13,7 @@ import {
   type User,
 } from "firebase/auth";
 import { getFirebaseAuth } from "../config/FirebaseAuthClient";
-import { executeOperation, failureResultFrom, successResult, type Result, ERROR_MESSAGES } from "../../../../shared/domain/utils";
+import { executeOperation, successResult, type Result, ERROR_MESSAGES } from "../../../../shared/domain/utils";
 import { withAuth } from "../utils/auth-guard.util";
 
 export interface EmailCredentials {

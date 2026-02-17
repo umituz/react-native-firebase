@@ -6,7 +6,6 @@
  * Generic implementation for all React Native apps
  */
 
-import { getFirebaseAuth } from '../config/FirebaseAuthClient';
 import {
   getCurrentUserId,
   getCurrentUser,

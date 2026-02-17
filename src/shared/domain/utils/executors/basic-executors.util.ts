@@ -4,7 +4,7 @@
  */
 
 import type { Result } from '../result.util';
-import { successResult, failureResultFromError } from '../result.util';
+import { successResult } from '../result.util';
 import { toErrorInfo } from '../error-handlers/error-converters';
 
 /**

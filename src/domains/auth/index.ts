@@ -128,7 +128,6 @@ export type {
 export {
   updateUserPassword,
 } from './infrastructure/services/password.service';
-export type { PasswordUpdateResult } from './infrastructure/services/password.service';
 
 // Email/Password Authentication
 export {
