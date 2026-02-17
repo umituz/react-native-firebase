@@ -3,8 +3,8 @@
  * Core async operation execution with error handling
  */
 
-import type { Result } from '../result.util';
-import { successResult } from '../result.util';
+import type { Result } from '../result/result-types';
+import { successResult } from '../result/result-creators';
 import { toErrorInfo } from '../error-handlers/error-converters';
 
 /**

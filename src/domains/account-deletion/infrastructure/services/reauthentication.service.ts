@@ -14,7 +14,7 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
 import { generateNonce, hashNonce } from "../../../auth/infrastructure/services/crypto.util";
 import { executeOperation, failureResultFrom, toErrorInfo, ERROR_MESSAGES } from "../../../../shared/domain/utils";
-import { isCancelledError } from "../../../../shared/domain/utils/error-handler.util";
+import { isCancelledError } from "../../../../shared/domain/utils/error-handlers/error-checkers";
 import type {
   ReauthenticationResult,
   AuthProviderType,

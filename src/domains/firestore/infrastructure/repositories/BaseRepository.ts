@@ -10,7 +10,7 @@
 
 import type { Firestore, CollectionReference, DocumentReference, DocumentData } from 'firebase/firestore';
 import { getFirestore, collection, doc } from 'firebase/firestore';
-import { isQuotaError as checkQuotaError } from '../../utils/quota-error-detector.util';
+import { isQuotaError as checkQuotaError } from '../../../../shared/domain/utils/error-handlers/error-checkers';
 import { ERROR_MESSAGES } from '../../../../shared/domain/utils/error-handlers/error-messages';
 import { quotaTrackingMiddleware } from '../middleware/QuotaTrackingMiddleware';
 

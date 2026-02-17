@@ -5,7 +5,7 @@
  */
 
 import type { Auth } from 'firebase/auth';
-import { getFirebaseApp } from '../../../../shared/infrastructure/config/FirebaseClient';
+import { getFirebaseApp } from '../../../../shared/infrastructure/config/services/FirebaseInitializationService';
 import { FirebaseAuthInitializer } from './initializers/FirebaseAuthInitializer';
 import type { FirebaseAuthConfig } from '../../domain/value-objects/FirebaseAuthConfig';
 import { ServiceClientSingleton } from '../../../../shared/infrastructure/config/base/ServiceClientSingleton';

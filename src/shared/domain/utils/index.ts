@@ -3,22 +3,28 @@
  * Centralized utilities for domain operations
  */
 
-// Result types
+// Result types and helpers
+export type {
+  Result,
+  SuccessResult,
+  FailureResult,
+  ErrorInfo,
+} from './result/result-types';
+
 export {
   successResult,
   failureResult,
   failureResultFrom,
   failureResultFromError,
+} from './result/result-creators';
+
+export {
   isSuccess,
   isFailure,
   getDataOrDefault,
   mapResult,
   chainResults,
-  type Result,
-  type SuccessResult,
-  type FailureResult,
-  type ErrorInfo,
-} from './result.util';
+} from './result/result-helpers';
 
 // Async operation execution
 export {
@@ -52,8 +58,9 @@ export {
 } from './credential.util';
 
 // Error handling
+export { toErrorInfo } from './error-handlers/error-converters';
+
 export {
-  toErrorInfo,
   hasErrorCode,
   isCancelledError,
   isQuotaErrorInfo,
@@ -61,14 +68,12 @@ export {
   isAuthError,
   isQuotaError,
   isRetryableError,
-  getQuotaErrorMessage,
-  getRetryableErrorMessage,
-  type ErrorInfo as ErrorHandlerErrorInfo,
-} from './error-handler.util';
+} from './error-handlers/error-checkers';
 
-// Error messages
 export {
   ERROR_MESSAGES,
+  getQuotaErrorMessage,
+  getRetryableErrorMessage,
 } from './error-handlers/error-messages';
 
 // Type guards
@@ -82,18 +87,28 @@ export {
 export {
   isValidString,
   isEmptyString,
+  isDefined,
+} from './validators/string.validator';
+
+export {
   isValidFirebaseApiKey,
   isValidFirebaseAuthDomain,
   isValidFirebaseProjectId,
+} from './validators/firebase.validator';
+
+export {
   isValidUrl,
   isValidHttpsUrl,
-  isValidEmail,
-  isDefined,
+} from './validators/url.validator';
+
+export { isValidEmail } from './validators/user-input.validator';
+
+export {
   isNonEmptyArray,
   isInRange,
   isPositive,
   isNonNegative,
-} from './validation.util';
+} from './validators/generic.validator';
 
 // ID generation
 export {

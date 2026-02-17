@@ -1,5 +1,6 @@
-import type { Result } from '../result.util';
-import { failureResultFromError, successResult, isSuccess, isFailure } from '../result.util';
+import type { Result } from '../result/result-types';
+import { failureResultFromError, successResult } from '../result/result-creators';
+import { isSuccess, isFailure } from '../result/result-helpers';
 
 export async function executeAll<T>(
   ...operations: (() => Promise<Result<T>>)[]

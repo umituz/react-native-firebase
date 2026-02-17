@@ -9,7 +9,7 @@
  */
 
 import type { Firestore } from 'firebase/firestore';
-import { getFirebaseApp } from '../../../../shared/infrastructure/config/FirebaseClient';
+import { getFirebaseApp } from '../../../../shared/infrastructure/config/services/FirebaseInitializationService';
 import { FirebaseFirestoreInitializer } from './initializers/FirebaseFirestoreInitializer';
 import { ServiceClientSingleton } from '../../../../shared/infrastructure/config/base/ServiceClientSingleton';
 

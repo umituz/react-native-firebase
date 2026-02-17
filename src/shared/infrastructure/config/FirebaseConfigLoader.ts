@@ -7,11 +7,8 @@
  */
 
 import type { FirebaseConfig } from '../../domain/value-objects/FirebaseConfig';
-import {
-  isValidString,
-  isValidFirebaseApiKey,
-  isValidFirebaseAuthDomain,
-} from '../../domain/utils/validation.util';
+import { isValidString } from '../../domain/utils/validators/string.validator';
+import { isValidFirebaseApiKey, isValidFirebaseAuthDomain } from '../../domain/utils/validators/firebase.validator';
 
 type ConfigKey = 'apiKey' | 'authDomain' | 'projectId' | 'storageBucket' | 'messagingSenderId' | 'appId';
 

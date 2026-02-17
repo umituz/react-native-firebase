@@ -7,7 +7,8 @@
 
 import type { FirebaseConfig } from '../../../domain/value-objects/FirebaseConfig';
 import { FirebaseConfigurationError } from '../../../domain/errors/FirebaseError';
-import { isValidString, isValidFirebaseApiKey, isValidFirebaseProjectId, isValidFirebaseAuthDomain } from '../../../domain/utils/validation.util';
+import { isValidString } from '../../../domain/utils/validators/string.validator';
+import { isValidFirebaseApiKey, isValidFirebaseProjectId, isValidFirebaseAuthDomain } from '../../../domain/utils/validators/firebase.validator';
 
 /**
  * Validation rule interface

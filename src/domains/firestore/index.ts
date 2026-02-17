@@ -57,12 +57,6 @@ export type {
 } from './types/pagination.types';
 export { EMPTY_PAGINATED_RESULT } from './types/pagination.types';
 
-// Document Mapper
-export {
-  DocumentMapperHelper,
-  createDocumentMapper,
-} from './utils/document-mapper.helper';
-
 // Domain Constants
 export {
   FREE_TIER_LIMITS,
@@ -91,8 +85,10 @@ export { QuotaCalculator } from './domain/services/QuotaCalculator';
 export {
   isQuotaError,
   isRetryableError,
+} from '../../shared/domain/utils/error-handlers/error-checkers';
+export {
   getQuotaErrorMessage,
-} from './utils/quota-error-detector.util';
+} from '../../shared/domain/utils/error-handlers/error-messages';
 
 // Middleware
 export {

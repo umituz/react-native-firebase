@@ -5,7 +5,7 @@
 
 import type { User, Auth } from 'firebase/auth';
 import { getFirebaseAuth } from '../config/FirebaseAuthClient';
-import { isValidString } from '../../../../shared/domain/utils/validation.util';
+import { isValidString } from '../../../../shared/domain/utils/validators/string.validator';
 
 export interface AuthCheckResult {
   isAuthenticated: boolean;

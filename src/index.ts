@@ -2,12 +2,6 @@
  * React Native Firebase - Unified Package
  *
  * Domain-Driven Design (DDD) Architecture
- *
- * Core exports - App initialization and shared utilities
- *
- * Module-specific exports available via:
- * - @umituz/react-native-firebase/auth
- * - @umituz/react-native-firebase/firestore
  */
 
 // Core Errors
@@ -30,15 +24,18 @@ export {
   isFirebaseInitialized,
   getFirebaseInitializationError,
   resetFirebaseClient,
-  firebaseClient,
-} from "./shared/infrastructure/config/FirebaseClient";
+} from "./shared/infrastructure/config/services/FirebaseInitializationService";
 
 export type {
-  FirebaseApp,
   AuthInitializer,
   ServiceInitializationOptions,
   ServiceInitializationResult,
-} from "./shared/infrastructure/config/FirebaseClient";
+} from "./shared/infrastructure/config/services/FirebaseInitializationService";
+
+export type { FirebaseApp } from "./shared/infrastructure/config/initializers/FirebaseAppInitializer";
+
+import { FirebaseClientSingleton } from "./shared/infrastructure/config/clients/FirebaseClientSingleton";
+export const firebaseClient = FirebaseClientSingleton.getInstance();
 
 // Type Guards
 export {
@@ -56,39 +53,15 @@ export {
 export * from "./domains/auth";
 export * from "./domains/account-deletion";
 
-
-
 // Firestore Module Exports
-export {
-  BaseRepository,
-  BaseQueryRepository,
-  BasePaginatedRepository,
-} from "./domains/firestore";
 export * from "./domains/firestore";
-export { Timestamp } from "firebase/firestore";
 export type {
   Transaction,
   DocumentReference,
-  CollectionReference,
   WriteBatch,
   DocumentSnapshot,
   QuerySnapshot,
-  QueryDocumentSnapshot,
-  DocumentData,
-  Firestore,
 } from "firebase/firestore";
-
-// Firestore Helper Utilities
-export {
-  withFirestore,
-  withFirestoreVoid,
-  withFirestoreBool,
-  createErrorResult,
-  createSuccessResult,
-  runTransaction,
-  serverTimestamp,
-} from "./domains/firestore/utils/firestore-helper";
-export type { NoDbResult } from "./domains/firestore/utils/firestore-helper";
 
 // Init Module Factory
 export {

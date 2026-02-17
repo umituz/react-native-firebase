@@ -3,8 +3,8 @@
  * Retry and timeout support for async operations
  */
 
-import type { Result } from '../result.util';
-import { failureResultFromError, successResult } from '../result.util';
+import type { Result } from '../result/result-types';
+import { failureResultFromError, successResult } from '../result/result-creators';
 import { executeOperation } from './basic-executors.util';
 
 /**
