@@ -31,14 +31,3 @@ export function isValidFirebaseAuthDomain(authDomain: string): boolean {
   );
 }
 
-/**
- * Validate Firebase projectId format
- * Project IDs must be 6-30 characters, lowercase, alphanumeric, and may contain hyphens
- */
-export function isValidFirebaseProjectId(projectId: string): boolean {
-  if (!isValidString(projectId)) {
-    return false;
-  }
-  const pattern = /^[a-z0-9][a-z0-9-]{4,28}[a-z0-9]$/;
-  return pattern.test(projectId);
-}

@@ -3,7 +3,7 @@
  * Manages cleanup timers for deduplication middleware
  */
 
-export interface TimerManagerOptions {
+interface TimerManagerOptions {
   cleanupIntervalMs: number;
   onCleanup: () => void;
 }

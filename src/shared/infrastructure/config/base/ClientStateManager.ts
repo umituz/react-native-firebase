@@ -7,7 +7,7 @@
  * @template TInstance - The service instance type (e.g., FirebaseApp, Firestore, Auth)
  */
 
-export interface ClientState<TInstance> {
+interface ClientState<TInstance> {
   instance: TInstance | null;
   initializationError: string | null;
   isInitialized: boolean;

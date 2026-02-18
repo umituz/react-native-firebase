@@ -21,12 +21,6 @@ import type {
   ReauthCredentialResult
 } from "../../application/ports/reauthentication.types";
 
-export type {
-  ReauthenticationResult,
-  AuthProviderType,
-  ReauthCredentialResult
-} from "../../application/ports/reauthentication.types";
-
 /**
  * Validates email format
  */

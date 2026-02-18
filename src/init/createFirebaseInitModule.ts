@@ -39,7 +39,7 @@ export interface FirebaseInitModuleConfig {
 export function createFirebaseInitModule(
   config: FirebaseInitModuleConfig = {}
 ): InitModule {
-  const { authInitializer, critical = true } = config;
+  const { authInitializer, critical = false } = config;
 
   return {
     name: 'firebase',
@@ -50,28 +50,24 @@ export function createFirebaseInitModule(
           authInitializer: authInitializer ?? (() => Promise.resolve()),
         });
 
-        // Check if initialization was successful
         if (!result.app) {
           if (__DEV__) {
-            console.error('[Firebase] Initialization failed: Firebase app not initialized');
+            console.warn('[Firebase] Firebase config not found or invalid — skipping initialization. Set EXPO_PUBLIC_FIREBASE_* env vars to enable.');
           }
           return false;
         }
 
-        // Check if auth initialization failed
         if (result.auth === false && result.authError) {
           if (__DEV__) {
-            console.error(`[Firebase] Auth initialization failed: ${result.authError}`);
+            console.warn(`[Firebase] Auth initialization skipped: ${result.authError}`);
           }
-          // Auth failure is not critical for the app to function
-          // Log the error but don't fail the entire initialization
         }
 
         return true;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         if (__DEV__) {
-          console.error(`[Firebase] Initialization failed: ${errorMessage}`);
+          console.warn(`[Firebase] Initialization skipped: ${errorMessage}`);
         }
         return false;
       }

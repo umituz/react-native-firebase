@@ -7,7 +7,7 @@ import type { Result, FailureResult } from '../../../../shared/domain/utils/resu
 
 export type NoDbResult = FailureResult;
 
-export const NO_DB_ERROR: NoDbResult = {
+const NO_DB_ERROR: NoDbResult = {
   success: false,
   error: { message: "No DB", code: "DB_ERR" },
 };
@@ -22,7 +22,7 @@ export function createErrorResult<T>(message: string, code: string): Result<T> {
 /**
  * Create a standard success result
  */
-export function createFirestoreSuccessResult<T>(data?: T): Result<T> {
+export function createSuccessResult<T>(data?: T): Result<T> {
   return { success: true, data: data as T };
 }
 
@@ -32,6 +32,3 @@ export function createFirestoreSuccessResult<T>(data?: T): Result<T> {
 export function createNoDbErrorResult<T>(): Result<T> {
   return { success: false, error: NO_DB_ERROR.error };
 }
-
-// Alias for backward compatibility
-export const createSuccessResult = createFirestoreSuccessResult;

@@ -32,19 +32,3 @@ export function generateQueryKey(key: QueryKey): string {
   return parts.join('|');
 }
 
-/**
- * Create a query key object
- */
-export function createQueryKey(
-  collection: string,
-  filters: string,
-  limit?: number,
-  orderBy?: string
-): QueryKey {
-  return {
-    collection,
-    filters,
-    limit,
-    orderBy,
-  };
-}

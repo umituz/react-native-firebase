@@ -69,12 +69,22 @@ class FirebaseAuthClientSingleton extends ServiceClientSingleton<Auth, FirebaseA
   }
 }
 
-export const firebaseAuthClient = FirebaseAuthClientSingleton.getInstance();
-export const initializeFirebaseAuth = (c?: FirebaseAuthConfig) => firebaseAuthClient.initialize(c);
-export const getFirebaseAuth = () => firebaseAuthClient.getAuth();
-export const isFirebaseAuthInitialized = () => firebaseAuthClient.isInitialized();
-export const getFirebaseAuthInitializationError = () => firebaseAuthClient.getInitializationError();
-export const resetFirebaseAuthClient = () => firebaseAuthClient.reset();
+function getFirebaseAuthClientSafe(): FirebaseAuthClientSingleton | null {
+  try {
+    return FirebaseAuthClientSingleton.getInstance();
+  } catch {
+    if (__DEV__) {
+      console.warn('[Firebase] Could not create FirebaseAuth client singleton.');
+    }
+    return null;
+  }
+}
+
+export const firebaseAuthClient = getFirebaseAuthClientSafe();
+export const initializeFirebaseAuth = (c?: FirebaseAuthConfig) => firebaseAuthClient?.initialize(c) ?? null;
+export const getFirebaseAuth = () => firebaseAuthClient?.getAuth() ?? null;
+export const isFirebaseAuthInitialized = () => firebaseAuthClient?.isInitialized() ?? false;
+export const getFirebaseAuthInitializationError = () => firebaseAuthClient?.getInitializationError() ?? null;
+export const resetFirebaseAuthClient = () => firebaseAuthClient?.reset();
 
 export type { Auth } from 'firebase/auth';
-export type { FirebaseAuthConfig } from '../../domain/value-objects/FirebaseAuthConfig';

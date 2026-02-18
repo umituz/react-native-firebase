@@ -5,11 +5,6 @@
 
 import type { AuthCredential } from 'firebase/auth';
 
-export interface ReauthenticationCredential {
-  provider: 'password' | 'google.com' | 'apple.com';
-  credential: AuthCredential;
-}
-
 export interface ReauthenticationResult {
   success: boolean;
   error?: {
@@ -26,15 +21,6 @@ export interface ReauthCredentialResult {
   error?: {
     code: string;
     message: string;
-  };
-}
-
-export interface AccountDeletionResult {
-  success: boolean;
-  error?: {
-    code?: string;
-    message?: string;
-    requiresReauth?: boolean;
   };
 }
 

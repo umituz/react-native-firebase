@@ -16,7 +16,7 @@ export function successResult<T = void>(data?: T): SuccessResult<T> {
 /**
  * Create a failure result with error information
  */
-export function failureResult(error: ErrorInfo): FailureResult {
+function failureResult(error: ErrorInfo): FailureResult {
   return { success: false, error };
 }
 

@@ -3,7 +3,7 @@
  * Manages pending queries for deduplication
  */
 
-export interface PendingQuery {
+interface PendingQuery {
   promise: Promise<unknown>;
   timestamp: number;
 }

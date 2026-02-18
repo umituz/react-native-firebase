@@ -18,12 +18,6 @@ import {
   buildUpdateData,
 } from "./user-document-builder.util";
 
-export type {
-  UserDocumentUser,
-  UserDocumentConfig,
-  UserDocumentExtras,
-} from "./user-document.types";
-
 declare const __DEV__: boolean;
 
 let userDocumentConfig: UserDocumentConfig = {};

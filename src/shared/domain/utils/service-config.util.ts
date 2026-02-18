@@ -3,26 +3,16 @@ import { ERROR_MESSAGES } from './error-handlers/error-messages';
 /**
  * Configuration state management
  */
-export interface ConfigState<TConfig> {
+interface ConfigState<TConfig> {
   config: TConfig | null;
   initialized: boolean;
-}
-
-/**
- * Configurable service interface
- */
-export interface IConfigurableService<TConfig> {
-  configure(config: TConfig): void;
-  isConfigured(): boolean;
-  getConfig(): TConfig | null;
-  reset(): void;
 }
 
 /**
  * Base class for configurable services
  * Provides configuration management pattern
  */
-export class ConfigurableService<TConfig = unknown> implements IConfigurableService<TConfig> {
+export class ConfigurableService<TConfig = unknown> {
   protected configState: ConfigState<TConfig>;
   private customValidator?: (config: TConfig) => boolean;
 
@@ -80,13 +70,4 @@ export class ConfigurableService<TConfig = unknown> implements IConfigurableServ
     }
     return this.configState.config;
   }
-}
-
-/**
- * Create a configurable service instance
- */
-export function createConfigurableService<TConfig>(
-  validator?: (config: TConfig) => boolean
-): ConfigurableService<TConfig> {
-  return new ConfigurableService<TConfig>(validator);
 }

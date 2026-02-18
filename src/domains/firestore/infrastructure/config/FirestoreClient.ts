@@ -61,26 +61,37 @@ class FirestoreClientSingleton extends ServiceClientSingleton<Firestore> {
   }
 }
 
-export const firestoreClient = FirestoreClientSingleton.getInstance();
+function getFirestoreClientSafe(): FirestoreClientSingleton | null {
+  try {
+    return FirestoreClientSingleton.getInstance();
+  } catch {
+    if (__DEV__) {
+      console.warn('[Firestore] Could not create Firestore client singleton.');
+    }
+    return null;
+  }
+}
+
+export const firestoreClient = getFirestoreClientSafe();
 
 export function initializeFirestore(): Firestore | null {
-  return firestoreClient.initialize();
+  return firestoreClient?.initialize() ?? null;
 }
 
 export function getFirestore(): Firestore | null {
-  return firestoreClient.getFirestore();
+  return firestoreClient?.getFirestore() ?? null;
 }
 
 export function isFirestoreInitialized(): boolean {
-  return firestoreClient.isInitialized();
+  return firestoreClient?.isInitialized() ?? false;
 }
 
 export function getFirestoreInitializationError(): string | null {
-  return firestoreClient.getInitializationError();
+  return firestoreClient?.getInitializationError() ?? null;
 }
 
 export function resetFirestoreClient(): void {
-  firestoreClient.reset();
+  firestoreClient?.reset();
 }
 
 export type { Firestore } from 'firebase/firestore';

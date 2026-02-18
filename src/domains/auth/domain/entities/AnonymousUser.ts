@@ -31,16 +31,3 @@ export function toAnonymousUser(user: User): AnonymousUser {
   };
 }
 
-/**
- * Validate AnonymousUser entity
- */
-export function isValidAnonymousUser(user: unknown): user is AnonymousUser {
-  return (
-    typeof user === 'object' &&
-    user !== null &&
-    'uid' in user &&
-    typeof user.uid === 'string' &&
-    'isAnonymous' in user &&
-    user.isAnonymous === true
-  );
-}

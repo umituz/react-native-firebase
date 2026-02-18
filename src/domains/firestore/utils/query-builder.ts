@@ -8,7 +8,7 @@ import {
   type Firestore,
   type Query,
 } from "firebase/firestore";
-import { applyFieldFilter, createInFilter, createEqualFilter, createFieldFilter, type FieldFilter } from "./query/filters.util";
+import { applyFieldFilter, createInFilter, createEqualFilter, type FieldFilter } from "./query/filters.util";
 import { applyDateRange, applySort, applyCursor, applyLimit, type SortOptions, type DateRangeOptions } from "./query/modifiers.util";
 
 export interface QueryBuilderOptions {
@@ -48,5 +48,5 @@ export function buildQuery(
   return q;
 }
 
-export { createInFilter, createEqualFilter, createFieldFilter };
-export type { FieldFilter, SortOptions, DateRangeOptions };
+export { createInFilter, createEqualFilter };
+export type { FieldFilter };

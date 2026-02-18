@@ -51,21 +51,21 @@ export function isAuthError(error: unknown): error is AuthError {
 /**
  * Check if error is a Firebase error (either Firestore or Auth)
  */
-export function isFirebaseError(error: unknown): error is FirebaseErrorBase {
+function isFirebaseError(error: unknown): error is FirebaseErrorBase {
   return isFirestoreError(error) || isAuthError(error);
 }
 
 /**
  * Check if error has a specific code
  */
-export function hasErrorCode(error: unknown, code: string): boolean {
+function hasErrorCode(error: unknown, code: string): boolean {
   return hasCodeProperty(error) && error.code === code;
 }
 
 /**
  * Check if error code matches any of the provided codes
  */
-export function hasAnyErrorCode(error: unknown, codes: string[]): boolean {
+function hasAnyErrorCode(error: unknown, codes: string[]): boolean {
   if (!hasCodeProperty(error)) return false;
   return codes.includes(error.code);
 }

@@ -67,4 +67,3 @@ export class QueryDeduplicationMiddleware {
 }
 
 export const queryDeduplicationMiddleware = new QueryDeduplicationMiddleware();
-export type { QueryKey };

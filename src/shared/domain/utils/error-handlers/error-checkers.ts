@@ -3,7 +3,6 @@
  * Check error types and categories
  */
 
-import type { ErrorInfo } from '../result/result-types';
 import { hasCodeProperty, hasMessageProperty } from '../type-guards.util';
 
 /**
@@ -32,48 +31,13 @@ const QUOTA_ERROR_MESSAGES = [
 const RETRYABLE_ERROR_CODES = ['unavailable', 'deadline-exceeded', 'aborted'];
 
 /**
- * Check if error info has a specific error code
- */
-export function hasErrorCode(error: ErrorInfo, code: string): boolean {
-  return error.code === code;
-}
-
-/**
  * Check if error is a cancelled/auth cancelled error
  */
-export function isCancelledError(error: ErrorInfo): boolean {
+export function isCancelledError(error: { code: string; message: string }): boolean {
   return (
     error.code === 'auth/cancelled' ||
     error.message.includes('ERR_CANCELED')
   );
-}
-
-/**
- * Check if error info is a quota error
- */
-export function isQuotaErrorInfo(error: ErrorInfo): boolean {
-  return (
-    error.code === 'quota-exceeded' ||
-    error.code.includes('quota') ||
-    error.message.toLowerCase().includes('quota')
-  );
-}
-
-/**
- * Check if error info is a network error
- */
-export function isNetworkError(error: ErrorInfo): boolean {
-  return (
-    error.code.includes('network') ||
-    error.message.toLowerCase().includes('network')
-  );
-}
-
-/**
- * Check if error info is an authentication error
- */
-export function isAuthError(error: ErrorInfo): boolean {
-  return error.code.startsWith('auth/');
 }
 
 /**

@@ -56,22 +56,3 @@ export function validateUserUnchanged(
   return { valid: true };
 }
 
-/**
- * Capture current user ID for later validation
- * Returns null if no user is signed in
- *
- * @param auth - Firebase Auth instance
- * @returns Current user ID or null
- *
- * @example
- * ```typescript
- * const auth = getFirebaseAuth();
- * const originalUserId = captureUserId(auth);
- * if (!originalUserId) {
- *   return failureResultFrom('auth/no-user', 'No user signed in');
- * }
- * ```
- */
-export function captureUserId(auth: Auth | null): string | null {
-  return auth?.currentUser?.uid ?? null;
-}

@@ -55,11 +55,14 @@ export class FirebaseClientSingleton implements IFirebaseClient {
   }
 
   isInitialized(): boolean {
-    // Check both local state and orchestrator for consistency
-    if (this.state.isInitialized()) return true;
+    try {
+      if (this.state && this.state.isInitialized()) return true;
 
-    // Check if Firebase has any apps initialized
-    return FirebaseInitializationOrchestrator.autoInitialize() !== null;
+      const app = FirebaseInitializationOrchestrator.autoInitialize();
+      return app !== null;
+    } catch {
+      return false;
+    }
   }
 
   getInitializationError(): string | null {

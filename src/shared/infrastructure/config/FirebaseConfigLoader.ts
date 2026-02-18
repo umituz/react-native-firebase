@@ -83,16 +83,23 @@ export function loadFirebaseConfig(): FirebaseConfig | null {
   const projectId = config.projectId?.trim();
 
   if (!isValidString(apiKey) || !isValidString(authDomain) || !isValidString(projectId)) {
+    if (__DEV__) {
+      console.warn('[Firebase] Missing required config (apiKey, authDomain, or projectId). Set EXPO_PUBLIC_FIREBASE_* env vars.');
+    }
     return null;
   }
 
-  // Validate API key format
   if (!isValidFirebaseApiKey(apiKey)) {
+    if (__DEV__) {
+      console.warn('[Firebase] Invalid Firebase API key format.');
+    }
     return null;
   }
 
-  // Validate authDomain format (should be like "projectId.firebaseapp.com")
   if (!isValidFirebaseAuthDomain(authDomain)) {
+    if (__DEV__) {
+      console.warn('[Firebase] Invalid Firebase authDomain format.');
+    }
     return null;
   }
 

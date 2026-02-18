@@ -14,7 +14,7 @@ import { isQuotaError as checkQuotaError } from '../../../../shared/domain/utils
 import { ERROR_MESSAGES } from '../../../../shared/domain/utils/error-handlers/error-messages';
 import { quotaTrackingMiddleware } from '../middleware/QuotaTrackingMiddleware';
 
-export enum RepositoryState {
+enum RepositoryState {
   ACTIVE = 'active',
   DESTROYED = 'destroyed',
 }

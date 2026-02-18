@@ -14,13 +14,13 @@
  * @template TConfig - The configuration type (optional)
  */
 
-export interface ServiceClientState<TInstance> {
+interface ServiceClientState<TInstance> {
   instance: TInstance | null;
   initializationError: string | null;
   isInitialized: boolean;
 }
 
-export interface ServiceClientOptions<TInstance, TConfig = unknown> {
+interface ServiceClientOptions<TInstance, TConfig = unknown> {
   serviceName: string;
   initializer?: (config?: TConfig) => TInstance | null;
   autoInitializer?: () => TInstance | null;

@@ -16,9 +16,9 @@ import { createAuthCheckResult } from '../../../infrastructure/services/auth-uti
  * @param setError - State setter for errors
  * @returns Callback function for auth state changes
  */
-export type AuthStateChangeHandler = (user: User | null) => void;
+type AuthStateChangeHandler = (user: User | null) => void;
 
-export interface CreateAuthStateChangeHandlerParams {
+interface CreateAuthStateChangeHandlerParams {
   setAuthState: (state: AuthCheckResult) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: Error | null) => void;

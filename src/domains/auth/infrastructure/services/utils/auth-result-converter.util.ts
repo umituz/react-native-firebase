@@ -11,7 +11,7 @@ import type { Result } from '../../../../../shared/domain/utils/result/result-ty
  * Generic OAuth authentication success result
  * Used by Apple, Google, and other OAuth providers
  */
-export interface OAuthAuthSuccessResult {
+interface OAuthAuthSuccessResult {
   success: true;
   userCredential: any;
   isNewUser: boolean;
@@ -20,7 +20,7 @@ export interface OAuthAuthSuccessResult {
 /**
  * Generic OAuth authentication error result
  */
-export interface OAuthAuthErrorResult {
+interface OAuthAuthErrorResult {
   success: false;
   error: string;
   code?: string;
@@ -29,7 +29,7 @@ export interface OAuthAuthErrorResult {
 /**
  * Generic OAuth authentication result (discriminated union)
  */
-export type OAuthAuthResult = OAuthAuthSuccessResult | OAuthAuthErrorResult;
+type OAuthAuthResult = OAuthAuthSuccessResult | OAuthAuthErrorResult;
 
 /**
  * Convert standard Result to OAuth-specific result format

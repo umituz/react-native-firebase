@@ -29,7 +29,7 @@ export interface UseGoogleOAuthResult {
   googleError: string | null;
 }
 
-export interface SocialAuthResult {
+interface SocialAuthResult {
   success: boolean;
   isNewUser?: boolean;
   error?: string;

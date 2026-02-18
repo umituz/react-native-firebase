@@ -63,13 +63,3 @@ export function createEqualFilter(
   return { field, operator: "==", value };
 }
 
-/**
- * Create a field filter for custom operator
- */
-export function createFieldFilter(
-  field: string,
-  operator: WhereFilterOp,
-  value: string | number | boolean | string[] | number[],
-): FieldFilter {
-  return { field, operator, value };
-}

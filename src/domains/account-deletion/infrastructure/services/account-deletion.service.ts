@@ -22,8 +22,6 @@ export interface AccountDeletionResult extends Result<void> {
   requiresReauth?: boolean;
 }
 
-export type { AccountDeletionOptions } from "../../application/ports/reauthentication.types";
-
 // Operation lock to prevent concurrent deletion attempts
 let deletionInProgress = false;
 

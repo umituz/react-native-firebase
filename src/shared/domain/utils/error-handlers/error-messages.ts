@@ -47,6 +47,3 @@ export function getQuotaErrorMessage(): string {
   return ERROR_MESSAGES.FIRESTORE.QUOTA_EXCEEDED;
 }
 
-export function getRetryableErrorMessage(): string {
-  return ERROR_MESSAGES.GENERAL.RETRYABLE;
-}

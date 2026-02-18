@@ -3,13 +3,10 @@
  * Provides common patterns for Firestore operations with error handling
  */
 
-export type { Firestore } from "../infrastructure/config/FirestoreClient";
-
 export {
   createErrorResult,
   createSuccessResult,
   type NoDbResult,
-  NO_DB_ERROR,
 } from "./result/result.util";
 
 export {

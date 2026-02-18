@@ -35,7 +35,19 @@ export type {
 export type { FirebaseApp } from "./shared/infrastructure/config/initializers/FirebaseAppInitializer";
 
 import { FirebaseClientSingleton } from "./shared/infrastructure/config/clients/FirebaseClientSingleton";
-export const firebaseClient = FirebaseClientSingleton.getInstance();
+
+function getFirebaseClientSafe(): FirebaseClientSingleton | null {
+  try {
+    return FirebaseClientSingleton.getInstance();
+  } catch {
+    if (__DEV__) {
+      console.warn('[Firebase] Could not create Firebase client singleton — Firebase may not be configured.');
+    }
+    return null;
+  }
+}
+
+export const firebaseClient = getFirebaseClientSafe();
 
 // Type Guards
 export {

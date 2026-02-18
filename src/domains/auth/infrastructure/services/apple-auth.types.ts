@@ -5,13 +5,6 @@
 
 import type { UserCredential } from 'firebase/auth';
 
-export interface AppleAuthConfig {
-  clientId?: string;
-  scope?: string;
-  redirectURI?: string;
-  state?: string;
-}
-
 export interface AppleAuthSuccessResult {
   success: true;
   userCredential: UserCredential;
@@ -25,15 +18,3 @@ export interface AppleAuthErrorResult {
 }
 
 export type AppleAuthResult = AppleAuthSuccessResult | AppleAuthErrorResult;
-
-export interface AppleAuthCredential {
-  idToken: string;
-  rawNonce: string;
-}
-
-export type User = {
-  uid: string;
-  email?: string | null;
-  displayName?: string | null;
-  isAnonymous: boolean;
-};
