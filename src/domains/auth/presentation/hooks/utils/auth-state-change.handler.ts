@@ -44,8 +44,3 @@ export function createAuthStateChangeHandler(
   };
 }
 
-/**
- * Convert Firebase User to AuthCheckResult
- * Re-exports createAuthCheckResult for convenience
- */
-export const userToAuthCheckResult = createAuthCheckResult;

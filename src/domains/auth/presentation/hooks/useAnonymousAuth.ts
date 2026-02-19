@@ -5,9 +5,9 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { onAuthStateChanged, type Auth, type User } from "firebase/auth";
-import type { AuthCheckResult } from "../../infrastructure/services/auth-utils.service";
+import { createAuthCheckResult, type AuthCheckResult } from "../../infrastructure/services/auth-utils.service";
 import { anonymousAuthService, type AnonymousAuthResult } from "../../infrastructure/services/anonymous-auth.service";
-import { createAuthStateChangeHandler, userToAuthCheckResult } from "./utils/auth-state-change.handler";
+import { createAuthStateChangeHandler } from "./utils/auth-state-change.handler";
 
 export interface UseAnonymousAuthResult extends AuthCheckResult {
   /**
@@ -69,10 +69,9 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
     }
 
     if (!auth) {
-      setAuthState(userToAuthCheckResult(null));
+      setAuthState(createAuthCheckResult(null));
       setLoading(false);
       setError(null);
-      // FIX: Always return cleanup function to prevent memory leaks
       return () => {
         if (unsubscribeRef.current) {
           unsubscribeRef.current();
@@ -93,8 +92,7 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
       const authError = err instanceof Error ? err : new Error('Auth listener setup failed');
       setError(authError);
       setLoading(false);
-      // FIX: Reset auth state on error to prevent stale data
-      setAuthState(userToAuthCheckResult(null));
+      setAuthState(createAuthCheckResult(null));
     }
 
     // Cleanup function

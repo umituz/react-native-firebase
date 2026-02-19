@@ -68,7 +68,7 @@ export class GoogleOAuthService {
   async signInWithOAuth(
     auth: Auth,
     config?: GoogleOAuthConfig,
-    promptAsync?: () => Promise<any>
+    promptAsync?: () => Promise<{ type: string; authentication?: { idToken?: string } | null }>
   ): Promise<GoogleAuthResult> {
     if (!isExpoAuthAvailable) {
       return {

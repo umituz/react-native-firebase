@@ -8,6 +8,7 @@ import {
   OAuthProvider,
   signInWithCredential,
   type Auth,
+  type UserCredential,
 } from "firebase/auth";
 import { Platform } from "react-native";
 import { generateNonce, hashNonce } from "./crypto.util";
@@ -43,7 +44,7 @@ export class AppleAuthService {
     }
   }
 
-  private convertToAppleAuthResult(result: Result<{ userCredential: any; isNewUser: boolean }>): AppleAuthResult {
+  private convertToAppleAuthResult(result: Result<{ userCredential: UserCredential; isNewUser: boolean }>): AppleAuthResult {
     return convertToOAuthResult(result, "Apple sign-in failed");
   }
 

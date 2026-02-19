@@ -17,7 +17,7 @@ function hasProviderData(user: unknown): user is { providerData: { providerId: s
     typeof user === 'object' &&
     user !== null &&
     'providerData' in user &&
-    Array.isArray((user as any).providerData)
+    Array.isArray((user as Record<string, unknown>).providerData)
   );
 }
 
@@ -27,7 +27,6 @@ function hasProviderData(user: unknown): user is { providerData: { providerId: s
 export function getSignUpMethod(user: UserDocumentUser): string | undefined {
   if (user.isAnonymous) return "anonymous";
   if (user.email) {
-    // FIX: Use type guard instead of unsafe cast
     if (hasProviderData(user) && user.providerData.length > 0) {
       const providerId = user.providerData[0]?.providerId;
       if (providerId === "google.com") return "google";

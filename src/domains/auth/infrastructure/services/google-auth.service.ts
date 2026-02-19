@@ -7,6 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithCredential,
   type Auth,
+  type UserCredential,
 } from "firebase/auth";
 import type { GoogleAuthConfig, GoogleAuthResult } from "./google-auth.types";
 import { executeAuthOperation, type Result } from "../../../../shared/domain/utils";
@@ -26,7 +27,7 @@ export class GoogleAuthService extends ConfigurableService<GoogleAuthConfig> {
     );
   }
 
-  private convertToGoogleAuthResult(result: Result<{ userCredential: any; isNewUser: boolean }>): GoogleAuthResult {
+  private convertToGoogleAuthResult(result: Result<{ userCredential: UserCredential; isNewUser: boolean }>): GoogleAuthResult {
     return convertToOAuthResult(result, "Google sign-in failed");
   }
 

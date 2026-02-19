@@ -41,15 +41,12 @@ export class PendingQueryManager {
   }
 
   /**
-   * Add query to pending list with guaranteed cleanup
+   * Add query to pending list.
+   * Cleanup is handled by the caller's finally block in deduplicate().
    */
   add(key: string, promise: Promise<unknown>): void {
-    const wrappedPromise = promise.finally(() => {
-      this.pendingQueries.delete(key);
-    });
-
     this.pendingQueries.set(key, {
-      promise: wrappedPromise,
+      promise,
       timestamp: Date.now(),
     });
   }

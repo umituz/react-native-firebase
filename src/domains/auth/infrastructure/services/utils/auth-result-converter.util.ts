@@ -4,6 +4,7 @@
  * Eliminates duplicate result conversion logic in OAuth providers (Apple, Google)
  */
 
+import type { UserCredential } from 'firebase/auth';
 import { isSuccess } from '../../../../../shared/domain/utils/result/result-helpers';
 import type { Result } from '../../../../../shared/domain/utils/result/result-types';
 
@@ -13,7 +14,7 @@ import type { Result } from '../../../../../shared/domain/utils/result/result-ty
  */
 interface OAuthAuthSuccessResult {
   success: true;
-  userCredential: any;
+  userCredential: UserCredential;
   isNewUser: boolean;
 }
 
@@ -42,18 +43,18 @@ type OAuthAuthResult = OAuthAuthSuccessResult | OAuthAuthErrorResult;
  * @example
  * ```typescript
  * // In AppleAuthService
- * private convertToAppleAuthResult(result: Result<{ userCredential: any; isNewUser: boolean }>): AppleAuthResult {
+ * private convertToAppleAuthResult(result: Result<{ userCredential: UserCredential; isNewUser: boolean }>): AppleAuthResult {
  *   return convertToOAuthResult(result, "Apple sign-in failed");
  * }
  *
  * // In GoogleAuthService
- * private convertToGoogleAuthResult(result: Result<{ userCredential: any; isNewUser: boolean }>): GoogleAuthResult {
+ * private convertToGoogleAuthResult(result: Result<{ userCredential: UserCredential; isNewUser: boolean }>): GoogleAuthResult {
  *   return convertToOAuthResult(result, "Google sign-in failed");
  * }
  * ```
  */
 export function convertToOAuthResult(
-  result: Result<{ userCredential: any; isNewUser: boolean }>,
+  result: Result<{ userCredential: UserCredential; isNewUser: boolean }>,
   defaultErrorMessage: string = 'Authentication failed'
 ): OAuthAuthResult {
   if (isSuccess(result) && result.data) {
