@@ -67,13 +67,6 @@ export * from "./domains/account-deletion";
 
 // Firestore Module Exports
 export * from "./domains/firestore";
-export type {
-  Transaction,
-  DocumentReference,
-  WriteBatch,
-  DocumentSnapshot,
-  QuerySnapshot,
-} from "firebase/firestore";
 
 // Init Module Factory
 export {

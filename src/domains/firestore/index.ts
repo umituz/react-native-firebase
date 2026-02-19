@@ -137,4 +137,9 @@ export type {
   CollectionReference,
   QueryDocumentSnapshot,
   DocumentData,
+  Transaction,
+  DocumentReference,
+  WriteBatch,
+  DocumentSnapshot,
+  QuerySnapshot,
 } from 'firebase/firestore';
