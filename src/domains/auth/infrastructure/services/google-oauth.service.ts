@@ -9,21 +9,21 @@ import type { GoogleAuthResult } from "./google-auth.types";
 import { googleAuthService } from "./google-auth.service";
 
 // Conditional import - expo-web-browser is optional
-let ExpoWebBrowser: any = null;
+interface ExpoWebBrowserModule {
+  maybeCompleteAuthSession: () => { type: string };
+}
+
+let ExpoWebBrowser: ExpoWebBrowserModule | null = null;
 let isExpoAuthAvailable = false;
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  ExpoWebBrowser = require("expo-web-browser");
+  ExpoWebBrowser = require("expo-web-browser") as ExpoWebBrowserModule;
   isExpoAuthAvailable = true;
 
-  // Complete auth session if available
-  if (ExpoWebBrowser?.maybeCompleteAuthSession) {
-    ExpoWebBrowser.maybeCompleteAuthSession();
-  }
+  ExpoWebBrowser.maybeCompleteAuthSession();
 } catch {
   // expo-web-browser not available - this is fine if not using Google OAuth
-  console.info("expo-web-browser is not installed. Google OAuth will not be available.");
 }
 
 export interface GoogleOAuthConfig {

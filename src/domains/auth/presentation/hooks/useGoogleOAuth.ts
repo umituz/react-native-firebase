@@ -10,12 +10,25 @@ import { getFirebaseAuth } from "../../infrastructure/config/FirebaseAuthClient"
 import type { GoogleOAuthConfig } from "../../infrastructure/services/google-oauth.service";
 
 // Conditional import for expo-auth-session
-let ExpoAuthSession: any = null;
+interface AuthSessionResponse {
+  type: string;
+  authentication?: { idToken?: string } | null;
+}
+
+interface ExpoAuthSessionModule {
+  useAuthRequest: (config: {
+    iosClientId: string;
+    webClientId: string;
+    androidClientId: string;
+  }) => [unknown, AuthSessionResponse | null, (() => Promise<AuthSessionResponse>) | null];
+}
+
+let ExpoAuthSession: ExpoAuthSessionModule | null = null;
 let isExpoAuthAvailable = false;
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  ExpoAuthSession = require("expo-auth-session/providers/google");
+  ExpoAuthSession = require("expo-auth-session/providers/google") as ExpoAuthSessionModule;
   isExpoAuthAvailable = true;
 } catch {
   // expo-auth-session not available - hook will return unavailable state
@@ -50,7 +63,7 @@ export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult
 
   // Call the Hook directly (only valid in React component)
   // If expo-auth-session is not available, these will be null
-  const [request, response, promptAsync] = isExpoAuthAvailable && ExpoAuthSession?.useAuthRequest
+  const [request, response, promptAsync] = isExpoAuthAvailable && ExpoAuthSession
     ? ExpoAuthSession.useAuthRequest({
         iosClientId: config?.iosClientId || PLACEHOLDER_CLIENT_ID,
         webClientId: config?.webClientId || PLACEHOLDER_CLIENT_ID,

@@ -21,16 +21,24 @@ import { isNewUser as checkIsNewUser } from "../../domain/utils/user-metadata.ut
 import { convertToOAuthResult } from "./utils/auth-result-converter.util";
 
 // Conditional import - expo-apple-authentication is optional
-let AppleAuthentication: any = null;
+interface AppleAuthModule {
+  isAvailableAsync: () => Promise<boolean>;
+  signInAsync: (options: {
+    requestedScopes: number[];
+    nonce: string;
+  }) => Promise<{ identityToken: string | null }>;
+  AppleAuthenticationScope: { FULL_NAME: number; EMAIL: number };
+}
+
+let AppleAuthentication: AppleAuthModule | null = null;
 let isAppleAuthAvailable = false;
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  AppleAuthentication = require("expo-apple-authentication");
+  AppleAuthentication = require("expo-apple-authentication") as AppleAuthModule;
   isAppleAuthAvailable = true;
 } catch {
   // expo-apple-authentication not available - this is fine if not using Apple auth
-  console.info("expo-apple-authentication is not installed. Apple authentication will not be available.");
 }
 
 export class AppleAuthService {
@@ -67,6 +75,10 @@ export class AppleAuthService {
     }
 
     const result = await executeAuthOperation(async () => {
+      if (!AppleAuthentication) {
+        throw new Error("Apple authentication module not loaded");
+      }
+
       const nonce = await generateNonce();
       const hashedNonce = await hashNonce(nonce);
 

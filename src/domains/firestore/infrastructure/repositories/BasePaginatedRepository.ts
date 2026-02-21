@@ -82,12 +82,11 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
 
     return this.executeQuery(
       collectionName,
-      q,
       async () => {
         const snapshot = await getDocs(q);
         return snapshot.docs;
       },
-      false, // Default to false as we don't know yet
+      false,
       uniqueKey
     );
   }

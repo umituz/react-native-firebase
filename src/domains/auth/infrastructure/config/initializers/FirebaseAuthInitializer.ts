@@ -35,12 +35,7 @@ export class FirebaseAuthInitializer {
   }
 
   private static handleInitializationError(error: unknown, app: FirebaseApp): Auth | null {
-    const errorCode = (error as { code?: string })?.code;
-
-    if (errorCode === 'auth/already-initialized') {
-      return this.getExistingAuth(app);
-    }
-
+    // Any initialization error: try to get existing auth instance
     return this.getExistingAuth(app);
   }
 
