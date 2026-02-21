@@ -1,6 +1,6 @@
 {
   "name": "@umituz/react-native-firebase",
-  "version": "2.4.41",
+  "version": "2.4.42",
   "description": "Unified Firebase package for React Native apps - Auth and Firestore services using Firebase JS SDK (no native modules).",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -55,7 +55,6 @@
     }
   },
   "devDependencies": {
-    "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/datetimepicker": "^8.6.0",
     "@react-native-community/slider": "^5.1.1",
@@ -66,7 +65,7 @@
     "@tanstack/react-query": "^5.66.7",
     "@tanstack/react-query-persist-client": "^5.66.7",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20.11.0",
+    "@types/node": "^20.19.33",
     "@types/react": "~19.1.10",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
