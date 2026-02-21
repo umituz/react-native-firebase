@@ -4,8 +4,6 @@
  */
 
 import { deleteUser, type User } from "firebase/auth";
-
-declare const __DEV__: boolean;
 import { getFirebaseAuth } from "../../../auth/infrastructure/config/FirebaseAuthClient";
 import { markUserDeleted } from "../../../auth/infrastructure/services/user-document.service";
 import {
@@ -28,15 +26,7 @@ let deletionInProgress = false;
 export async function deleteCurrentUser(
   options: AccountDeletionOptions = { autoReauthenticate: true }
 ): Promise<AccountDeletionResult> {
-  if (typeof __DEV__ !== "undefined" && __DEV__) {
-    console.log("[deleteCurrentUser] Called with options:", options);
-  }
-
-  // FIX: Check if deletion already in progress
   if (deletionInProgress) {
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
-      console.log("[deleteCurrentUser] Deletion already in progress");
-    }
     return {
       success: false,
       error: { code: "auth/operation-in-progress", message: "Account deletion already in progress" },
@@ -51,9 +41,6 @@ export async function deleteCurrentUser(
     const user = auth?.currentUser;
 
     if (!auth || !user) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[deleteCurrentUser] Auth not ready");
-      }
       return {
         success: false,
         error: { code: "auth/not-ready", message: "Auth not ready" },
@@ -61,13 +48,9 @@ export async function deleteCurrentUser(
       };
     }
 
-    // FIX: Capture user ID early to detect if user changes during operation
     const originalUserId = user.uid;
 
     if (user.isAnonymous) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[deleteCurrentUser] Cannot delete anonymous user");
-      }
       return {
         success: false,
         error: { code: "auth/anonymous", message: "Cannot delete anonymous" },
@@ -76,37 +59,17 @@ export async function deleteCurrentUser(
     }
 
     const provider = getUserAuthProvider(user);
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
-      console.log("[deleteCurrentUser] User provider:", provider);
-    }
 
     if (provider === "password" && options.autoReauthenticate && options.onPasswordRequired) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[deleteCurrentUser] Password provider, calling attemptReauth");
-      }
       const reauth = await attemptReauth(user, options, originalUserId);
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[deleteCurrentUser] attemptReauth result:", reauth);
-      }
       if (reauth) {
-        if (typeof __DEV__ !== "undefined" && __DEV__) {
-          console.log("[deleteCurrentUser] Reauth returned result, returning:", reauth);
-        }
         return reauth;
-      }
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[deleteCurrentUser] Reauth returned null, continuing to deleteUser");
       }
     }
 
     try {
-      // Verify user hasn't changed before deletion
       const validation = validateUserUnchanged(auth, originalUserId);
       if (!('valid' in validation)) {
-        // User changed - validation is a FailureResult
-        if (typeof __DEV__ !== "undefined" && __DEV__) {
-          console.log("[deleteCurrentUser] User changed during operation");
-        }
         return {
           success: false,
           error: validation.error,
@@ -114,23 +77,10 @@ export async function deleteCurrentUser(
         };
       }
 
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[deleteCurrentUser] Marking user as deleted in Firestore");
-      }
       await markUserDeleted(user.uid);
-
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[deleteCurrentUser] Calling deleteUser");
-      }
       await deleteUser(user);
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[deleteCurrentUser] deleteUser successful");
-      }
       return successResult();
     } catch (error: unknown) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.error("[deleteCurrentUser] deleteUser failed:", error);
-      }
       const errorInfo = toErrorInfo(error, 'auth/failed');
       const code = errorInfo.code;
       const message = errorInfo.message;
@@ -150,25 +100,15 @@ export async function deleteCurrentUser(
       };
     }
   } finally {
-    // FIX: Always release lock when done
     deletionInProgress = false;
   }
 }
 
 async function attemptReauth(user: User, options: AccountDeletionOptions, originalUserId?: string): Promise<AccountDeletionResult | null> {
-  if (typeof __DEV__ !== "undefined" && __DEV__) {
-    console.log("[attemptReauth] Called");
-  }
-
-  // Verify user hasn't changed if originalUserId provided
   if (originalUserId) {
-    const auth = getFirebaseAuth();
-    const validation = validateUserUnchanged(auth, originalUserId);
+    const authInstance = getFirebaseAuth();
+    const validation = validateUserUnchanged(authInstance, originalUserId);
     if (!('valid' in validation)) {
-      // User changed - validation is a FailureResult
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[attemptReauth] User changed during reauthentication");
-      }
       return {
         success: false,
         error: validation.error,
@@ -178,21 +118,12 @@ async function attemptReauth(user: User, options: AccountDeletionOptions, origin
   }
 
   const provider = getUserAuthProvider(user);
-  if (typeof __DEV__ !== "undefined" && __DEV__) {
-    console.log("[attemptReauth] Provider:", provider);
-  }
 
   let res: { success: boolean; error?: { code?: string; message?: string } };
 
   if (provider === "apple.com") {
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
-      console.log("[attemptReauth] Apple provider");
-    }
     res = await reauthenticateWithApple(user);
   } else if (provider === "google.com") {
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
-      console.log("[attemptReauth] Google provider");
-    }
     let googleToken = options.googleIdToken;
     if (!googleToken && options.onGoogleReauthRequired) {
       const token = await options.onGoogleReauthRequired();
@@ -214,93 +145,50 @@ async function attemptReauth(user: User, options: AccountDeletionOptions, origin
     }
     res = await reauthenticateWithGoogle(user, googleToken);
   } else if (provider === "password") {
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
-      console.log("[attemptReauth] Password provider, calling onPasswordRequired...");
-    }
     let password = options.password;
     if (!password && options.onPasswordRequired) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[attemptReauth] Calling onPasswordRequired callback");
-      }
       const pwd = await options.onPasswordRequired();
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[attemptReauth] onPasswordRequired returned:", pwd ? "password received" : "null/cancelled");
-      }
       if (!pwd) {
-        if (typeof __DEV__ !== "undefined" && __DEV__) {
-          console.log("[attemptReauth] Password was null/cancelled, returning error");
-        }
         return {
           success: false,
           error: { code: "auth/password-reauth-cancelled", message: "Password reauth cancelled" },
           requiresReauth: true
         };
       }
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[attemptReauth] Password received, setting password variable");
-      }
       password = pwd;
     }
     if (!password) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[attemptReauth] No password available after callback, returning error");
-      }
       return {
         success: false,
         error: { code: "auth/password-reauth", message: "Password required" },
         requiresReauth: true
       };
     }
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
-      console.log("[attemptReauth] Calling reauthenticateWithPassword");
-    }
     res = await reauthenticateWithPassword(user, password);
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
-      console.log("[attemptReauth] reauthenticateWithPassword result:", res);
-    }
   } else {
     return null;
   }
 
   if (res.success) {
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
-      console.log("[attemptReauth] Reauthentication successful, calling deleteUser");
-    }
     try {
-      const auth = getFirebaseAuth();
-      const currentUser = auth?.currentUser || user;
+      const postReauthAuth = getFirebaseAuth();
+      const currentUser = postReauthAuth?.currentUser || user;
 
-      // Final verification before deletion
       if (originalUserId) {
-        const auth = getFirebaseAuth();
-        const validation = validateUserUnchanged(auth, originalUserId);
-        if (!('valid' in validation)) {
-          // User changed - validation is a FailureResult
-          if (typeof __DEV__ !== "undefined" && __DEV__) {
-            console.log("[attemptReauth] User changed after reauthentication");
-          }
+        const validationCheck = validateUserUnchanged(postReauthAuth, originalUserId);
+        if (!('valid' in validationCheck)) {
           return {
             success: false,
-            error: validation.error,
+            error: validationCheck.error,
             requiresReauth: false
           };
         }
       }
 
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[attemptReauth] Marking user as deleted in Firestore");
-      }
       await markUserDeleted(currentUser.uid);
-
       await deleteUser(currentUser);
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.log("[attemptReauth] deleteUser successful after reauth");
-      }
       return successResult();
     } catch (err: unknown) {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
-        console.error("[attemptReauth] deleteUser failed after reauth:", err);
-      }
       const errorInfo = toErrorInfo(err, 'auth/failed');
       return {
         success: false,
@@ -310,9 +198,6 @@ async function attemptReauth(user: User, options: AccountDeletionOptions, origin
     }
   }
 
-  if (typeof __DEV__ !== "undefined" && __DEV__) {
-    console.log("[attemptReauth] Reauthentication failed, returning error");
-  }
   return {
     success: false,
     error: {

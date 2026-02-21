@@ -58,24 +58,30 @@ export abstract class BaseRepository implements IPathResolver {
     return db;
   }
 
+  private validateSegment(value: string, fieldName: string): void {
+    if (!value || value.trim() === '') {
+      throw new Error(`${fieldName} must be a non-empty string`);
+    }
+    if (value.includes('/')) {
+      throw new Error(`${fieldName} must not contain '/' characters`);
+    }
+    if (value === '.' || value === '..') {
+      throw new Error(`${fieldName} must not be '.' or '..'`);
+    }
+  }
+
   getUserCollection(userId: string): CollectionReference<DocumentData> | null {
     const db = this.getDb();
     if (!db) return null;
-    if (!userId || userId.trim() === '') {
-      throw new Error('userId must be a non-empty string');
-    }
+    this.validateSegment(userId, 'userId');
     return collection(db, 'users', userId, this.collectionName);
   }
 
   getDocRef(userId: string, documentId: string): DocumentReference<DocumentData> | null {
     const db = this.getDb();
     if (!db) return null;
-    if (!userId || userId.trim() === '') {
-      throw new Error('userId must be a non-empty string');
-    }
-    if (!documentId || documentId.trim() === '') {
-      throw new Error('documentId must be a non-empty string');
-    }
+    this.validateSegment(userId, 'userId');
+    this.validateSegment(documentId, 'documentId');
     return doc(db, 'users', userId, this.collectionName, documentId);
   }
 
