@@ -9,7 +9,7 @@ export type NoDbResult = FailureResult;
 
 const NO_DB_ERROR: NoDbResult = {
   success: false,
-  error: { message: "No DB", code: "DB_ERR" },
+  error: { message: "Firestore is not initialized", code: "firestore/not-initialized" },
 };
 
 /**
@@ -22,7 +22,9 @@ export function createErrorResult<T>(message: string, code: string): Result<T> {
 /**
  * Create a standard success result
  */
-export function createSuccessResult<T>(data?: T): Result<T> {
+export function createSuccessResult(): Result<void>;
+export function createSuccessResult<T>(data: T): Result<T>;
+export function createSuccessResult<T = void>(data?: T): Result<T> {
   return { success: true, data: data as T };
 }
 

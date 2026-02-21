@@ -64,10 +64,8 @@ class FirestoreClientSingleton extends ServiceClientSingleton<Firestore> {
 function getFirestoreClientSafe(): FirestoreClientSingleton | null {
   try {
     return FirestoreClientSingleton.getInstance();
-  } catch {
-    if (__DEV__) {
-      console.warn('[Firestore] Could not create Firestore client singleton.');
-    }
+  } catch (error) {
+    console.error('[Firestore] Could not create Firestore client singleton:', error);
     return null;
   }
 }

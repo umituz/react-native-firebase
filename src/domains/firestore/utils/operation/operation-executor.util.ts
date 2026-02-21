@@ -24,26 +24,28 @@ export async function withFirestore<T>(
 
 /**
  * Execute a Firestore operation that returns void
+ * @throws {Error} if Firestore is not available
  */
 export async function withFirestoreVoid(
   operation: (db: Firestore) => Promise<void>,
 ): Promise<void> {
   const db = getFirestore();
   if (!db) {
-    return;
+    throw new Error('[withFirestoreVoid] Firestore is not available');
   }
   return operation(db);
 }
 
 /**
  * Execute a Firestore operation that returns boolean
+ * @throws {Error} if Firestore is not available
  */
 export async function withFirestoreBool(
   operation: (db: Firestore) => Promise<boolean>,
 ): Promise<boolean> {
   const db = getFirestore();
   if (!db) {
-    return false;
+    throw new Error('[withFirestoreBool] Firestore is not available');
   }
   return operation(db);
 }

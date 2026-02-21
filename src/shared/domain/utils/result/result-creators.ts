@@ -9,6 +9,8 @@ import { toErrorInfo } from '../error-handlers/error-converters';
 /**
  * Create a success result with optional data
  */
+export function successResult(): SuccessResult<void>;
+export function successResult<T>(data: T): SuccessResult<T>;
 export function successResult<T = void>(data?: T): SuccessResult<T> {
   return { success: true, data: data as T };
 }
