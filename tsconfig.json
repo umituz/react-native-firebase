@@ -12,6 +12,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "baseUrl": "./",
+    "paths": {
+      "expo-file-system": ["./node_modules/expo-file-system/build"],
+      "expo-file-system/*": ["./node_modules/expo-file-system/build/*"]
+    },
     /* Emit */
     "declaration": true,
     "declarationMap": true,
@@ -51,6 +55,11 @@
   ],
   "exclude": [
     "node_modules",
+    "node_modules/**",
+    "node_modules/**/*",
+    "**/node_modules",
+    "**/node_modules/**",
+    "**/node_modules/**/*",
     "dist",
     "lib",
     "**/*.test.ts",
