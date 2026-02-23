@@ -37,7 +37,7 @@ function getEnvValue(key: ConfigKey): string {
 /**
  * Load configuration from expo-constants
  */
-function loadExpoConfig(): Record<string, string> {
+function loadExpoConfig(): Record<string, unknown> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Constants = require('expo-constants');
@@ -49,10 +49,13 @@ function loadExpoConfig(): Record<string, string> {
 }
 
 /**
- * Get config value from expo constants
+ * Get config value from expo constants.
+ * Supports two formats in app.json extra:
+ *   1. Flat:   extra.firebaseApiKey  (preferred)
+ *   2. Nested: extra.firebase.apiKey (legacy fallback)
  */
-function getExpoValue(key: ConfigKey, expoConfig: Record<string, string>): string {
-  const mapping: Record<ConfigKey, string> = {
+function getExpoValue(key: ConfigKey, expoConfig: Record<string, unknown>): string {
+  const flatMapping: Record<ConfigKey, string> = {
     apiKey: 'firebaseApiKey',
     authDomain: 'firebaseAuthDomain',
     projectId: 'firebaseProjectId',
@@ -60,7 +63,19 @@ function getExpoValue(key: ConfigKey, expoConfig: Record<string, string>): strin
     messagingSenderId: 'firebaseMessagingSenderId',
     appId: 'firebaseAppId',
   };
-  return expoConfig[mapping[key]] || '';
+
+  // 1. Flat key: extra.firebaseApiKey
+  const flat = expoConfig[flatMapping[key]];
+  if (typeof flat === 'string' && flat) return flat;
+
+  // 2. Nested key: extra.firebase.apiKey
+  const nested = expoConfig['firebase'];
+  if (nested && typeof nested === 'object') {
+    const val = (nested as Record<string, unknown>)[key];
+    if (typeof val === 'string' && val) return val;
+  }
+
+  return '';
 }
 
 /**
