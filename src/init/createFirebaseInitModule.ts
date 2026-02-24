@@ -3,7 +3,7 @@
  * Creates a ready-to-use InitModule for app initialization
  */
 
-import type { InitModule } from '@umituz/react-native-design-system';
+import type { InitModule } from '@umituz/react-native-design-system/init';
 import { initializeAllFirebaseServices } from '../shared/infrastructure/config/services/FirebaseInitializationService';
 
 export interface FirebaseInitModuleConfig {

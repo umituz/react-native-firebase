@@ -7,7 +7,7 @@
  * This store provides minimal state for low-level Firebase operations.
  */
 
-import { createStore, type SetState, type GetState } from "@umituz/react-native-design-system";
+import { createStore, type SetState, type GetState } from "@umituz/react-native-design-system/storage";
 import { onAuthStateChanged, type User, type Auth } from "firebase/auth";
 
 interface AuthState {

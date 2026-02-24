@@ -10,8 +10,20 @@ import {
   EmailAuthProvider,
   type User,
 } from "firebase/auth";
-import * as AppleAuthentication from "expo-apple-authentication";
 import { Platform } from "react-native";
+
+/**
+ * Lazy-loads expo-apple-authentication (optional peer dependency).
+ * Returns null if the package is not installed.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getAppleAuthModule(): any {
+  try {
+    return require("expo-apple-authentication");
+  } catch {
+    return null;
+  }
+}
 import { generateNonce, hashNonce } from "../../../auth/infrastructure/services/crypto.util";
 import { executeOperation, failureResultFrom, toErrorInfo, ERROR_MESSAGES } from "../../../../shared/domain/utils";
 import { isCancelledError } from "../../../../shared/domain/utils/error-handlers/error-checkers";
@@ -78,6 +90,14 @@ export async function getAppleReauthCredential(): Promise<ReauthCredentialResult
     return {
       success: false,
       error: { code: "auth/ios-only", message: "iOS only" }
+    };
+  }
+
+  const AppleAuthentication = getAppleAuthModule();
+  if (!AppleAuthentication) {
+    return {
+      success: false,
+      error: { code: "auth/unavailable", message: "expo-apple-authentication is not installed" }
     };
   }
 
