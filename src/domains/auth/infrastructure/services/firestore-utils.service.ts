@@ -53,7 +53,7 @@ export function shouldSkipFirestoreQuery(
   options: FirestoreQueryOptions = {},
 ): FirestoreQueryResult {
   const {
-    skipForGuest = true,
+    skipForGuest = false,
     skipIfNotAuthenticated = true,
     verifyUserId: shouldVerifyUserId = true,
     userId,
@@ -103,7 +103,7 @@ export function createFirestoreQueryOptions(
   options: Partial<FirestoreQueryOptions> = {},
 ): FirestoreQueryOptions {
   return {
-    skipForGuest: options.skipForGuest ?? true,
+    skipForGuest: options.skipForGuest ?? false,
     skipIfNotAuthenticated: options.skipIfNotAuthenticated ?? true,
     verifyUserId: options.verifyUserId ?? true,
     userId: options.userId,
