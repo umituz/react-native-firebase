@@ -3,7 +3,7 @@
  * Generic service for creating/updating user documents in Firestore
  */
 
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 import type { User } from "firebase/auth";
 import { getFirestore } from "../../../firestore";
 import type {
@@ -16,6 +16,7 @@ import {
   buildBaseData,
   buildCreateData,
   buildUpdateData,
+  buildLoginHistoryEntry,
 } from "./user-document-builder.util";
 
 declare const __DEV__: boolean;
@@ -52,6 +53,16 @@ export async function ensureUserDocument(
       : buildUpdateData(baseData, allExtras);
 
     await setDoc(userRef, docData, { merge: true });
+
+    // Write login history entry (fire-and-forget)
+    const historyEntry = buildLoginHistoryEntry(user, allExtras);
+    const historyRef = collection(db, collectionName, user.uid, "loginHistory");
+    addDoc(historyRef, historyEntry).catch((err) => {
+      if (typeof __DEV__ !== "undefined" && __DEV__) {
+        console.warn("[UserDocumentService] Failed to write login history:", err);
+      }
+    });
+
     return true;
   } catch (error) {
     if (typeof __DEV__ !== "undefined" && __DEV__) {

@@ -3,7 +3,7 @@
  * Builds user document data for Firestore (max 100 lines)
  */
 
-import { serverTimestamp } from "firebase/firestore";
+import { serverTimestamp, increment } from "firebase/firestore";
 import type {
   UserDocumentUser,
   UserDocumentExtras,
@@ -82,6 +82,7 @@ export function buildCreateData(
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     lastLoginAt: serverTimestamp(),
+    loginCount: 1,
   };
 
   if (extras?.previousAnonymousUserId) {
@@ -106,6 +107,7 @@ export function buildUpdateData(
     ...baseData,
     lastLoginAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
+    loginCount: increment(1),
   };
 
   if (extras?.previousAnonymousUserId) {
@@ -116,4 +118,34 @@ export function buildUpdateData(
   }
 
   return updateData;
+}
+
+/**
+ * Builds a login history entry for the loginHistory subcollection
+ */
+export function buildLoginHistoryEntry(
+  user: UserDocumentUser,
+  extras?: UserDocumentExtras,
+): Record<string, unknown> {
+  return {
+    loginAt: serverTimestamp(),
+    provider: getSignUpMethod(user) ?? "unknown",
+    email: user.email ?? null,
+    displayName: user.displayName ?? null,
+    isAnonymous: user.isAnonymous ?? false,
+    platform: extras?.platform ?? null,
+    deviceModel: extras?.deviceModel ?? null,
+    deviceBrand: extras?.deviceBrand ?? null,
+    osName: extras?.osName ?? null,
+    osVersion: extras?.osVersion ?? null,
+    appVersion: extras?.appVersion ?? null,
+    buildNumber: extras?.buildNumber ?? null,
+    locale: extras?.locale ?? null,
+    region: extras?.region ?? null,
+    timezone: extras?.timezone ?? null,
+    screenWidth: extras?.screenWidth ?? null,
+    screenHeight: extras?.screenHeight ?? null,
+    deviceId: extras?.persistentDeviceId ?? extras?.deviceId ?? null,
+    isConversion: !!extras?.previousAnonymousUserId,
+  };
 }

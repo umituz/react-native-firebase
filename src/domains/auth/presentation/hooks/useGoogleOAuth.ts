@@ -4,11 +4,10 @@
  * This hook is optional and requires expo-auth-session to be installed
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { googleOAuthService } from "../../infrastructure/services/google-oauth.service";
 import { getFirebaseAuth } from "../../infrastructure/config/FirebaseAuthClient";
 import type { GoogleOAuthConfig } from "../../infrastructure/services/google-oauth.service";
-
 // Conditional import for expo-auth-session
 interface AuthSessionResponse {
   type: string;
@@ -48,8 +47,6 @@ interface SocialAuthResult {
   error?: string;
 }
 
-const PLACEHOLDER_CLIENT_ID = "000000000000-placeholder.apps.googleusercontent.com";
-
 /**
  * Hook for Google OAuth authentication
  * Requires expo-auth-session and expo-web-browser to be installed
@@ -61,13 +58,18 @@ export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult
   const googleAvailable = googleOAuthService.isAvailable();
   const googleConfigured = googleOAuthService.isConfigured(config);
 
+  // Keep config in a ref so the response useEffect doesn't re-run when config object reference changes
+  const configRef = useRef(config);
+  configRef.current = config;
+
   // Call the Hook directly (only valid in React component)
   // If expo-auth-session is not available, these will be null
+  // Empty strings are passed when config is missing to preserve hook call order (Rules of Hooks)
   const [request, response, promptAsync] = isExpoAuthAvailable && ExpoAuthSession
     ? ExpoAuthSession.useAuthRequest({
-        iosClientId: config?.iosClientId || PLACEHOLDER_CLIENT_ID,
-        webClientId: config?.webClientId || PLACEHOLDER_CLIENT_ID,
-        androidClientId: config?.androidClientId || PLACEHOLDER_CLIENT_ID,
+        iosClientId: config?.iosClientId ?? "",
+        webClientId: config?.webClientId ?? "",
+        androidClientId: config?.androidClientId ?? "",
       })
     : [null, null, null];
 
@@ -90,7 +92,7 @@ export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult
 
           await googleOAuthService.signInWithOAuth(
             auth,
-            config,
+            configRef.current,
             async () => response
           );
         } catch (error) {
@@ -107,7 +109,7 @@ export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult
     };
 
     handleResponse();
-  }, [response, googleAvailable, config]);
+  }, [response, googleAvailable]); // config read via ref to prevent re-running on reference changes
 
   const signInWithGoogle = useCallback(async (): Promise<SocialAuthResult> => {
     if (!googleAvailable) {

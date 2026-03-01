@@ -32,15 +32,9 @@ export interface GoogleOAuthConfig {
   androidClientId?: string;
 }
 
-const PLACEHOLDER_CLIENT_ID = "000000000000-placeholder.apps.googleusercontent.com";
-
 function validateGoogleConfig(config?: GoogleOAuthConfig): boolean {
   if (!config) return false;
-  return !!(
-    (config.iosClientId && config.iosClientId !== PLACEHOLDER_CLIENT_ID) ||
-    (config.webClientId && config.webClientId !== PLACEHOLDER_CLIENT_ID) ||
-    (config.androidClientId && config.androidClientId !== PLACEHOLDER_CLIENT_ID)
-  );
+  return !!(config.iosClientId || config.webClientId || config.androidClientId);
 }
 
 /**

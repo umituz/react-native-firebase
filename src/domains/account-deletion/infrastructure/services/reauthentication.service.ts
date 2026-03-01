@@ -16,9 +16,10 @@ import { Platform } from "react-native";
  * Lazy-loads expo-apple-authentication (optional peer dependency).
  * Returns null if the package is not installed.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getAppleAuthModule(): any {
+function getAppleAuthModule(): typeof import("expo-apple-authentication") | null {
   try {
+    // Dynamic require needed for optional peer dependency
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require("expo-apple-authentication");
   } catch {
     return null;
