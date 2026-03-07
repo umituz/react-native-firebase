@@ -132,6 +132,17 @@ export {
   validateDateRangeOrThrow,
 } from './utils/validation/date-validator.util';
 
+// Presentation — TanStack Query integration
+export {
+  useFirestoreQuery,
+  useFirestoreMutation,
+  useFirestoreSnapshot,
+  createFirestoreKeys,
+  type UseFirestoreQueryOptions,
+  type UseFirestoreMutationOptions,
+  type UseFirestoreSnapshotOptions,
+} from './presentation';
+
 export { Timestamp } from 'firebase/firestore';
 export type {
   CollectionReference,
