@@ -33,7 +33,9 @@ export {
   timestampToISO,
   timestampToDate,
   getCurrentISOString,
+  formatRelativeTime,
 } from './utils/dateUtils';
+export type { RelativeTimeLabels } from './utils/dateUtils';
 
 // Query Builder
 export {

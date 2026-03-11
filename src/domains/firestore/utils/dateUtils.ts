@@ -51,3 +51,49 @@ export function timestampToDate(timestamp: Timestamp | null | undefined): Date |
 export function getCurrentISOString(): string {
     return new Date().toISOString();
 }
+
+/**
+ * Labels for relative time formatting.
+ * Pass localized strings to support i18n.
+ */
+export interface RelativeTimeLabels {
+  now: string;
+  minutes: string;
+  hours: string;
+  days: string;
+}
+
+const DEFAULT_LABELS: RelativeTimeLabels = {
+  now: "now",
+  minutes: "m",
+  hours: "h",
+  days: "d",
+};
+
+/**
+ * Format a Date (or Firestore Timestamp) as a short relative time string.
+ *
+ * Examples: "now", "5m", "2h", "3d", or a localized date for older values.
+ *
+ * @param date    The date to format (typically from `timestampToDate()` or `Timestamp.toDate()`)
+ * @param labels  Optional localized labels — defaults to English abbreviations
+ */
+export function formatRelativeTime(
+  date: Date,
+  labels: RelativeTimeLabels = DEFAULT_LABELS,
+): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60_000);
+
+  if (diffMins < 1) return labels.now;
+  if (diffMins < 60) return `${diffMins}${labels.minutes}`;
+
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}${labels.hours}`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays}${labels.days}`;
+
+  return date.toLocaleDateString();
+}
