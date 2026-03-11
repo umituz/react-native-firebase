@@ -77,7 +77,10 @@ export async function deleteCurrentUser(
         };
       }
 
-      await markUserDeleted(user.uid);
+      const marked = await markUserDeleted(user.uid);
+      if (!marked && __DEV__) {
+        console.warn('[AccountDeletion] Failed to mark user document as deleted before account removal');
+      }
       await deleteUser(user);
       return successResult();
     } catch (error: unknown) {
@@ -185,7 +188,10 @@ async function attemptReauth(user: User, options: AccountDeletionOptions, origin
         }
       }
 
-      await markUserDeleted(currentUser.uid);
+      const marked = await markUserDeleted(currentUser.uid);
+      if (!marked && __DEV__) {
+        console.warn('[AccountDeletion] Failed to mark user document as deleted before account removal (reauth path)');
+      }
       await deleteUser(currentUser);
       return successResult();
     } catch (err: unknown) {
@@ -218,6 +224,10 @@ export async function deleteUserAccount(user: User | null): Promise<AccountDelet
   }
 
   try {
+    const marked = await markUserDeleted(user.uid);
+    if (!marked && __DEV__) {
+      console.warn('[AccountDeletion] Failed to mark user document as deleted (deleteUserAccount)');
+    }
     await deleteUser(user);
     return successResult();
   } catch (error: unknown) {

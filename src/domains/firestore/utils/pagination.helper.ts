@@ -55,7 +55,8 @@ export class PaginationHelper<T> {
    * @returns Page limit
    */
   getLimit(params?: PaginationParams, defaultLimit: number = 10): number {
-    return params?.limit ?? defaultLimit;
+    const limit = params?.limit ?? defaultLimit;
+    return Math.max(1, Math.floor(limit));
   }
 
   /**

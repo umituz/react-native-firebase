@@ -11,6 +11,7 @@ import {
 import { getFirestore } from "../../infrastructure/config/FirestoreClient";
 import { hasCodeProperty } from "../../../../shared/domain/utils/type-guards.util";
 import { ERROR_MESSAGES } from "../../../../shared/domain/utils/error-handlers/error-messages";
+import { isQuotaError } from "../../../../shared/domain/utils/error-handlers/error-checkers";
 
 /**
  * Execute a transaction with automatic DB instance check.
@@ -28,6 +29,11 @@ export async function runTransaction<T>(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorCode = hasCodeProperty(error) ? error.code : 'unknown';
+
+    if (isQuotaError(error)) {
+      throw new Error(`[runTransaction] ${ERROR_MESSAGES.FIRESTORE.QUOTA_EXCEEDED}: ${errorMessage} (Code: ${errorCode})`);
+    }
+
     throw new Error(`[runTransaction] Transaction failed: ${errorMessage} (Code: ${errorCode})`);
   }
 }

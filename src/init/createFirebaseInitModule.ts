@@ -39,7 +39,7 @@ export interface FirebaseInitModuleConfig {
 export function createFirebaseInitModule(
   config: FirebaseInitModuleConfig = {}
 ): InitModule {
-  const { authInitializer, critical = false } = config;
+  const { authInitializer, critical = true } = config;
 
   return {
     name: 'firebase',

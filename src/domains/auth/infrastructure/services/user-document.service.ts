@@ -84,7 +84,10 @@ export async function markUserDeleted(userId: string): Promise<boolean> {
       updatedAt: serverTimestamp(),
     }, { merge: true });
     return true;
-  } catch {
+  } catch (error) {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
+      console.error("[UserDocumentService] Failed to mark user deleted:", error);
+    }
     return false;
   }
 }

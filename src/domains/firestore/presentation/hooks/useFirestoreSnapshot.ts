@@ -20,7 +20,7 @@
  * ```
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   useQuery,
   useQueryClient,
@@ -46,19 +46,22 @@ export function useFirestoreSnapshot<TData>(
   const queryClient = useQueryClient();
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
+  // Stabilize queryKey to prevent unnecessary listener re-subscriptions
+  const stableKeyString = JSON.stringify(queryKey);
+  const stableQueryKey = useMemo(() => queryKey, [stableKeyString]);
+
   useEffect(() => {
     if (!enabled) return;
 
     unsubscribeRef.current = subscribe((data) => {
-      queryClient.setQueryData(queryKey, data);
+      queryClient.setQueryData(stableQueryKey, data);
     });
 
     return () => {
       unsubscribeRef.current?.();
       unsubscribeRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, queryClient, ...queryKey]);
+  }, [enabled, queryClient, stableQueryKey, subscribe]);
 
   return useQuery<TData, Error>({
     queryKey,

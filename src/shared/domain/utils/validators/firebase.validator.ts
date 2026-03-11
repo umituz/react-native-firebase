@@ -26,8 +26,8 @@ export function isValidFirebaseAuthDomain(authDomain: string): boolean {
     return false;
   }
   return (
-    authDomain.includes('.firebaseapp.com') ||
-    authDomain.includes('.web.app')
+    authDomain.endsWith('.firebaseapp.com') ||
+    authDomain.endsWith('.web.app')
   );
 }
 

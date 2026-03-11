@@ -24,28 +24,40 @@ export async function withFirestore<T>(
 
 /**
  * Execute a Firestore operation that returns void
- * @throws {Error} if Firestore is not available
+ * Returns Result<void> for consistent error handling
  */
 export async function withFirestoreVoid(
   operation: (db: Firestore) => Promise<void>,
-): Promise<void> {
+): Promise<Result<void>> {
   const db = getFirestore();
   if (!db) {
-    throw new Error('[withFirestoreVoid] Firestore is not available');
+    return createNoDbErrorResult<void>();
   }
-  return operation(db);
+  try {
+    await operation(db);
+    return { success: true, data: undefined as void };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Operation failed';
+    return { success: false, error: { code: 'firestore/operation-failed', message } };
+  }
 }
 
 /**
  * Execute a Firestore operation that returns boolean
- * @throws {Error} if Firestore is not available
+ * Returns Result<boolean> for consistent error handling
  */
 export async function withFirestoreBool(
   operation: (db: Firestore) => Promise<boolean>,
-): Promise<boolean> {
+): Promise<Result<boolean>> {
   const db = getFirestore();
   if (!db) {
-    throw new Error('[withFirestoreBool] Firestore is not available');
+    return createNoDbErrorResult<boolean>();
   }
-  return operation(db);
+  try {
+    const result = await operation(db);
+    return { success: true, data: result };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Operation failed';
+    return { success: false, error: { code: 'firestore/operation-failed', message } };
+  }
 }

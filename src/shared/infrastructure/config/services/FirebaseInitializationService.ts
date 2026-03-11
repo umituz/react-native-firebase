@@ -82,6 +82,7 @@ export async function initializeAllFirebaseServices(
       await options.authInitializer();
       authSuccess = true;
     } catch (error) {
+      authSuccess = false;
       authError = error instanceof Error ? error.message : 'Auth initialization failed';
     }
   }

@@ -6,12 +6,18 @@
 // Result types and helpers
 export type {
   Result,
+  FailureResult,
 } from './result/result-types';
 
 export {
   successResult,
   failureResultFrom,
 } from './result/result-creators';
+
+export {
+  isSuccess,
+  isFailure,
+} from './result/result-helpers';
 
 // Async operation execution
 export {

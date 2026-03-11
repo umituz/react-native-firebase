@@ -40,7 +40,7 @@ export function useFirestoreMutation<TData, TVars, TContext = unknown>(
 
   return useMutation<TData, Error, TVars, TContext>({
     ...rest,
-    onSuccess: (data, variables, context) => {
+    onSuccess: (data, variables, _context) => {
       if (invalidateKeys?.length) {
         invalidateKeys.forEach((key) => {
           queryClient.invalidateQueries({ queryKey: key });

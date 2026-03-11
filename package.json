@@ -128,19 +128,14 @@
       "default": "./src/index.ts"
     },
     "./auth": {
-      "react-native": "./src/auth/index.ts",
-      "types": "./src/auth/index.ts",
-      "default": "./src/auth/index.ts"
+      "react-native": "./src/domains/auth/index.ts",
+      "types": "./src/domains/auth/index.ts",
+      "default": "./src/domains/auth/index.ts"
     },
     "./firestore": {
-      "react-native": "./src/firestore/index.ts",
-      "types": "./src/firestore/index.ts",
-      "default": "./src/firestore/index.ts"
-    },
-    "./storage": {
-      "react-native": "./src/storage/index.ts",
-      "types": "./src/storage/index.ts",
-      "default": "./src/storage/index.ts"
+      "react-native": "./src/domains/firestore/index.ts",
+      "types": "./src/domains/firestore/index.ts",
+      "default": "./src/domains/firestore/index.ts"
     },
     "./init": {
       "react-native": "./src/init/index.ts",
