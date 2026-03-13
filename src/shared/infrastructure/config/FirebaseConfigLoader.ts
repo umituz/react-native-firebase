@@ -4,6 +4,8 @@
  * Automatically loads Firebase configuration from:
  * 1. expo-constants (Constants.expoConfig?.extra)
  * 2. Environment variables (process.env)
+ *
+ * Config format (flat): extra.firebaseApiKey, extra.firebaseAuthDomain, etc.
  */
 
 import type { FirebaseConfig } from '../../domain/value-objects/FirebaseConfig';
@@ -50,9 +52,7 @@ function loadExpoConfig(): Record<string, unknown> {
 
 /**
  * Get config value from expo constants.
- * Supports two formats in app.json extra:
- *   1. Flat:   extra.firebaseApiKey  (preferred)
- *   2. Nested: extra.firebase.apiKey (legacy fallback)
+ * Config format: extra.firebaseApiKey, extra.firebaseAuthDomain, etc.
  */
 function getExpoValue(key: ConfigKey, expoConfig: Record<string, unknown>): string {
   const flatMapping: Record<ConfigKey, string> = {
@@ -64,16 +64,8 @@ function getExpoValue(key: ConfigKey, expoConfig: Record<string, unknown>): stri
     appId: 'firebaseAppId',
   };
 
-  // 1. Flat key: extra.firebaseApiKey
   const flat = expoConfig[flatMapping[key]];
   if (typeof flat === 'string' && flat) return flat;
-
-  // 2. Nested key: extra.firebase.apiKey
-  const nested = expoConfig['firebase'];
-  if (nested && typeof nested === 'object') {
-    const val = (nested as Record<string, unknown>)[key];
-    if (typeof val === 'string' && val) return val;
-  }
 
   return '';
 }

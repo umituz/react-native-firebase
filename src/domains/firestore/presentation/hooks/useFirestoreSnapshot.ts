@@ -10,7 +10,8 @@
  * const { data: matches, isLoading } = useFirestoreSnapshot<Match[]>({
  *   queryKey: ["matches", userId],
  *   subscribe: (onData) => {
- *     return onSnapshot(matchesCol(userId!), (snap) => {
+ *     if (!userId) return () => {};
+ *     return onSnapshot(matchesCol(userId), (snap) => {
  *       onData(snap.docs.map(d => d.data() as Match));
  *     });
  *   },

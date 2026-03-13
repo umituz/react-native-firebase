@@ -65,7 +65,9 @@ function getFirestoreClientSafe(): FirestoreClientSingleton | null {
   try {
     return FirestoreClientSingleton.getInstance();
   } catch (error) {
-    console.error('[Firestore] Could not create Firestore client singleton:', error);
+    if (__DEV__) {
+      console.error('[Firestore] Could not create Firestore client singleton:', error);
+    }
     return null;
   }
 }

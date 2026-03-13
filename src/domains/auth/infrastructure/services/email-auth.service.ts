@@ -80,7 +80,9 @@ export async function signUpWithEmail(
         } catch (profileError) {
           // Profile update failed but account was created successfully
           // Log the error but don't fail the signup
-          console.warn("Profile update failed after account creation:", profileError);
+          if (__DEV__) {
+            console.warn("Profile update failed after account creation:", profileError);
+          }
         }
       }
     }

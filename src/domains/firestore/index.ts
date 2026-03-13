@@ -113,12 +113,18 @@ export {
   withFirestore,
   withFirestoreVoid,
   withFirestoreBool,
-  createErrorResult,
-  createSuccessResult,
+} from './utils/operation/operation-executor.util';
+
+export {
   runTransaction,
   serverTimestamp,
-} from './utils/firestore-helper';
-export type { NoDbResult } from './utils/firestore-helper';
+} from './utils/transaction/transaction.util';
+
+export {
+  createErrorResult,
+  createSuccessResult,
+} from './utils/result/result.util';
+export type { NoDbResult } from './utils/result/result.util';
 
 // Validation Utilities
 export {

@@ -51,9 +51,11 @@ export function setupAuthListener(
   // Safety timeout
   const timeoutId = setTimeout(() => {
     if (!hasTriggered) {
-      console.warn(
-        "[AuthListener] Auth listener timeout - marking as initialized"
-      );
+      if (__DEV__) {
+        console.warn(
+          "[AuthListener] Auth listener timeout - marking as initialized"
+        );
+      }
       hasTriggered = true;
       onInitialized?.();
     }

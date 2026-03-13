@@ -49,7 +49,8 @@ export class FirebaseInitializationOrchestrator {
   static autoInitialize(): FirebaseApp | null {
     try {
       const existingApps = getApps();
-      return existingApps.length > 0 ? (existingApps[0] ?? null) : null;
+      const existingApp = existingApps.length > 0 ? existingApps[0] : undefined;
+      return existingApp ?? null;
     } catch {
       return null;
     }

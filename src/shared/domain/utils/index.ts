@@ -23,7 +23,7 @@ export {
 export {
   executeOperation,
   executeAuthOperation,
-} from './async-executor.util';
+} from './executors/basic-executors.util';
 
 // Error handling
 export { toErrorInfo } from './error-handlers/error-converters';
