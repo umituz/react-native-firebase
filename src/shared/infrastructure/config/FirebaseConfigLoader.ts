@@ -24,13 +24,19 @@ const ENV_KEYS: Record<ConfigKey, string[]> = {
   appId: ['FIREBASE_APP_ID'],
 };
 
+// Cache Constants module to avoid repeated require calls
+let ConstantsCache: Record<string, unknown> = {} as Record<string, unknown>;
+let ConstantsCacheLoaded = false;
+
 /**
  * Get environment variable value
+ * Optimized to reduce string operations
  */
 function getEnvValue(key: ConfigKey): string {
   const keys = ENV_KEYS[key];
   for (const envKey of keys) {
-    const value = process.env[`${EXPO_PREFIX}${envKey}`] || process.env[envKey];
+    const envKeyWithPrefix = `${EXPO_PREFIX}${envKey}`;
+    const value = process.env[envKeyWithPrefix] || process.env[envKey];
     if (isValidString(value)) return value;
   }
   return '';
@@ -38,14 +44,24 @@ function getEnvValue(key: ConfigKey): string {
 
 /**
  * Load configuration from expo-constants
+ * Optimized with caching to avoid repeated require calls
  */
 function loadExpoConfig(): Record<string, unknown> {
+  // Return cached value if already loaded
+  if (ConstantsCacheLoaded) {
+    return ConstantsCache || {};
+  }
+
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Constants = require('expo-constants');
     const expoConfig = Constants?.expoConfig || Constants?.default?.expoConfig;
-    return expoConfig?.extra || {};
+    ConstantsCache = expoConfig?.extra || {};
+    ConstantsCacheLoaded = true;
+    return ConstantsCache;
   } catch {
+    ConstantsCache = {};
+    ConstantsCacheLoaded = true;
     return {};
   }
 }

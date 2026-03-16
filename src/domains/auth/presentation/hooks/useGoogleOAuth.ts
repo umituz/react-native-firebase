@@ -149,7 +149,7 @@ export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult
     } finally {
       setIsLoading(false);
     }
-  }, [googleAvailable, googleConfigured, request, promptAsync, config]);
+  }, [googleAvailable, googleConfigured, request, promptAsync]); // config read via ref to prevent re-creation on reference changes
 
   return {
     signInWithGoogle,

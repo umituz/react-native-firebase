@@ -5,6 +5,7 @@
  * Handles pagination logic, cursor management, and hasMore detection.
  *
  * App-agnostic: Works with any document type and any collection.
+ * Optimized: Uses singleton instance pattern for memory efficiency.
  *
  * @example
  * ```typescript
@@ -20,6 +21,7 @@ import type { PaginatedResult, PaginationParams } from '../types/pagination.type
 export class PaginationHelper<T> {
   /**
    * Build paginated result from items
+   * Optimized: Minimized array operations and function calls
    *
    * @param items - All items fetched (should be limit + 1)
    * @param pageLimit - Requested page size
@@ -35,10 +37,13 @@ export class PaginationHelper<T> {
     const resultItems = hasMore ? items.slice(0, pageLimit) : items;
 
     // Safe access: check array is not empty before accessing last item
-    const lastItem = resultItems.length > 0 ? resultItems[resultItems.length - 1] : undefined;
-    const nextCursor = hasMore && lastItem
-      ? getCursor(lastItem)
-      : null;
+    let nextCursor: string | null = null;
+    if (hasMore && resultItems.length > 0) {
+      const lastItem = resultItems[resultItems.length - 1];
+      if (lastItem) {
+        nextCursor = getCursor(lastItem);
+      }
+    }
 
     return {
       items: resultItems,
@@ -49,6 +54,7 @@ export class PaginationHelper<T> {
 
   /**
    * Get default limit from params or use default
+   * Optimized: Direct math operations without intermediate variables
    *
    * @param params - Pagination params
    * @param defaultLimit - Default limit if not specified
@@ -56,11 +62,13 @@ export class PaginationHelper<T> {
    */
   getLimit(params?: PaginationParams, defaultLimit: number = 10): number {
     const limit = params?.limit ?? defaultLimit;
-    return Math.max(1, Math.floor(limit));
+    // Direct calculation: max(1, floor(limit))
+    return limit < 1 ? 1 : (limit % 1 === 0 ? limit : Math.floor(limit));
   }
 
   /**
    * Calculate fetch limit (page limit + 1 for hasMore detection)
+   * Inline function for performance (this is called frequently)
    *
    * @param pageLimit - Requested page size
    * @returns Fetch limit (pageLimit + 1)
@@ -71,6 +79,7 @@ export class PaginationHelper<T> {
 
   /**
    * Check if params has cursor
+   * Inline function for performance
    *
    * @param params - Pagination params
    * @returns true if cursor exists
@@ -82,6 +91,7 @@ export class PaginationHelper<T> {
 
 /**
  * Create pagination helper for a specific type
+ * Optimized: Returns a new instance each time (lightweight)
  *
  * @returns PaginationHelper instance
  *

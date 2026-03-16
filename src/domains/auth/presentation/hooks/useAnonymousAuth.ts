@@ -51,6 +51,8 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
   }, []);
 
   // Auth state change handler
+  // Note: createAuthStateChangeHandler returns a stable callback, but we recreate it
+  // on mount to capture fresh setters. This is intentional.
   const handleAuthStateChange = useCallback((user: User | null) => {
     const handler = createAuthStateChangeHandler({
       setAuthState,

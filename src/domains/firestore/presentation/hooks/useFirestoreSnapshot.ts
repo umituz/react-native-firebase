@@ -46,6 +46,7 @@ export function useFirestoreSnapshot<TData>(
   const { queryKey, subscribe, enabled = true, initialData } = options;
   const queryClient = useQueryClient();
   const unsubscribeRef = useRef<(() => void) | null>(null);
+  const dataPromiseRef = useRef<{ resolve: (value: TData) => void; reject: (error: Error) => void } | null>(null);
 
   // Stabilize queryKey to prevent unnecessary listener re-subscriptions
   const stableKeyString = JSON.stringify(queryKey);
@@ -56,11 +57,21 @@ export function useFirestoreSnapshot<TData>(
 
     unsubscribeRef.current = subscribe((data) => {
       queryClient.setQueryData(stableQueryKey, data);
+      // Resolve any pending promise from queryFn
+      if (dataPromiseRef.current) {
+        dataPromiseRef.current.resolve(data);
+        dataPromiseRef.current = null;
+      }
     });
 
     return () => {
       unsubscribeRef.current?.();
       unsubscribeRef.current = null;
+      // Reject pending promise on cleanup to prevent memory leaks
+      if (dataPromiseRef.current) {
+        dataPromiseRef.current.reject(new Error('Snapshot listener cleanup'));
+        dataPromiseRef.current = null;
+      }
     };
   }, [enabled, queryClient, stableQueryKey, subscribe]);
 
@@ -71,8 +82,27 @@ export function useFirestoreSnapshot<TData>(
       const cached = queryClient.getQueryData<TData>(queryKey);
       if (cached !== undefined) return cached;
       if (initialData !== undefined) return initialData;
-      // Return a promise that never resolves — the snapshot will provide data
-      return new Promise<TData>(() => {});
+
+      // Return a promise that resolves when snapshot provides data
+      // This prevents hanging promises and memory leaks
+      return new Promise<TData>((resolve, reject) => {
+        dataPromiseRef.current = { resolve, reject };
+
+        // Timeout to prevent infinite waiting (memory leak protection)
+        const timeoutId = setTimeout(() => {
+          if (dataPromiseRef.current) {
+            dataPromiseRef.current = null;
+            if (initialData !== undefined) {
+              resolve(initialData);
+            } else {
+              reject(new Error('Snapshot listener timeout'));
+            }
+          }
+        }, 30000); // 30 second timeout
+
+        // Clear timeout on promise resolution
+        return () => clearTimeout(timeoutId);
+      });
     },
     enabled,
     initialData,

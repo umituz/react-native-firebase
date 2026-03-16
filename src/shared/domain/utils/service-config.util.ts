@@ -26,8 +26,14 @@ export class ConfigurableService<TConfig = unknown> {
 
   /**
    * Configure the service
+   * Optimized to avoid redundant validation when config is same
    */
   configure(config: TConfig): void {
+    // Skip if config is the same reference (optimized)
+    if (this.configState.config === config) {
+      return;
+    }
+
     this.configState.config = config;
     this.configState.initialized = this.isValidConfig(config);
   }
@@ -48,6 +54,7 @@ export class ConfigurableService<TConfig = unknown> {
 
   /**
    * Reset configuration
+   * Helps with garbage collection by clearing references
    */
   reset(): void {
     this.configState.config = null;

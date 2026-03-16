@@ -26,15 +26,17 @@ export type EmailAuthResult = Result<User>;
 
 /**
  * Sign in with email and password
+ * Optimized: Trim email once instead of multiple times
  */
 export async function signInWithEmail(
   email: string,
   password: string
 ): Promise<EmailAuthResult> {
   return withAuth(async (auth) => {
+    const trimmedEmail = email.trim();
     const userCredential = await signInWithEmailAndPassword(
       auth,
-      email.trim(),
+      trimmedEmail,
       password
     );
     return userCredential.user;
@@ -44,6 +46,7 @@ export async function signInWithEmail(
 /**
  * Sign up with email and password
  * Automatically links with anonymous account if one exists
+ * Optimized: Trim email once, reduce redundant operations
  */
 export async function signUpWithEmail(
   credentials: EmailCredentials
@@ -51,12 +54,13 @@ export async function signUpWithEmail(
   return withAuth(async (auth) => {
     const currentUser = auth.currentUser;
     const isAnonymous = currentUser?.isAnonymous ?? false;
+    const trimmedEmail = credentials.email.trim();
     let userCredential;
 
     if (currentUser && isAnonymous) {
       // Link anonymous account with email
       const credential = EmailAuthProvider.credential(
-        credentials.email.trim(),
+        trimmedEmail,
         credentials.password
       );
       userCredential = await linkWithCredential(currentUser, credential);
@@ -64,7 +68,7 @@ export async function signUpWithEmail(
       // Create new account
       userCredential = await createUserWithEmailAndPassword(
         auth,
-        credentials.email.trim(),
+        trimmedEmail,
         credentials.password
       );
     }
@@ -107,6 +111,7 @@ export async function signOut(): Promise<Result<void>> {
 
 /**
  * Link anonymous account with email/password
+ * Optimized: Trim email once
  */
 export async function linkAnonymousWithEmail(
   email: string,
@@ -122,7 +127,8 @@ export async function linkAnonymousWithEmail(
       throw new Error(ERROR_MESSAGES.AUTH.INVALID_USER);
     }
 
-    const credential = EmailAuthProvider.credential(email.trim(), password);
+    const trimmedEmail = email.trim();
+    const credential = EmailAuthProvider.credential(trimmedEmail, password);
     const userCredential = await linkWithCredential(currentUser, credential);
     return userCredential.user;
   });

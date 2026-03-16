@@ -9,17 +9,22 @@ import { PendingQueryManager } from '../../utils/deduplication/pending-query-man
 import { TimerManager } from '../../utils/deduplication/timer-manager.util';
 
 const DEDUPLICATION_WINDOW_MS = 1000;
-const CLEANUP_INTERVAL_MS = 5000;
+const CLEANUP_INTERVAL_MS = 3000; // Reduced from 5000ms to 3000ms for more aggressive cleanup
 
 export class QueryDeduplicationMiddleware {
   private readonly queryManager: PendingQueryManager;
   private readonly timerManager: TimerManager;
+  private destroyed = false;
 
   constructor(deduplicationWindowMs: number = DEDUPLICATION_WINDOW_MS) {
     this.queryManager = new PendingQueryManager(deduplicationWindowMs);
     this.timerManager = new TimerManager({
       cleanupIntervalMs: CLEANUP_INTERVAL_MS,
-      onCleanup: () => this.queryManager.cleanup(),
+      onCleanup: () => {
+        if (!this.destroyed) {
+          this.queryManager.cleanup();
+        }
+      },
     });
     this.timerManager.start();
   }
@@ -28,6 +33,11 @@ export class QueryDeduplicationMiddleware {
     queryKey: QueryKey,
     queryFn: () => Promise<T>,
   ): Promise<T> {
+    if (this.destroyed) {
+      // If middleware is destroyed, execute query directly without deduplication
+      return queryFn();
+    }
+
     const key = generateQueryKey(queryKey);
 
     // FIX: Atomic get-or-create pattern to prevent race conditions
@@ -42,6 +52,8 @@ export class QueryDeduplicationMiddleware {
         return await queryFn();
       } finally {
         // Cleanup after completion (success or error)
+        // Note: PendingQueryManager also has cleanup via finally, but we keep
+        // this for extra safety and immediate cleanup
         this.queryManager.remove(key);
       }
     })();
@@ -57,6 +69,7 @@ export class QueryDeduplicationMiddleware {
   }
 
   destroy(): void {
+    this.destroyed = true;
     this.timerManager.destroy();
     this.queryManager.clear();
   }

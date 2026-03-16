@@ -3,7 +3,7 @@
  * Provides Google and Apple Sign-In functionality
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { getFirebaseAuth } from "../../infrastructure/config/FirebaseAuthClient";
 import { googleAuthService } from "../../infrastructure/services/google-auth.service";
 import type { GoogleAuthConfig } from "../../infrastructure/services/google-auth.types";
@@ -34,7 +34,14 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
   const [appleLoading, setAppleLoading] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
 
-  const googleConfig = config?.google;
+  // Stabilize config objects to prevent unnecessary re-renders and effect re-runs
+  const googleConfig = useMemo(() => config?.google, [
+    config?.google?.webClientId,
+    config?.google?.iosClientId,
+    config?.google?.androidClientId,
+  ]);
+  const appleEnabled = useMemo(() => config?.apple?.enabled, [config?.apple?.enabled]);
+
   const googleConfigured = !!(
     googleConfig?.webClientId ||
     googleConfig?.iosClientId ||
@@ -53,7 +60,7 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
     const checkApple = async () => {
       const available = await appleAuthService.isAvailable();
       if (!cancelled) {
-        setAppleAvailable(available && (config?.apple?.enabled ?? false));
+        setAppleAvailable(available && (appleEnabled ?? false));
       }
     };
 
@@ -62,7 +69,7 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
     return () => {
       cancelled = true;
     };
-  }, [config?.apple?.enabled]);
+  }, [appleEnabled]);
 
   const signInWithGoogleToken = useCallback(
     async (idToken: string): Promise<SocialAuthResult> => {

@@ -25,9 +25,10 @@ export interface UseFirebaseAuthResult {
  * Hook for raw Firebase Auth state
  *
  * Uses shared store to ensure only one listener is active.
+ * Properly cleans up listener when all components unmount.
  */
 export function useFirebaseAuth(): UseFirebaseAuthResult {
-  const { user, loading, initialized, setupListener } = useFirebaseAuthStore();
+  const { user, loading, initialized, setupListener, cleanup } = useFirebaseAuthStore();
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -40,12 +41,11 @@ export function useFirebaseAuth(): UseFirebaseAuthResult {
 
     // Cleanup function - called when component unmounts
     return () => {
-      // Note: We don't call cleanupListener here because the store manages
-      // the shared listener. Multiple components can use this hook simultaneously,
-      // and we want to keep the listener active until all components are unmounted.
-      // The store will handle cleanup when appropriate.
+      // Call cleanup to decrement component count
+      // The store will only cleanup the listener when all components unmount
+      cleanup();
     };
-  }, [setupListener]); // setupListener is stable from the store
+  }, [setupListener, cleanup]); // Both are stable from the store
 
   return {
     user,

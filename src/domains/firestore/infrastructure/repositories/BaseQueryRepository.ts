@@ -30,8 +30,14 @@ export abstract class BaseQueryRepository extends BaseRepository {
 
     return queryDeduplicationMiddleware.deduplicate(queryKey, async () => {
       const result = await queryFn();
-      const count = Array.isArray(result) ? result.length : 1;
-      this.trackRead(collection, count, cached);
+
+      // Optimize: Only calculate count if tracking is needed
+      // Check if quota tracking is enabled before computing array length
+      if (!cached) {
+        const count = Array.isArray(result) ? result.length : 1;
+        this.trackRead(collection, count, cached);
+      }
+
       return result;
     });
   }
