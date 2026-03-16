@@ -5,7 +5,7 @@
  * Handles pagination logic, cursor management, and hasMore detection.
  *
  * App-agnostic: Works with any document type and any collection.
- * Optimized: Uses singleton instance pattern for memory efficiency.
+ * Optimized: Uses centralized calculation utilities.
  *
  * @example
  * ```typescript
@@ -17,11 +17,18 @@
  */
 
 import type { PaginatedResult, PaginationParams } from '../types/pagination.types';
+import {
+  safeSlice,
+  getFetchLimit as calculateFetchLimit,
+  hasMore as checkHasMore,
+  getResultCount,
+  safeFloor,
+} from '../../../shared/domain/utils/calculation.util';
 
 export class PaginationHelper<T> {
   /**
    * Build paginated result from items
-   * Optimized: Minimized array operations and function calls
+   * Optimized: Uses centralized calculation utilities
    *
    * @param items - All items fetched (should be limit + 1)
    * @param pageLimit - Requested page size
@@ -33,12 +40,13 @@ export class PaginationHelper<T> {
     pageLimit: number,
     getCursor: (item: T) => string,
   ): PaginatedResult<T> {
-    const hasMore = items.length > pageLimit;
-    const resultItems = hasMore ? items.slice(0, pageLimit) : items;
+    const hasMoreValue = checkHasMore(items.length, pageLimit);
+    const resultCount = getResultCount(items.length, pageLimit);
+    const resultItems = safeSlice(items, 0, resultCount);
 
     // Safe access: check array is not empty before accessing last item
     let nextCursor: string | null = null;
-    if (hasMore && resultItems.length > 0) {
+    if (hasMoreValue && resultItems.length > 0) {
       const lastItem = resultItems[resultItems.length - 1];
       if (lastItem) {
         nextCursor = getCursor(lastItem);
@@ -48,13 +56,13 @@ export class PaginationHelper<T> {
     return {
       items: resultItems,
       nextCursor,
-      hasMore,
+      hasMore: hasMoreValue,
     };
   }
 
   /**
    * Get default limit from params or use default
-   * Optimized: Direct math operations without intermediate variables
+   * Optimized: Uses centralized calculation utility
    *
    * @param params - Pagination params
    * @param defaultLimit - Default limit if not specified
@@ -62,19 +70,18 @@ export class PaginationHelper<T> {
    */
   getLimit(params?: PaginationParams, defaultLimit: number = 10): number {
     const limit = params?.limit ?? defaultLimit;
-    // Direct calculation: max(1, floor(limit))
-    return limit < 1 ? 1 : (limit % 1 === 0 ? limit : Math.floor(limit));
+    return safeFloor(limit, 1);
   }
 
   /**
    * Calculate fetch limit (page limit + 1 for hasMore detection)
-   * Inline function for performance (this is called frequently)
+   * Optimized: Uses centralized calculation utility
    *
    * @param pageLimit - Requested page size
    * @returns Fetch limit (pageLimit + 1)
    */
   getFetchLimit(pageLimit: number): number {
-    return pageLimit + 1;
+    return calculateFetchLimit(pageLimit);
   }
 
   /**

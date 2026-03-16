@@ -1,4 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
+import { diffMinutes, diffHours, diffDays } from '../../../shared/domain/utils/calculation.util';
 
 /**
  * Validate ISO 8601 date string format
@@ -72,6 +73,7 @@ const DEFAULT_LABELS: RelativeTimeLabels = {
 
 /**
  * Format a Date (or Firestore Timestamp) as a short relative time string.
+ * Optimized: Uses centralized calculation utilities
  *
  * Examples: "now", "5m", "2h", "3d", or a localized date for older values.
  *
@@ -83,17 +85,17 @@ export function formatRelativeTime(
   labels: RelativeTimeLabels = DEFAULT_LABELS,
 ): string {
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60_000);
 
-  if (diffMins < 1) return labels.now;
-  if (diffMins < 60) return `${diffMins}${labels.minutes}`;
+  // Use centralized calculation utilities
+  const minsAgo = diffMinutes(now, date);
+  if (minsAgo < 1) return labels.now;
+  if (minsAgo < 60) return `${minsAgo}${labels.minutes}`;
 
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}${labels.hours}`;
+  const hoursAgo = diffHours(now, date);
+  if (hoursAgo < 24) return `${hoursAgo}${labels.hours}`;
 
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays}${labels.days}`;
+  const daysAgo = diffDays(now, date);
+  if (daysAgo < 7) return `${daysAgo}${labels.days}`;
 
   return date.toLocaleDateString();
 }

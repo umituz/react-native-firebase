@@ -6,6 +6,8 @@
  * Based on Firestore free tier and pricing documentation
  */
 
+import { calculatePercentage, calculateRemaining } from '../../../../shared/domain/utils/calculation.util';
+
 /**
  * Firestore free tier daily limits
  * https://firebase.google.com/docs/firestore/quotas
@@ -62,13 +64,13 @@ export const QUOTA_THRESHOLDS = {
 
 /**
  * Calculate quota usage percentage
+ * Optimized: Uses centralized calculation utility
  * @param current - Current usage count
  * @param limit - Total limit
  * @returns Percentage (0-1)
  */
 export function calculateQuotaUsage(current: number, limit: number): number {
-  if (limit <= 0) return current > 0 ? 1 : 0;
-  return Math.min(1, current / limit);
+  return calculatePercentage(current, limit);
 }
 
 /**
@@ -89,10 +91,11 @@ export function isQuotaThresholdReached(
 
 /**
  * Get remaining quota
+ * Optimized: Uses centralized calculation utility
  * @param current - Current usage count
  * @param limit - Total limit
  * @returns Remaining quota count
  */
 export function getRemainingQuota(current: number, limit: number): number {
-  return Math.max(0, limit - current);
+  return calculateRemaining(current, limit);
 }
