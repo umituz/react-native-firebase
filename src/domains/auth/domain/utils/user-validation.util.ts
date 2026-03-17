@@ -42,7 +42,7 @@ export function validateUserUnchanged(
   const currentUserId = auth?.currentUser?.uid;
 
   if (currentUserId !== originalUserId) {
-    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+    if (__DEV__) {
       console.log(
         `[validateUserUnchanged] User changed during operation. Original: ${originalUserId}, Current: ${currentUserId || 'none'}`
       );

@@ -17,7 +17,7 @@ function hasProviderData(user: unknown): user is { providerData: { providerId: s
     typeof user === 'object' &&
     user !== null &&
     'providerData' in user &&
-    Array.isArray((user as Record<string, unknown>).providerData)
+    Array.isArray((user as { providerData: unknown }).providerData)
   );
 }
 
@@ -54,15 +54,14 @@ export function buildBaseData(
   };
 
   if (extras) {
-    const internalFields = ["signUpMethod", "previousAnonymousUserId"];
-    Object.keys(extras).forEach((key) => {
-      if (!internalFields.includes(key)) {
-        const val = extras[key];
-        if (val !== undefined) {
-          data[key] = val;
-        }
+    const internalFields = new Set(["signUpMethod", "previousAnonymousUserId"]);
+    // Optimized: Single pass through extras, avoid multiple lookups
+    for (const [key, val] of Object.entries(extras)) {
+      // Skip internal fields (handled separately)
+      if (val !== undefined && !internalFields.has(key)) {
+        data[key] = val;
       }
-    });
+    }
   }
 
   return data;

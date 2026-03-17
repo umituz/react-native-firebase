@@ -58,14 +58,14 @@ export async function ensureUserDocument(
     const historyEntry = buildLoginHistoryEntry(user, allExtras);
     const historyRef = collection(db, collectionName, user.uid, "loginHistory");
     addDoc(historyRef, historyEntry).catch((err) => {
-      if (typeof __DEV__ !== "undefined" && __DEV__) {
+      if (__DEV__) {
         console.warn("[UserDocumentService] Failed to write login history:", err);
       }
     });
 
     return true;
   } catch (error) {
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
+    if (__DEV__) {
       console.error("[UserDocumentService] Failed:", error);
     }
     return false;
@@ -85,7 +85,7 @@ export async function markUserDeleted(userId: string): Promise<boolean> {
     }, { merge: true });
     return true;
   } catch (error) {
-    if (typeof __DEV__ !== "undefined" && __DEV__) {
+    if (__DEV__) {
       console.error("[UserDocumentService] Failed to mark user deleted:", error);
     }
     return false;

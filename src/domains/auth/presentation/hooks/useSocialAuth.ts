@@ -35,18 +35,16 @@ export function useSocialAuth(config?: SocialAuthConfig): UseSocialAuthResult {
   const [appleAvailable, setAppleAvailable] = useState(false);
 
   // Stabilize config objects to prevent unnecessary re-renders and effect re-runs
-  const googleConfig = useMemo(() => config?.google, [
-    config?.google?.webClientId,
-    config?.google?.iosClientId,
-    config?.google?.androidClientId,
-  ]);
+  // Use full object as dependency instead of individual properties
+  const googleConfig = useMemo(() => config?.google, [config?.google]);
   const appleEnabled = useMemo(() => config?.apple?.enabled, [config?.apple?.enabled]);
 
-  const googleConfigured = !!(
+  // Memoize configured check to avoid recalculation on every render
+  const googleConfigured = useMemo(() => !!(
     googleConfig?.webClientId ||
     googleConfig?.iosClientId ||
     googleConfig?.androidClientId
-  );
+  ), [googleConfig]);
 
   useEffect(() => {
     if (googleConfig) {

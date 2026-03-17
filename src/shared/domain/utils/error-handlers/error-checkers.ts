@@ -33,10 +33,13 @@ const RETRYABLE_ERROR_CODES = ['unavailable', 'deadline-exceeded', 'aborted'];
 /**
  * Check if error is a cancelled/auth cancelled error
  */
-export function isCancelledError(error: { code: string; message: string }): boolean {
+export function isCancelledError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  if (!('code' in error) || !('message' in error)) return false;
+  const err = error as { code: string; message: string };
   return (
-    error.code === 'auth/cancelled' ||
-    error.message.includes('ERR_CANCELED')
+    err.code === 'auth/cancelled' ||
+    err.message.includes('ERR_CANCELED')
   );
 }
 

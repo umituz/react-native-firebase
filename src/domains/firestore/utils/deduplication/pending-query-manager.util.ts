@@ -46,17 +46,15 @@ export class PendingQueryManager {
    * Also attaches cleanup handlers to prevent memory leaks.
    */
   add(key: string, promise: Promise<unknown>): void {
-    // Attach cleanup handlers to ensure promise is removed from map
+    // Attach cleanup handler to ensure query is removed from map
     // even if caller's finally block doesn't execute (e.g., unhandled rejection)
-    const cleanupPromise = promise.finally(() => {
-      // Small delay to allow immediate retry if needed
-      setTimeout(() => {
-        this.pendingQueries.delete(key);
-      }, 100);
+    promise.finally(() => {
+      // Immediate cleanup - no delay needed for better performance
+      this.pendingQueries.delete(key);
     });
 
     this.pendingQueries.set(key, {
-      promise: cleanupPromise,
+      promise,
       timestamp: Date.now(),
     });
   }

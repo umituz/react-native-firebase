@@ -62,11 +62,11 @@ export function convertToOAuthResult(
       success: true,
       userCredential: result.data.userCredential,
       isNewUser: result.data.isNewUser,
-    } as OAuthAuthSuccessResult;
+    };
   }
   return {
     success: false,
     error: result.error?.message ?? defaultErrorMessage,
     code: result.error?.code,
-  } as OAuthAuthErrorResult;
+  };
 }

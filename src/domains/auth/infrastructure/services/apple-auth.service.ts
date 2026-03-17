@@ -14,8 +14,8 @@ import { Platform } from "react-native";
 import { generateNonce, hashNonce } from "./crypto.util";
 import type { AppleAuthResult } from "./apple-auth.types";
 import {
-  isCancellationError,
-} from "./base/base-auth.service";
+  isCancelledError,
+} from "../../../../shared/domain/utils/error-handlers/error-checkers";
 import { executeAuthOperation, type Result } from "../../../../shared/domain/utils";
 import { isNewUser as checkIsNewUser } from "../../domain/utils/user-metadata.util";
 import { convertToOAuthResult } from "./utils/auth-result-converter.util";
@@ -121,7 +121,7 @@ export class AppleAuthService {
     try {
       return await this.signIn(auth);
     } catch (error) {
-      if (isCancellationError(error)) {
+      if (isCancelledError(error)) {
         return {
           success: false,
           error: "Apple Sign-In was cancelled",

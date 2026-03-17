@@ -4,7 +4,7 @@
  * This hook is optional and requires expo-auth-session to be installed
  */
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { googleOAuthService } from "../../infrastructure/services/google-oauth.service";
 import { getFirebaseAuth } from "../../infrastructure/config/FirebaseAuthClient";
 import type { GoogleOAuthConfig } from "../../infrastructure/services/google-oauth.service";
@@ -55,8 +55,9 @@ export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult
   const [isLoading, setIsLoading] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
 
-  const googleAvailable = googleOAuthService.isAvailable();
-  const googleConfigured = googleOAuthService.isConfigured(config);
+  // Memoize service checks to avoid repeated calls on every render
+  const googleAvailable = useMemo(() => googleOAuthService.isAvailable(), []);
+  const googleConfigured = useMemo(() => googleOAuthService.isConfigured(config), [config]);
 
   // Keep config in a ref so the response useEffect doesn't re-run when config object reference changes
   const configRef = useRef(config);
@@ -86,7 +87,7 @@ export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult
           const auth = getFirebaseAuth();
           if (!auth) {
             setGoogleError("Firebase Auth not initialized");
-            setIsLoading(false); // FIX: Reset loading state before early return
+            setIsLoading(false);
             return;
           }
 
@@ -104,11 +105,16 @@ export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult
         }
       } else if (response.type === "error") {
         setGoogleError("Google authentication failed");
-        setIsLoading(false);
       }
     };
 
-    handleResponse();
+    // Call async function and catch errors separately
+    handleResponse().catch((err) => {
+      // Errors are already handled in handleResponse
+      if (__DEV__) {
+        console.error('[useGoogleOAuth] Unexpected error in handleResponse:', err);
+      }
+    });
   }, [response, googleAvailable]); // config read via ref to prevent re-running on reference changes
 
   const signInWithGoogle = useCallback(async (): Promise<SocialAuthResult> => {

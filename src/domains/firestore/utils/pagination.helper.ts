@@ -44,13 +44,13 @@ export class PaginationHelper<T> {
     const resultCount = getResultCount(items.length, pageLimit);
     const resultItems = safeSlice(items, 0, resultCount);
 
-    // Safe access: check array is not empty before accessing last item
+    // Extract next cursor from last item
+    // Safe: resultItems is guaranteed to have at least one item when hasMoreValue is true
     let nextCursor: string | null = null;
     if (hasMoreValue && resultItems.length > 0) {
-      const lastItem = resultItems[resultItems.length - 1];
-      if (lastItem) {
-        nextCursor = getCursor(lastItem);
-      }
+      // Access is safe because we checked length > 0
+      const lastItem = resultItems[resultItems.length - 1]!;
+      nextCursor = getCursor(lastItem);
     }
 
     return {

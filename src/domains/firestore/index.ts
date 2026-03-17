@@ -141,15 +141,14 @@ export {
 } from './utils/validation/date-validator.util';
 
 // Presentation — TanStack Query integration
-export {
-  useFirestoreQuery,
-  useFirestoreMutation,
-  useFirestoreSnapshot,
-  createFirestoreKeys,
-  type UseFirestoreQueryOptions,
-  type UseFirestoreMutationOptions,
-  type UseFirestoreSnapshotOptions,
-} from './presentation';
+export { useFirestoreQuery } from './presentation/hooks/useFirestoreQuery';
+export { useFirestoreMutation } from './presentation/hooks/useFirestoreMutation';
+export { useFirestoreSnapshot } from './presentation/hooks/useFirestoreSnapshot';
+export { createFirestoreKeys } from './presentation/query-keys/createFirestoreKeys';
+
+export type { UseFirestoreQueryOptions } from './presentation/hooks/useFirestoreQuery';
+export type { UseFirestoreMutationOptions } from './presentation/hooks/useFirestoreMutation';
+export type { UseFirestoreSnapshotOptions } from './presentation/hooks/useFirestoreSnapshot';
 
 export { Timestamp } from 'firebase/firestore';
 export type {

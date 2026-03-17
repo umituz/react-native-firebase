@@ -67,6 +67,10 @@ export function isNewUser(input: UserCredential | User | UserMetadata): boolean 
   }
 
   // Convert to timestamps for reliable comparison
-  // If creation time === last sign in time, this is the first sign-in
-  return new Date(creationTime).getTime() === new Date(lastSignInTime).getTime();
+  // If creation time === last sign in time (within 2 seconds tolerance), this is the first sign-in
+  // Tolerance handles Firebase timestamp inconsistencies across different auth providers
+  const creationTimestamp = new Date(creationTime).getTime();
+  const lastSignInTimestamp = new Date(lastSignInTime).getTime();
+  const TOLERANCE_MS = 2000; // 2 second tolerance for timestamp inconsistencies
+  return Math.abs(creationTimestamp - lastSignInTimestamp) <= TOLERANCE_MS;
 }

@@ -47,6 +47,7 @@ export function useFirestoreSnapshot<TData>(
   const queryClient = useQueryClient();
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const dataPromiseRef = useRef<{ resolve: (value: TData) => void; reject: (error: Error) => void } | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Stabilize queryKey to prevent unnecessary listener re-subscriptions
   const stableKeyString = JSON.stringify(queryKey);
@@ -57,10 +58,14 @@ export function useFirestoreSnapshot<TData>(
 
     unsubscribeRef.current = subscribe((data) => {
       queryClient.setQueryData(stableQueryKey, data);
-      // Resolve any pending promise from queryFn
+      // Resolve any pending promise from queryFn and clear timeout
       if (dataPromiseRef.current) {
         dataPromiseRef.current.resolve(data);
         dataPromiseRef.current = null;
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
       }
     });
 
@@ -71,6 +76,11 @@ export function useFirestoreSnapshot<TData>(
       if (dataPromiseRef.current) {
         dataPromiseRef.current.reject(new Error('Snapshot listener cleanup'));
         dataPromiseRef.current = null;
+      }
+      // Clear timeout on cleanup
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
     };
   }, [enabled, queryClient, stableQueryKey, subscribe]);
@@ -89,9 +99,10 @@ export function useFirestoreSnapshot<TData>(
         dataPromiseRef.current = { resolve, reject };
 
         // Timeout to prevent infinite waiting (memory leak protection)
-        const timeoutId = setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
           if (dataPromiseRef.current) {
             dataPromiseRef.current = null;
+            timeoutRef.current = null;
             if (initialData !== undefined) {
               resolve(initialData);
             } else {
@@ -99,9 +110,6 @@ export function useFirestoreSnapshot<TData>(
             }
           }
         }, 30000); // 30 second timeout
-
-        // Clear timeout on promise resolution
-        return () => clearTimeout(timeoutId);
       });
     },
     enabled,

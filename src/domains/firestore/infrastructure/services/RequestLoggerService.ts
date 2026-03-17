@@ -4,12 +4,23 @@
  */
 
 import type { RequestLog, RequestStats, RequestType } from '../../domain/entities/RequestLog';
-import { generateUniqueId } from '../../../../shared/domain/utils/id-generator.util';
+import { generateUUID } from '@umituz/react-native-design-system/uuid';
+
+/**
+ * Maximum number of logs to keep in memory
+ * Prevents unbounded memory growth
+ */
+export const DEFAULT_MAX_LOGS = 1000;
 
 export class RequestLoggerService {
   private logs: RequestLog[] = [];
-  private readonly MAX_LOGS = 1000;
+  private readonly maxLogs: number;
   private listeners: Set<(log: RequestLog) => void> = new Set();
+  private static readonly LISTENER_ERROR_PREFIX = '[RequestLoggerService] Listener error:';
+
+  constructor(maxLogs: number = DEFAULT_MAX_LOGS) {
+    this.maxLogs = maxLogs;
+  }
 
   /**
    * Log a request
@@ -17,13 +28,13 @@ export class RequestLoggerService {
   logRequest(log: Omit<RequestLog, 'id' | 'timestamp'>): void {
     const fullLog: RequestLog = {
       ...log,
-      id: generateUniqueId(),
+      id: generateUUID(),
       timestamp: Date.now(),
     };
 
     this.logs.push(fullLog);
 
-    if (this.logs.length > this.MAX_LOGS) {
+    if (this.logs.length > this.maxLogs) {
       this.logs.shift();
     }
 
@@ -39,40 +50,62 @@ export class RequestLoggerService {
 
   /**
    * Get logs by type
+   * Optimized: Return empty array early if no logs
    */
   getLogsByType(type: RequestType): RequestLog[] {
+    if (this.logs.length === 0) return [];
     return this.logs.filter((log) => log.type === type);
   }
 
   /**
    * Get request statistics
+   * Optimized: Single-pass calculation O(n) instead of O(7n)
    */
   getStats(): RequestStats {
-    const totalRequests = this.logs.length;
-    const readRequests = this.logs.filter((l) => l.type === 'read').length;
-    const writeRequests = this.logs.filter((l) => l.type === 'write').length;
-    const deleteRequests = this.logs.filter((l) => l.type === 'delete').length;
-    const listenerRequests = this.logs.filter((l) => l.type === 'listener').length;
-    const cachedRequests = this.logs.filter((l) => l.cached).length;
-    const failedRequests = this.logs.filter((l) => !l.success).length;
+    let readRequests = 0;
+    let writeRequests = 0;
+    let deleteRequests = 0;
+    let listenerRequests = 0;
+    let cachedRequests = 0;
+    let failedRequests = 0;
+    let durationSum = 0;
+    let durationCount = 0;
 
-    const durations = this.logs
-      .map((l) => l.duration)
-      .filter((d): d is number => d !== undefined);
-    const averageDuration =
-      durations.length > 0
-        ? durations.reduce((sum, d) => sum + d, 0) / durations.length
-        : 0;
+    // Single pass through logs for all statistics
+    for (const log of this.logs) {
+      switch (log.type) {
+        case 'read':
+          readRequests++;
+          break;
+        case 'write':
+          writeRequests++;
+          break;
+        case 'delete':
+          deleteRequests++;
+          break;
+        case 'listener':
+          listenerRequests++;
+          break;
+      }
+
+      if (log.cached) cachedRequests++;
+      if (!log.success) failedRequests++;
+
+      if (log.duration !== undefined) {
+        durationSum += log.duration;
+        durationCount++;
+      }
+    }
 
     return {
-      totalRequests,
+      totalRequests: this.logs.length,
       readRequests,
       writeRequests,
       deleteRequests,
       listenerRequests,
       cachedRequests,
       failedRequests,
-      averageDuration,
+      averageDuration: durationCount > 0 ? durationSum / durationCount : 0,
     };
   }
 
@@ -116,8 +149,13 @@ export class RequestLoggerService {
     this.listeners.forEach((listener) => {
       try {
         listener(log);
-      } catch {
-        // Silently ignore listener errors
+      } catch (error) {
+        // Log listener errors in development to help debugging
+        // In production, silently ignore to prevent crashing the app
+        if (__DEV__) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.warn(`${RequestLoggerService.LISTENER_ERROR_PREFIX} ${errorMessage}`);
+        }
       }
     });
   }

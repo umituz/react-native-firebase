@@ -51,9 +51,8 @@ export class QueryDeduplicationMiddleware {
       try {
         return await queryFn();
       } finally {
-        // Cleanup after completion (success or error)
-        // Note: PendingQueryManager also has cleanup via finally, but we keep
-        // this for extra safety and immediate cleanup
+        // Immediate cleanup after completion (success or error)
+        // PendingQueryManager will also cleanup via its finally handler
         this.queryManager.remove(key);
       }
     })();

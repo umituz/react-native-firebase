@@ -11,26 +11,7 @@ import {
   type WhereFilterOp,
   type Query,
 } from "firebase/firestore";
-
-/**
- * Chunk array into smaller arrays (local copy for this module)
- * Inlined here to avoid circular dependencies
- */
-function chunkArray(array: readonly (string | number)[], chunkSize: number): (string | number)[][] {
-  if (chunkSize <= 0) {
-    throw new Error('chunkSize must be greater than 0');
-  }
-
-  const chunks: (string | number)[][] = [];
-  const len = array.length;
-
-  for (let i = 0; i < len; i += chunkSize) {
-    const end = Math.min(i + chunkSize, len);
-    chunks.push(array.slice(i, end));
-  }
-
-  return chunks;
-}
+import { chunkArray } from "../../../../shared/domain/utils/calculation.util";
 
 export interface FieldFilter {
   field: string;
@@ -38,7 +19,11 @@ export interface FieldFilter {
   value: string | number | boolean | string[] | number[];
 }
 
-const MAX_IN_OPERATOR_VALUES = 10;
+/**
+ * Maximum number of values in a single 'in' query
+ * Firestore limits 'in' queries to 10 values
+ */
+export const MAX_IN_OPERATOR_VALUES = 10;
 
 /**
  * Apply field filter with 'in' operator and chunking support
@@ -53,8 +38,8 @@ export function applyFieldFilter(q: Query, filter: FieldFilter): Query {
     }
 
     // Split into chunks of 10 and use 'or' operator
-    // Optimized: Uses local chunkArray utility
-    const chunks = chunkArray(value, MAX_IN_OPERATOR_VALUES);
+    // Optimized: Uses centralized chunkArray utility
+    const chunks = chunkArray(value as readonly (string | number)[], MAX_IN_OPERATOR_VALUES);
     const orConditions = chunks.map((chunk) => where(field, "in", chunk));
     return query(q, or(...orConditions));
   }
