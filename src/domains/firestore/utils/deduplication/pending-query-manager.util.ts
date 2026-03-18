@@ -10,10 +10,25 @@ interface PendingQuery {
 
 export class PendingQueryManager {
   private pendingQueries = new Map<string, PendingQuery>();
-  private readonly deduplicationWindowMs: number;
+  private deduplicationWindowMs: number;
 
   constructor(deduplicationWindowMs: number = 1000) {
     this.deduplicationWindowMs = deduplicationWindowMs;
+  }
+
+  /**
+   * Update the deduplication window dynamically
+   * Used for quota-aware adaptive deduplication
+   */
+  setWindow(windowMs: number): void {
+    this.deduplicationWindowMs = windowMs;
+  }
+
+  /**
+   * Get current deduplication window
+   */
+  getWindow(): number {
+    return this.deduplicationWindowMs;
   }
 
   /**
@@ -68,11 +83,14 @@ export class PendingQueryManager {
 
   /**
    * Clean up expired queries
+   * Uses current deduplication window (may be adjusted dynamically)
    */
   cleanup(): void {
     const now = Date.now();
+    const windowMs = this.deduplicationWindowMs; // Capture current window
+
     for (const [key, query] of this.pendingQueries.entries()) {
-      if (now - query.timestamp > this.deduplicationWindowMs) {
+      if (now - query.timestamp > windowMs) {
         this.pendingQueries.delete(key);
       }
     }

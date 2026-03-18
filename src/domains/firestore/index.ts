@@ -96,6 +96,11 @@ export {
 export {
   QueryDeduplicationMiddleware,
   queryDeduplicationMiddleware,
+  useDeduplicationWithQuota,
+} from './infrastructure/middleware/QueryDeduplicationMiddleware';
+export type {
+  QueryDeduplicationConfig,
+  DeduplicationStatistics,
 } from './infrastructure/middleware/QueryDeduplicationMiddleware';
 export {
   QuotaTrackingMiddleware,
@@ -144,11 +149,13 @@ export {
 export { useFirestoreQuery } from './presentation/hooks/useFirestoreQuery';
 export { useFirestoreMutation } from './presentation/hooks/useFirestoreMutation';
 export { useFirestoreSnapshot } from './presentation/hooks/useFirestoreSnapshot';
+export { useSmartFirestoreSnapshot, useSmartListenerControl } from './presentation/hooks/useSmartFirestoreSnapshot';
 export { createFirestoreKeys } from './presentation/query-keys/createFirestoreKeys';
 
 export type { UseFirestoreQueryOptions } from './presentation/hooks/useFirestoreQuery';
 export type { UseFirestoreMutationOptions } from './presentation/hooks/useFirestoreMutation';
 export type { UseFirestoreSnapshotOptions } from './presentation/hooks/useFirestoreSnapshot';
+export type { UseSmartFirestoreSnapshotOptions, BackgroundStrategy } from './presentation/hooks/useSmartFirestoreSnapshot';
 
 export { Timestamp } from 'firebase/firestore';
 export type {

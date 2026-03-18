@@ -12,3 +12,13 @@ export {
   useFirestoreSnapshot,
   type UseFirestoreSnapshotOptions,
 } from './useFirestoreSnapshot';
+
+export {
+  useSmartFirestoreSnapshot,
+  useSmartListenerControl,
+} from './useSmartFirestoreSnapshot';
+
+export type {
+  UseSmartFirestoreSnapshotOptions,
+  BackgroundStrategy,
+} from './useSmartFirestoreSnapshot';
