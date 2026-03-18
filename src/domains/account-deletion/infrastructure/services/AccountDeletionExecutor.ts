@@ -12,7 +12,7 @@ import type { AccountDeletionResult } from './AccountDeletionTypes';
 export class AccountDeletionExecutor {
   private deletionInProgress = false;
 
-  async deleteCurrentUser(options: AccountDeletionOptions): Promise<AccountDeletionResult> {
+  async deleteCurrentUser(_options: AccountDeletionOptions): Promise<AccountDeletionResult> {
     if (this.deletionInProgress) {
       return {
         success: false,

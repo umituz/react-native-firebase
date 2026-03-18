@@ -5,7 +5,7 @@
  * Max lines: 150 (enforced for maintainability)
  */
 
-import type { WhereFilterOp, OrderByDirection } from 'firebase/firestore';
+import type { OrderByDirection } from 'firebase/firestore';
 import { WhereClause } from './WhereClause';
 import * as Factory from './QueryOptionsFactory';
 

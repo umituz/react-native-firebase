@@ -23,3 +23,9 @@ export { useGoogleOAuth } from './presentation/hooks/useGoogleOAuth';
 export type {
   UseGoogleOAuthResult,
 } from './presentation/hooks/useGoogleOAuth';
+
+export { useAppleAuth } from './presentation/hooks/useAppleAuth';
+export type {
+  UseAppleAuthResult,
+  AppleAuthSignInResult,
+} from './presentation/hooks/useAppleAuth';

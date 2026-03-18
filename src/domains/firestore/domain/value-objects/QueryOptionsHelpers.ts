@@ -6,7 +6,7 @@
  */
 
 import type { QueryOptions } from './QueryOptions';
-import type { SortOptions, DateRangeOptions, PaginationOptions } from './QueryOptions';
+import type { SortOptions } from './QueryOptions';
 
 /**
  * Check if query options has where clauses

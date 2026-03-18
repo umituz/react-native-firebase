@@ -11,7 +11,6 @@
 import type { WhereFilterOp } from 'firebase/firestore';
 import * as Validation from './WhereClauseValidation';
 import * as Helpers from './WhereClauseHelpers';
-import * as Factory from './WhereClauseFactory';
 
 /**
  * Valid where operators for Firestore queries

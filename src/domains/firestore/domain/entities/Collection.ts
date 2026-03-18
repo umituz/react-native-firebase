@@ -10,10 +10,6 @@
 
 import type { CollectionReference, Query } from 'firebase/firestore';
 import {
-  isValidCollectionName,
-  isValidCollectionPath,
-  extractCollectionNameFromPath,
-  extractParentCollectionPath,
   isUserCollectionPath,
   extractUserIdFromPath,
   createSubCollectionPath as createSubCollectionPathUtil,
