@@ -124,5 +124,3 @@ export class Collection<TDocument = unknown> {
   }
 }
 
-// Re-export factory function for backward compatibility
-export { createCollection, fromReference, fromQuery } from './CollectionFactory';

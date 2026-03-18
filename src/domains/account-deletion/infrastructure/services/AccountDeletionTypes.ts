@@ -21,7 +21,6 @@ export interface ReauthenticationContext {
   readonly user: import('firebase/auth').User;
   readonly options: import('../../application/ports/reauthentication.types').AccountDeletionOptions;
   readonly originalUserId?: string;
-  readonly repository: AccountDeletionRepository;
 }
 
 /**

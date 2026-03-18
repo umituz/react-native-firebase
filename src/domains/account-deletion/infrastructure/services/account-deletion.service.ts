@@ -1,11 +1,6 @@
 /**
- * Account Deletion Service (Refactored)
+ * Account Deletion Service
  * Handles Firebase account deletion with reauthentication support
- *
- * This file now delegates to the new DDD architecture:
- * - AccountDeletionExecutor for deletion logic
- * - UserValidationService for validation
- * - AccountDeletionRepository for persistence
  *
  * Max lines: 150 (enforced for maintainability)
  */
@@ -13,15 +8,8 @@
 import type { User } from "firebase/auth";
 import type { AccountDeletionOptions } from "../../application/ports/reauthentication.types";
 import { accountDeletionExecutor } from "./AccountDeletionExecutor";
-import type { AccountDeletionResult } from "./AccountDeletionExecutor";
+import type { AccountDeletionResult } from "./AccountDeletionTypes";
 
-/**
- * Delete current user account
- * Handles reauthentication automatically if enabled
- *
- * @param options - Deletion options including reauthentication settings
- * @returns Result of deletion operation
- */
 export async function deleteCurrentUser(
   options: AccountDeletionOptions = { autoReauthenticate: true }
 ): Promise<AccountDeletionResult> {

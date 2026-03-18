@@ -1,5 +1,0 @@
-   */
-  protected setError(error: string): void {
-    this.state.initializationError = error;
-  }
-}

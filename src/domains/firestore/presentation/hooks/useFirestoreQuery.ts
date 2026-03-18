@@ -1,7 +1,7 @@
 /**
  * useFirestoreQuery
  *
- * TanStack Query wrapper optimized for Firestore data fetching.
+ * TanStack Query integration for Firestore data fetching.
  * Provides Firestore-aware defaults, retry logic, and error handling.
  *
  * @example

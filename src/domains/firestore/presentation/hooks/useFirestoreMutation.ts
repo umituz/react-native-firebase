@@ -1,7 +1,7 @@
 /**
  * useFirestoreMutation
  *
- * TanStack Mutation wrapper for Firestore write operations.
+ * TanStack Mutation integration for Firestore write operations.
  * Automatically invalidates specified query keys on success.
  *
  * @example

@@ -113,17 +113,3 @@ export class WhereClause {
   }
 }
 
-// Re-export factory functions for backward compatibility
-export const create = Factory.where;
-export const equals = Factory.equals;
-export const notEquals = Factory.notEquals;
-export const lessThan = Factory.lessThan;
-export const lessThanOrEqual = Factory.lessThanOrEqual;
-export const greaterThan = Factory.greaterThan;
-export const greaterThanOrEqual = Factory.greaterThanOrEqual;
-export const arrayContains = Factory.arrayContains;
-export const inOp = Factory.inOp;
-export const notIn = Factory.notIn;
-export const arrayContainsAny = Factory.arrayContainsAny;
-export const where = Factory.where;
-export const fromObject = Factory.fromObject;

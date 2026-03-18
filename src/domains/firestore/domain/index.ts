@@ -14,7 +14,8 @@ export {
 } from './errors/FirebaseFirestoreError';
 
 // Domain Entities
-export { Collection, createCollection, fromReference, fromQuery } from './entities/Collection';
+export { Collection } from './entities/Collection';
+export { fromReference, fromQuery, createCollection } from './entities/CollectionFactory';
 export type { CollectionMetadata } from './entities/Collection';
 
 // Collection Entity Helpers
@@ -52,6 +53,9 @@ export {
 
 // Domain Value Objects
 export { QueryOptions, createQueryOptions } from './value-objects/QueryOptions';
-export { WhereClause, equals, where, create as createWhereClause } from './value-objects/WhereClause';
 export type { SortOptions, DateRangeOptions, PaginationOptions } from './value-objects/QueryOptions';
+
+// Where Clause
+export { WhereClause } from './value-objects/WhereClause';
+export { equals, where, fromObject as createWhereClause } from './value-objects/WhereClauseFactory';
 export type { WhereOperator } from './value-objects/WhereClause';

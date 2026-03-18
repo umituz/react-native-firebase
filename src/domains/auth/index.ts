@@ -1,24 +1,15 @@
 /**
  * Firebase Auth Module
  * Domain-Driven Design (DDD) Architecture
- *
- * Exports organized by DDD layers for better maintainability.
- * Main re-exports everything for backward compatibility.
  */
 
-// =============================================================================
-// DOMAIN LAYER - Business Logic
-// =============================================================================
+// Domain Layer
 export * from './domain';
 
-// =============================================================================
-// INFRASTRUCTURE LAYER - Implementation
-// =============================================================================
+// Infrastructure Layer
 export * from './infrastructure';
 
-// =============================================================================
-// PRESENTATION LAYER - React Hooks
-// =============================================================================
+// Presentation Layer
 export * from './presentation';
 
 
