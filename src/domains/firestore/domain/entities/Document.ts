@@ -1,0 +1,233 @@
+/**
+ * Document Entity
+ * Single Responsibility: Represent a Firestore document with metadata
+ *
+ * Domain entity that encapsulates document data and metadata.
+ * Provides business logic for document operations.
+ *
+ * Max lines: 150 (enforced for maintainability)
+ */
+
+import type { DocumentData, DocumentSnapshot, Timestamp } from 'firebase/firestore';
+
+/**
+ * Document metadata
+ */
+export interface DocumentMetadata {
+  readonly id: string;
+  readonly createdAt: Timestamp | null;
+  readonly updatedAt: Timestamp | null;
+  readonly exists: boolean;
+}
+
+/**
+ * Document entity
+ * Represents a Firestore document with data and metadata
+ */
+export class Document<T extends DocumentData = DocumentData> {
+  readonly id: string;
+  readonly data: T | null;
+  readonly metadata: DocumentMetadata;
+  readonly path: string;
+
+  constructor(snapshot: DocumentSnapshot<T>, path: string) {
+    this.id = snapshot.id;
+    this.data = snapshot.data() || null;
+    this.path = path;
+    this.metadata = {
+      id: snapshot.id,
+      createdAt: this.extractTimestamp(snapshot, 'createdAt'),
+      updatedAt: this.extractTimestamp(snapshot, 'updatedAt'),
+      exists: snapshot.exists(),
+    };
+  }
+
+  /**
+   * Create document from snapshot with custom path
+   */
+  static fromSnapshot<T extends DocumentData>(
+    snapshot: DocumentSnapshot<T>,
+    path: string
+  ): Document<T> {
+    return new Document(snapshot, path);
+  }
+
+  /**
+   * Check if document exists
+   */
+  exists(): boolean {
+    return this.metadata.exists && this.data !== null;
+  }
+
+  /**
+   * Get field value from document data
+   */
+  getField<K extends keyof T>(field: K): T[K] | null {
+    return this.data?.[field] ?? null;
+  }
+
+  /**
+   * Check if document has a specific field
+   */
+  hasField<K extends keyof T>(field: K): boolean {
+    return this.data !== null && field in this.data;
+  }
+
+  /**
+   * Get document age in milliseconds
+   * Returns null if createdAt is not set
+   */
+  getAge(): number | null {
+    if (!this.metadata.createdAt) return null;
+    return Date.now() - this.metadata.createdAt.toMillis();
+  }
+
+  /**
+   * Check if document is recent (created within specified milliseconds)
+   */
+  isRecent(maxAgeMs: number): boolean {
+    const age = this.getAge();
+    return age !== null && age <= maxAgeMs;
+  }
+
+  /**
+   * Check if document was updated after creation (modified)
+   */
+  isModified(): boolean {
+    if (!this.metadata.createdAt || !this.metadata.updatedAt) return false;
+    return this.metadata.updatedAt.toMillis() > this.metadata.createdAt.toMillis();
+  }
+
+  /**
+   * Get time since last update in milliseconds
+   * Returns null if updatedAt is not set
+   */
+  getTimeSinceUpdate(): number | null {
+    if (!this.metadata.updatedAt) return null;
+    return Date.now() - this.metadata.updatedAt.toMillis();
+  }
+
+  /**
+   * Check if document is stale (not updated within specified milliseconds)
+   */
+  isStale(maxStaleMs: number): boolean {
+    const timeSinceUpdate = this.getTimeSinceUpdate();
+    return timeSinceUpdate !== null && timeSinceUpdate > maxStaleMs;
+  }
+
+  /**
+   * Convert to plain object (for serialization)
+   */
+  toObject(): { id: string; data: T | null; metadata: DocumentMetadata } {
+    return {
+      id: this.id,
+      data: this.data,
+      metadata: this.metadata,
+    };
+  }
+
+  /**
+   * Extract timestamp field from document snapshot
+   */
+  private extractTimestamp(
+    snapshot: DocumentSnapshot<T>,
+    field: string
+  ): Timestamp | null {
+    const data = snapshot.data();
+    if (!data) return null;
+
+    const value = data[field as keyof T];
+    if (value && typeof value === 'object' && 'toDate' in value && typeof value.toDate === 'function') {
+      return value as unknown as Timestamp;
+    }
+
+    return null;
+  }
+
+  /**
+   * Create a new document with updated data
+   * Useful for immutability patterns
+   */
+  withData<K extends keyof T>(field: K, value: T[K]): Document<T> {
+    if (!this.data) {
+      throw new Error('Cannot update null document data');
+    }
+
+    const newData = { ...this.data, [field]: value };
+    return new Document(
+      {
+        id: this.id,
+        exists: true,
+        data() {
+          return newData;
+        },
+      } as unknown as DocumentSnapshot<T>,
+      this.path
+    );
+  }
+
+  /**
+   * Validate document data against required fields
+   */
+  validateRequiredFields(requiredFields: (keyof T)[]): { valid: boolean; missing: (keyof T)[] } {
+    if (!this.data) {
+      return { valid: false, missing: requiredFields };
+    }
+
+    const missing = requiredFields.filter(field => !this.hasField(field));
+    return {
+      valid: missing.length === 0,
+      missing,
+    };
+  }
+
+  /**
+   * Check if document matches filter criteria
+   */
+  matches(filter: Partial<T>): boolean {
+    if (!this.data) return false;
+
+    return Object.entries(filter).every(([key, value]) => {
+      const fieldValue = this.data![key as keyof T];
+      return fieldValue === value;
+    });
+  }
+
+  /**
+   * Check if document matches filter criteria
+   */
+  matches(filter: Partial<T>): boolean {
+    if (!this.data) return false;
+
+    return Object.entries(filter).every(([key, value]) => {
+      return this.data[key as keyof T] === value;
+    });
+  }
+
+  /**
+   * Get document size in bytes (approximate)
+   * Useful for quota management
+   */
+  getSize(): number {
+    if (!this.data) return 0;
+
+    return JSON.stringify(this.data).length;
+  }
+
+  /**
+   * Check if document size exceeds limit
+   */
+  exceedsSizeLimit(maxBytes: number): boolean {
+    return this.getSize() > maxBytes;
+  }
+}
+
+/**
+ * Factory function to create document entity
+ */
+export function createDocument<T extends DocumentData>(
+  snapshot: DocumentSnapshot<T>,
+  path: string
+): Document<T> {
+  return Document.fromSnapshot(snapshot, path);
+}

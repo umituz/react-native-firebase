@@ -13,6 +13,11 @@ export const ERROR_MESSAGES = {
     INVALID_CREDENTIALS: 'Invalid credentials provided',
     USER_CHANGED: 'User changed during operation',
     OPERATION_IN_PROGRESS: 'Operation already in progress',
+    USER_NOT_FOUND: 'User not found',
+    EMAIL_ALREADY_IN_USE: 'Email is already in use',
+    TOO_MANY_REQUESTS: 'Too many requests. Please try again later',
+    USER_DISABLED: 'This account has been disabled',
+    GENERIC_ERROR: 'Authentication error occurred',
   },
   FIRESTORE: {
     NOT_INITIALIZED: 'Firestore is not initialized',
@@ -25,6 +30,12 @@ export const ERROR_MESSAGES = {
     PERMISSION_DENIED: 'Permission denied',
     TRANSACTION_FAILED: 'Transaction failed',
     NETWORK_ERROR: 'Network error occurred',
+    NOT_FOUND: 'Document not found',
+    UNAVAILABLE: 'Firestore service is unavailable',
+    GENERIC_ERROR: 'Firestore error occurred',
+  },
+  STORAGE: {
+    GENERIC_ERROR: 'Storage error occurred',
   },
   REPOSITORY: {
     DESTROYED: 'Repository has been destroyed',

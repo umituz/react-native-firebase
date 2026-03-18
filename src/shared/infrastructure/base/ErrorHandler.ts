@@ -1,0 +1,189 @@
+/**
+ * Error Handler Base Class
+ * Single Responsibility: Centralized error handling and conversion
+ *
+ * Eliminates try-catch duplication across 9+ files.
+ * Provides standardized error-to-ErrorInfo conversion.
+ * Integrates with existing Result pattern.
+ *
+ * Max lines: 150 (enforced for maintainability)
+ */
+
+import type { ErrorInfo } from '../../domain/utils';
+import { toErrorInfo, successResult, type Result } from '../../domain/utils';
+import { isCancelledError, isQuotaError, isRetryableError } from '../../domain/utils/error-handlers/error-checkers';
+import { ERROR_MESSAGES } from '../../domain/utils/error-handlers/error-messages';
+
+/**
+ * Error handler options
+ */
+export interface ErrorHandlerOptions {
+  /** Default error code if none can be extracted */
+  defaultErrorCode?: string;
+  /** Custom error message mapper */
+  errorMapper?: (error: unknown) => string | null;
+  /** Enable detailed logging in development */
+  enableDevLogging?: boolean;
+}
+
+/**
+ * Base class for error handling
+ * Provides centralized error conversion and handling
+ */
+export class ErrorHandler {
+  private readonly options: ErrorHandlerOptions;
+
+  constructor(options: ErrorHandlerOptions = {}) {
+    this.options = {
+      defaultErrorCode: 'unknown/error',
+      enableDevLogging: __DEV__,
+      ...options,
+    };
+  }
+
+  /**
+   * Wrap an async operation with standardized error handling
+   * Eliminates try-catch duplication across services
+   */
+  async handleAsync<T>(
+    operation: () => Promise<T>,
+    errorCode: string = this.options.defaultErrorCode || 'unknown/error'
+  ): Promise<Result<T>> {
+    try {
+      const result = await operation();
+      return successResult(result);
+    } catch (error) {
+      if (this.options.enableDevLogging) {
+        console.error(`[ErrorHandler] Operation failed: ${errorCode}`, error);
+      }
+      return { success: false, error: toErrorInfo(error, errorCode) };
+    }
+  }
+
+  /**
+   * Wrap a synchronous operation with standardized error handling
+   */
+  handle<T>(
+    operation: () => T,
+    errorCode: string = this.options.defaultErrorCode || 'unknown/error'
+  ): Result<T> {
+    try {
+      const result = operation();
+      return successResult(result);
+    } catch (error) {
+      if (this.options.enableDevLogging) {
+        console.error(`[ErrorHandler] Operation failed: ${errorCode}`, error);
+      }
+      return { success: false, error: toErrorInfo(error, errorCode) };
+    }
+  }
+
+  /**
+   * Convert error to ErrorInfo with optional custom code
+   */
+  toErrorInfo(error: unknown, code?: string): ErrorInfo {
+    // Try custom error mapper first
+    if (this.options.errorMapper) {
+      const customMessage = this.options.errorMapper(error);
+      if (customMessage) {
+        return {
+          code: code || this.options.defaultErrorCode || 'unknown/error',
+          message: customMessage,
+        };
+      }
+    }
+
+    // Use standard conversion
+    return toErrorInfo(error, code || this.options.defaultErrorCode);
+  }
+
+  /**
+   * Check if error is a cancelled operation
+   */
+  isCancelledError(error: unknown): boolean {
+    return isCancelledError(error);
+  }
+
+  /**
+   * Check if error is a quota error
+   */
+  isQuotaError(error: unknown): boolean {
+    return isQuotaError(error);
+  }
+
+  /**
+   * Check if error is retryable
+   */
+  isRetryableError(error: unknown): boolean {
+    return isRetryableError(error);
+  }
+
+  /**
+   * Get user-friendly error message
+   * Maps error codes to user-friendly messages
+   */
+  getUserMessage(error: ErrorInfo): string {
+    // Check if it's a known error category
+    if (error.code.startsWith('auth/')) {
+      return this.getAuthUserMessage(error.code);
+    }
+    if (error.code.startsWith('firestore/')) {
+      return this.getFirestoreUserMessage(error.code);
+    }
+    if (error.code.startsWith('storage/')) {
+      return ERROR_MESSAGES.STORAGE.GENERIC_ERROR;
+    }
+
+    return error.message || ERROR_MESSAGES.GENERAL.UNKNOWN;
+  }
+
+  /**
+   * Get user-friendly auth error message
+   */
+  private getAuthUserMessage(code: string): string {
+    // Map common auth error codes to user-friendly messages
+    const authMessages: Record<string, string> = {
+      'auth/user-not-found': ERROR_MESSAGES.AUTH.USER_NOT_FOUND,
+      'auth/wrong-password': ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS,
+      'auth/email-already-in-use': ERROR_MESSAGES.AUTH.EMAIL_ALREADY_IN_USE,
+      'auth/invalid-email': ERROR_MESSAGES.AUTH.INVALID_EMAIL,
+      'auth/weak-password': ERROR_MESSAGES.AUTH.WEAK_PASSWORD,
+      'auth/too-many-requests': ERROR_MESSAGES.AUTH.TOO_MANY_REQUESTS,
+      'auth/user-disabled': ERROR_MESSAGES.AUTH.USER_DISABLED,
+    };
+
+    return authMessages[code] || ERROR_MESSAGES.AUTH.GENERIC_ERROR;
+  }
+
+  /**
+   * Get user-friendly firestore error message
+   */
+  private getFirestoreUserMessage(code: string): string {
+    const firestoreMessages: Record<string, string> = {
+      'firestore/permission-denied': ERROR_MESSAGES.FIRESTORE.PERMISSION_DENIED,
+      'firestore/not-found': ERROR_MESSAGES.FIRESTORE.NOT_FOUND,
+      'firestore/unavailable': ERROR_MESSAGES.FIRESTORE.UNAVAILABLE,
+    };
+
+    return firestoreMessages[code] || ERROR_MESSAGES.FIRESTORE.GENERIC_ERROR;
+  }
+
+  /**
+   * Create a failure result from error code
+   */
+  failureFrom(code: string, message?: string): Result {
+    return {
+      success: false,
+      error: {
+        code,
+        message: message || ERROR_MESSAGES.GENERAL.UNKNOWN,
+      },
+    };
+  }
+}
+
+/**
+ * Default error handler instance
+ * Can be used across the application
+ */
+export const defaultErrorHandler = new ErrorHandler();

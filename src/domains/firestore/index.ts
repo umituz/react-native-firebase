@@ -3,12 +3,15 @@
  * Domain-Driven Design (DDD) Architecture
  */
 
-// Domain Errors
-export {
-  FirebaseFirestoreError,
-  FirebaseFirestoreInitializationError,
-  FirebaseFirestoreQuotaError,
-} from './domain/errors/FirebaseFirestoreError';
+// =============================================================================
+// DOMAIN LAYER - Business Logic
+// =============================================================================
+
+export * from './domain';
+
+// =============================================================================
+// INFRASTRUCTURE LAYER - Implementation
+// =============================================================================
 
 // Firestore Client
 export {
@@ -99,6 +102,17 @@ export { useFirestoreSnapshot } from './presentation/hooks/useFirestoreSnapshot'
 export type { UseFirestoreQueryOptions } from './presentation/hooks/useFirestoreQuery';
 export type { UseFirestoreMutationOptions } from './presentation/hooks/useFirestoreMutation';
 export type { UseFirestoreSnapshotOptions } from './presentation/hooks/useFirestoreSnapshot';
+
+// Re-export commonly used Firebase Firestore types
+export type {
+  Timestamp,
+  DocumentSnapshot,
+  QuerySnapshot,
+  DocumentReference,
+  CollectionReference,
+  Query,
+  Transaction,
+} from 'firebase/firestore';
 
 // Firebase types are available from the 'firebase' package directly
 // Import them in your app: import { Timestamp } from 'firebase/firestore';

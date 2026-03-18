@@ -46,6 +46,31 @@ export {
   getSafeErrorCode,
 } from "./shared/domain/guards/firebase-error.guard";
 
+// Shared Infrastructure Base Classes
+export {
+  ServiceBase,
+  ErrorHandler,
+  defaultErrorHandler,
+  hasCodeProperty,
+  hasMessageProperty,
+  isFirebaseErrorLike,
+  hasNameProperty,
+  isErrorLike,
+  hasUidProperty,
+  hasEmailProperty,
+  hasProviderIdProperty,
+  isArray,
+  isString,
+  isFunction,
+  hasProperty,
+  hasProperties,
+} from "./shared/infrastructure/base";
+
+export type {
+  ServiceBaseOptions,
+  ErrorHandlerOptions,
+} from "./shared/infrastructure/base";
+
 // Domain Exports
 export * from "./domains/auth";
 export * from "./domains/account-deletion";

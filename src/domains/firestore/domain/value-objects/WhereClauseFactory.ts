@@ -1,0 +1,207 @@
+/**
+ * Where Clause Factory
+ * Single Responsibility: Provide factory methods for common where clauses
+ *
+ * Factory functions for creating commonly used where clauses.
+ * Separated from WhereClause for better maintainability.
+ *
+ * Max lines: 150 (enforced for maintainability)
+ */
+
+import type { WhereFilterOp } from 'firebase/firestore';
+import { WhereClause } from './WhereClause';
+import type { WhereOperator } from './WhereClause';
+
+/**
+ * Factory function to create where clause
+ */
+export function createWhereClause(
+  field: string,
+  operator: WhereFilterOp,
+  value: unknown
+): WhereClause {
+  return WhereClause.create(field, operator, value);
+}
+
+/**
+ * Factory functions for common where clauses
+ */
+export const where = {
+  equals: WhereClause.equals,
+  notEquals: WhereClause.notEquals,
+  lessThan: WhereClause.lessThan,
+  lessThanOrEqual: WhereClause.lessThanOrEqual,
+  greaterThan: WhereClause.greaterThan,
+  greaterThanOrEqual: WhereClause.greaterThanOrEqual,
+  arrayContains: WhereClause.arrayContains,
+  arrayContainsAny: WhereClause.arrayContainsAny,
+  in: WhereClause.in,
+  notIn: WhereClause.notIn,
+};
+
+/**
+ * Create batch of where clauses
+ */
+export function createWhereBatch(
+  clauses: Array<{ field: string; operator: WhereFilterOp; value: unknown }>
+): WhereClause[] {
+  return clauses.map(c => WhereClause.create(c.field, c.operator, c.value));
+}
+
+/**
+ * Create equality clauses from object
+ */
+export function createEqualityFilters(obj: Record<string, unknown>): WhereClause[] {
+  return Object.entries(obj).map(([field, value]) =>
+    WhereClause.equals(field, value)
+  );
+}
+
+/**
+ * Create in clause from values
+ */
+export function createInClause(field: string, values: unknown[]): WhereClause {
+  return WhereClause.in(field, values);
+}
+
+/**
+ * Create not-in clause from values
+ */
+export function createNotInClause(field: string, values: unknown[]): WhereClause {
+  return WhereClause.notIn(field, values);
+}
+
+/**
+ * Create range clause (>= start and <= end)
+ */
+export function createRangeClause(
+  field: string,
+  startValue: unknown,
+  endValue: unknown
+): WhereClause[] {
+  return [
+    WhereClause.greaterThanOrEqual(field, startValue),
+    WhereClause.lessThanOrEqual(field, endValue),
+  ];
+}
+
+/**
+ * Create date range clause
+ */
+export function createDateRangeClause(
+  field: string,
+  startDate: Date,
+  endDate: Date
+): WhereClause[] {
+  return createRangeClause(field, startDate, endDate);
+}
+
+/**
+ * Create text search clause (case-insensitive contains)
+ * Note: Firestore doesn't support native contains, this is for consistency
+ */
+export function createTextSearchClause(field: string, searchText: string): WhereClause {
+  return WhereClause.equals(field, searchText);
+}
+
+/**
+ * Create multiple equality clauses combined
+ */
+export function createMultiFieldFilter(filters: Record<string, unknown>): WhereClause[] {
+  return createEqualityFilters(filters);
+}
+
+/**
+ * Create not-null clause
+ */
+export function createNotNullClause(field: string): WhereClause {
+  return WhereClause.notEquals(field, null);
+}
+
+/**
+ * Create null clause
+ */
+export function createNullClause(field: string): WhereClause {
+  return WhereClause.equals(field, null);
+}
+
+/**
+ * Create boolean clause
+ */
+export function createBooleanClause(field: string, value: boolean): WhereClause {
+  return WhereClause.equals(field, value);
+}
+
+/**
+ * Create number range clause
+ */
+export function createNumberRangeClause(
+  field: string,
+  min: number,
+  max: number
+): WhereClause[] {
+  return [
+    WhereClause.greaterThanOrEqual(field, min),
+    WhereClause.lessThanOrEqual(field, max),
+  ];
+}
+
+/**
+ * Validate where clauses compatibility
+ */
+export function validateWhereClauses(clauses: WhereClause[]): {
+  valid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  // Validate each clause individually
+  for (let i = 0; i < clauses.length; i++) {
+    const validation = clauses[i].validate();
+    if (!validation.valid) {
+      errors.push(`Clause ${i}: ${validation.errors.join(', ')}`);
+    }
+  }
+
+  // Validate compatibility
+  for (let i = 0; i < clauses.length; i++) {
+    for (let j = i + 1; j < clauses.length; j++) {
+      if (!clauses[i].isCompatibleWith(clauses[j])) {
+        errors.push(`Clauses ${i} and ${j} are incompatible`);
+      }
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Optimize where clauses
+ * Removes duplicates and incompatible clauses
+ */
+export function optimizeWhereClauses(clauses: WhereClause[]): WhereClause[] {
+  // Remove duplicates
+  const unique = clauses.filter((clause, index, self) =>
+    index === self.findIndex(c => clause.equals(c))
+  );
+
+  // Remove incompatible (keep first occurrences)
+  const compatible: WhereClause[] = [];
+  for (const clause of unique) {
+    let canAdd = true;
+    for (const existing of compatible) {
+      if (!clause.isCompatibleWith(existing)) {
+        canAdd = false;
+        break;
+      }
+    }
+    if (canAdd) {
+      compatible.push(clause);
+    }
+  }
+
+  return compatible;
+}
