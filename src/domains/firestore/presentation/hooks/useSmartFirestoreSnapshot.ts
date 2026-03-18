@@ -173,6 +173,8 @@ export function useSmartFirestoreSnapshot<TData>(
    * Handle app state changes (foreground/background)
    */
   useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       const isBackgrounded = nextAppState.match(/inactive|background/);
 
@@ -190,12 +192,13 @@ export function useSmartFirestoreSnapshot<TData>(
 
           switch (backgroundStrategy) {
             case 'suspend':
-              // Suspend immediately
-              setTimeout(() => suspendListener(), 0);
+              // Suspend immediately - track timer for cleanup
+              const suspendTimer = setTimeout(() => suspendListener(), 0);
+              timers.push(suspendTimer);
               break;
 
             case 'timeout':
-              // Suspend after timeout
+              // Suspend after timeout - timer stored in state for cleanup
               const timer = setTimeout(() => {
                 suspendListener();
               }, backgroundTimeout);
@@ -215,10 +218,11 @@ export function useSmartFirestoreSnapshot<TData>(
             console.log(`[SmartSnapshot] App entering foreground for query:`, queryKey);
           }
 
-          // Resume listener (with optional delay)
-          setTimeout(() => {
+          // Resume listener (with optional delay) - track timer for cleanup
+          const resumeTimer = setTimeout(() => {
             resumeListener();
           }, resumeDelay);
+          timers.push(resumeTimer);
 
           return { ...prev, isBackgrounded: false, suspendTimer: null };
         }
@@ -231,6 +235,8 @@ export function useSmartFirestoreSnapshot<TData>(
 
     return () => {
       subscription.remove();
+      // Clean up any pending timers
+      timers.forEach(timer => clearTimeout(timer));
     };
   }, [queryKey, backgroundStrategy, backgroundTimeout, resumeDelay, suspendListener, resumeListener]);
 
@@ -343,9 +349,13 @@ export function useSmartListenerControl() {
     return () => subscription.remove();
   }, []);
 
+  // Compute background status once to avoid duplicate regex matching
+  const isBackgrounded = appState.match(/inactive|background/);
+  const isForegrounded = !isBackgrounded;
+
   return {
-    isBackgrounded: appState.match(/inactive|background/),
-    isForegrounded: !appState.match(/inactive|background/),
+    isBackgrounded,
+    isForegrounded,
     appState,
   };
 }

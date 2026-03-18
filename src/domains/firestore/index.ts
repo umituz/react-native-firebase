@@ -96,6 +96,7 @@ export {
 export {
   QueryDeduplicationMiddleware,
   queryDeduplicationMiddleware,
+  syncDeduplicationWithQuota,
   useDeduplicationWithQuota,
 } from './infrastructure/middleware/QueryDeduplicationMiddleware';
 export type {

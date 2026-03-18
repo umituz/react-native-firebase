@@ -30,9 +30,9 @@ const DEFAULT_CLEANUP_INTERVAL_MS = 15000;       // 15s (was 3s)
  * Quota-based window adjustment thresholds
  */
 const QUOTA_THRESHOLDS = {
-  HIGH_USAGE: 0.80,   // 80% - extend window to 30s
+  HIGH_USAGE: 0.80,   // 80% - extend window to 60s (1 min)
   MEDIUM_USAGE: 0.60, // 60% - extend window to 20s
-  NORMAL: 0.60,       // < 60% - use default 10s
+  NORMAL: 0.50,       // < 50% - use default 10s
 } as const;
 
 /**
@@ -280,15 +280,21 @@ export const queryDeduplicationMiddleware = new QueryDeduplicationMiddleware({
 });
 
 /**
- * Hook to integrate deduplication with quota tracking
+ * Helper function to integrate deduplication with quota tracking
  * Automatically adjusts window based on quota usage
+ *
+ * Note: This is NOT a React hook, but a helper function.
+ * Call this from your own hook or effect as needed.
  *
  * @example
  * ```typescript
- * useDeduplicationWithQuota(queryDeduplicationMiddleware, quotaMiddleware);
+ * // In your own hook or component:
+ * useEffect(() => {
+ *   syncDeduplicationWithQuota(queryDeduplicationMiddleware, quotaMiddleware, quotaLimits);
+ * }, [quotaMiddleware.getCounts().reads]);
  * ```
  */
-export function useDeduplicationWithQuota(
+export function syncDeduplicationWithQuota(
   deduplication: QueryDeduplicationMiddleware,
   quotaMiddleware: { getCounts: () => { reads: number; writes: number; deletes: number } },
   quotaLimits: { dailyReadLimit: number }
@@ -298,3 +304,9 @@ export function useDeduplicationWithQuota(
   const quotaPercentage = counts.reads / quotaLimits.dailyReadLimit;
   deduplication.adjustWindowForQuota(quotaPercentage);
 }
+
+/**
+ * @deprecated Use syncDeduplicationWithQuota instead (not a hook)
+ * This will be removed in a future version
+ */
+export const useDeduplicationWithQuota = syncDeduplicationWithQuota;
