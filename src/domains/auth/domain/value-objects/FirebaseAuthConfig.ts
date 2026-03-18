@@ -21,7 +21,7 @@ export interface FirebaseAuthConfig {
 
   /**
    * Auth state persistence type
-   * - 'local': Persist across browser/app restarts (default)
+   * - 'local': Persist across app restarts (default)
    * - 'session': Persist only for current session
    * - 'none': No persistence
    */

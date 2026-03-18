@@ -6,7 +6,7 @@
  * Uses generic ClientStateManager for shared functionality
  */
 
-import type { FirebaseApp } from '../initializers/FirebaseAppInitializer';
+import type { FirebaseApp } from 'firebase/app';
 import { ClientStateManager } from '../base/ClientStateManager';
 
 export class FirebaseClientState extends ClientStateManager<FirebaseApp> {

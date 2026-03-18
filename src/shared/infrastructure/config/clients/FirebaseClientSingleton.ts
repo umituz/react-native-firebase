@@ -5,7 +5,7 @@
 
 import type { FirebaseConfig } from '../../../domain/value-objects/FirebaseConfig';
 import type { IFirebaseClient } from '../../../../application/ports/IFirebaseClient';
-import type { FirebaseApp } from '../initializers/FirebaseAppInitializer';
+import type { FirebaseApp } from 'firebase/app';
 import { FirebaseClientState } from '../state/FirebaseClientState';
 import { FirebaseInitializationOrchestrator } from '../orchestrators/FirebaseInitializationOrchestrator';
 

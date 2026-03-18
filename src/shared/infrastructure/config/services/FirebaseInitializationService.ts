@@ -4,7 +4,7 @@
  */
 
 import type { FirebaseConfig } from '../../../domain/value-objects/FirebaseConfig';
-import type { FirebaseApp } from '../initializers/FirebaseAppInitializer';
+import type { FirebaseApp } from 'firebase/app';
 import { FirebaseClientSingleton } from '../clients/FirebaseClientSingleton';
 import { loadFirebaseConfig } from '../FirebaseConfigLoader';
 
