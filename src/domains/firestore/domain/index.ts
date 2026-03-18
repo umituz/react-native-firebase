@@ -17,10 +17,6 @@ export {
 export { Collection, createCollection, fromReference, fromQuery } from './entities/Collection';
 export type { CollectionMetadata } from './entities/Collection';
 
-// Document entity (if exists)
-// export { Document, createDocument } from './entities/Document';
-// export type { DocumentMetadata } from './entities/Document';
-
 // Collection Entity Helpers
 export {
   isParentOf,
@@ -55,11 +51,7 @@ export {
 } from './entities/CollectionValidation';
 
 // Domain Value Objects
-// export { QueryOptions, createQueryOptions } from './value-objects/QueryOptions';
-// export { WhereClause, createWhereClause, where } from './value-objects/WhereClause';
-// export type { SortOptions, DateRangeOptions, PaginationOptions } from './value-objects/QueryOptions';
-// export type { WhereOperator } from './value-objects/WhereClause';
-
-// Domain Services
-// export { QueryService, createQueryService } from './services/QueryService';
-// export type { QueryBuilderResult } from './services/QueryService';
+export { QueryOptions, createQueryOptions } from './value-objects/QueryOptions';
+export { WhereClause, equals, where, create as createWhereClause } from './value-objects/WhereClause';
+export type { SortOptions, DateRangeOptions, PaginationOptions } from './value-objects/QueryOptions';
+export type { WhereOperator } from './value-objects/WhereClause';
