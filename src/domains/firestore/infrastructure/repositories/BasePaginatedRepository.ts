@@ -43,11 +43,9 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
 
     const collectionRef = collection(db, collectionName);
     let q: import("firebase/firestore").Query<DocumentData>;
-    let cursorKey = 'start';
 
     // Handle cursor-based pagination
     if (helper.hasCursor(params) && params?.cursor) {
-      cursorKey = params.cursor;
 
       // FIX: Validate cursor and throw error instead of silent failure
       validateCursorOrThrow(params.cursor);
@@ -77,17 +75,13 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
       );
     }
 
-    // Generate a unique key for deduplication (after cursor is resolved)
-    const uniqueKey = `${collectionName}_list_${orderByField}_${orderDirection}_${fetchLimit}_${cursorKey}`;
-
     return this.executeQuery(
       collectionName,
       async () => {
         const snapshot = await getDocs(q);
         return snapshot.docs;
       },
-      false,
-      uniqueKey
+      false
     );
   }
 
