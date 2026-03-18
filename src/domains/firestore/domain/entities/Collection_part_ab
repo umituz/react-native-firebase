@@ -1,0 +1,138 @@
+    }
+
+    // Reasonable length limit
+    if (name.length > 100) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Validate collection path format
+   * Paths must follow Firestore path structure
+   */
+  static isValidPath(path: string): boolean {
+    if (!path || typeof path !== 'string' || path.trim() === '') {
+      return false;
+    }
+
+    const segments = path.split('/');
+    if (segments.length < 2 || segments.length % 2 !== 0) {
+      return false;
+    }
+
+    return segments.every(segment => this.isValidName(segment));
+  }
+
+  /**
+   * Extract collection name from path
+   */
+  static extractNameFromPath(path: string): string | null {
+    if (!this.isValidPath(path)) {
+      return null;
+    }
+
+    const segments = path.split('/');
+    return segments[segments.length - 1] || null;
+  }
+
+  /**
+   * Extract parent path from collection path
+   */
+  static extractParentPath(path: string): string | null {
+    if (!this.isValidPath(path)) {
+      return null;
+    }
+
+    const segments = path.split('/');
+    if (segments.length <= 2) {
+      return null;
+    }
+
+    return segments.slice(0, -1).join('/');
+  }
+
+  /**
+   * Convert to plain object (for serialization)
+   */
+  toObject(): CollectionMetadata {
+    return {
+      name: this.name,
+      path: this.path,
+      parentPath: this.parentPath || undefined,
+    };
+  }
+
+  /**
+   * Create a sub-collection path
+   */
+  createSubCollectionPath(subCollectionName: string): string | null {
+    if (!Collection.isValidName(subCollectionName)) {
+      return null;
+    }
+
+    return `${this.path}/${subCollectionName}`;
+  }
+
+  /**
+   * Check if collection is a sub-collection of another
+   */
+  isSubCollectionOf(other: Collection): boolean {
+    return this.parentPath === other.path;
+  }
+
+  /**
+   * Check if collection is parent of another
+   */
+  isParentOf(other: Collection): boolean {
+    return other.isSubCollectionOf(this);
+  }
+
+  /**
+   * Get collection ID (similar to name but more explicit)
+   */
+  getId(): string {
+    return this.name;
+  }
+
+  /**
+   * Check if this is a user collection (users/{userId}/{collection})
+   */
+  isUserCollection(): boolean {
+    return this.parentPath?.startsWith('users/') || false;
+  }
+
+  /**
+   * Extract user ID from user collection path
+   * Returns null if not a user collection
+   */
+  extractUserId(): string | null {
+    if (!this.isUserCollection()) return null;
+
+    const segments = this.path.split('/');
+    if (segments.length >= 3 && segments[0] === 'users') {
+      return segments[1];
+    }
+
+    return null;
+  }
+}
+
+/**
+ * Factory function to create collection entity
+ */
+export function createCollection<TDocument = unknown>(
+  reference: CollectionReference<TDocument> | Query<TDocument>,
+  name?: string,
+  path?: string
+): Collection<TDocument> {
+  if ('type' in reference && reference.type === 'query') {
+    if (!name || !path) {
+      throw new Error('name and path are required for query collections');
+    }
+    return Collection.fromQuery(reference, name, path);
+  }
+
+  return Collection.fromReference(reference as CollectionReference<TDocument>);
+}

@@ -1,0 +1,149 @@
+    return {
+      valid: errors.length === 0,
+      errors,
+    };
+  }
+
+  /**
+   * Check if equals another where clause
+   */
+  equals(other: WhereClause): boolean {
+    return (
+      this.field === other.field &&
+      this.operator === other.operator &&
+      JSON.stringify(this.value) === JSON.stringify(other.value)
+    );
+  }
+
+  /**
+   * Check if compatible for compound queries
+   * Some operator combinations are not allowed in Firestore
+   */
+  isCompatibleWith(other: WhereClause): boolean {
+    // Equality and inequality operators can be combined
+    // Array operators and membership operators have restrictions
+    if (
+      (this.isArrayOperator() || this.isMembership()) &&
+      (other.isArrayOperator() || other.isMembership())
+    ) {
+      // Only one array/membership clause per query
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Get field path components
+   * Returns array of field path segments (for nested fields)
+   */
+  getFieldPath(): string[] {
+    return this.field.split('.');
+  }
+
+  /**
+   * Check if field is nested (contains dots)
+   */
+  isNestedField(): boolean {
+    return this.field.includes('.');
+  }
+
+  /**
+   * Get top-level field name
+   */
+  getTopLevelField(): string {
+    return this.getFieldPath()[0];
+  }
+
+  /**
+   * Get human-readable description
+   */
+  getDescription(): string {
+    const valueStr = Array.isArray(this.value)
+      ? `[${this.value.map(v => JSON.stringify(v)).join(', ')}]`
+      : JSON.stringify(this.value);
+
+    return `${this.field} ${this.operator} ${valueStr}`;
+  }
+
+  /**
+   * Convert to plain object (for serialization)
+   */
+  toObject(): { field: string; operator: WhereFilterOp; value: unknown } {
+    return {
+      field: this.field,
+      operator: this.operator,
+      value: this.value,
+    };
+  }
+
+  /**
+   * Create from plain object
+   */
+  static fromObject(obj: { field: string; operator: WhereFilterOp; value: unknown }): WhereClause {
+    return WhereClause.create(obj.field, obj.operator, obj.value);
+  }
+
+  /**
+   * Clone with new value
+   */
+  withValue(newValue: unknown): WhereClause {
+    return new WhereClause(this.field, this.operator, newValue);
+  }
+
+  /**
+   * Clone with new field
+   */
+  withField(newField: string): WhereClause {
+    return new WhereClause(newField, this.operator, this.value);
+  }
+
+  /**
+   * Clone with new operator
+   */
+  withOperator(newOperator: WhereFilterOp): WhereClause {
+    return new WhereClause(this.field, newOperator, this.value);
+  }
+
+  /**
+   * Check if is equality operator
+   */
+  isEquality(): boolean {
+    return this.operator === '==';
+  }
+
+  /**
+   * Check if is inequality operator
+   */
+  isInequality(): boolean {
+    return this.operator === '!=';
+  }
+
+  /**
+   * Check if is comparison operator (<, <=, >, >=)
+   */
+  isComparison(): boolean {
+    return ['<', '<=', '>', '>='].includes(this.operator);
+  }
+
+  /**
+   * Check if is array operator
+   */
+  isArrayOperator(): boolean {
+    return ['array-contains', 'array-contains-any'].includes(this.operator);
+  }
+
+  /**
+   * Check if is membership operator (in, not-in)
+   */
+  isMembership(): boolean {
+    return ['in', 'not-in'].includes(this.operator);
+  }
+
+  /**
+   * Check if operator requires array value
+   */
+  requiresArrayValue(): boolean {
+    return ['array-contains-any', 'in', 'not-in'].includes(this.operator);
+  }
+}

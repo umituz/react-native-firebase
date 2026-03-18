@@ -1,5 +1,5 @@
 /**
- * Collection Entity (Main)
+ * Collection Entity
  * Single Responsibility: Represent a Firestore collection with metadata
  *
  * Domain entity that encapsulates collection information and metadata.
@@ -9,22 +9,7 @@
  */
 
 import type { CollectionReference, Query } from 'firebase/firestore';
-import {
-  isValidCollectionName,
-  isValidCollectionPath,
-  extractCollectionNameFromPath,
-  extractParentCollectionPath,
-  isUserCollectionPath,
-  extractUserIdFromPath,
-  createSubCollectionPath as createSubCollectionPathUtil,
-} from './CollectionValidation';
-import {
-  getCollectionDepth,
-  collectionToObject,
-  isQueryReference,
-  isCollectionReference as isCollectionReferenceUtil,
-} from './CollectionUtils';
-import { fromReference, fromQuery } from './CollectionFactory';
+import type { Document } from './Document';
 
 /**
  * Collection metadata
@@ -61,68 +46,105 @@ export class Collection<TDocument = unknown> {
   static fromReference<TDocument = unknown>(
     reference: CollectionReference<TDocument>
   ): Collection<TDocument> {
-    return fromReference(reference);
+    return new Collection(reference, {
+      name: reference.id,
+      path: reference.path,
+      parentPath: reference.parent?.path || null,
+    });
   }
 
   /**
    * Create collection from query
    */
   static fromQuery<TDocument = unknown>(query: Query<TDocument>, name: string, path: string): Collection<TDocument> {
-    return fromQuery(query, name, path);
+    return new Collection(query, {
+      name,
+      path,
+      parentPath: path.split('/').slice(0, -2).join('/') || null,
+    });
   }
 
+  /**
+   * Get collection name
+   */
   getName(): string {
     return this.name;
   }
 
+  /**
+   * Get collection path
+   */
   getPath(): string {
     return this.path;
   }
 
-  getParentPath(): string | undefined {
+  /**
+   * Get parent path if exists
+   */
+  getParentPath(): string | null {
     return this.parentPath;
   }
 
+  /**
+   * Check if collection is nested (has parent)
+   */
   isNested(): boolean {
-    return this.parentPath !== undefined;
+    return this.parentPath !== null;
   }
 
+  /**
+   * Check if collection is root level (no parent)
+   */
   isRootLevel(): boolean {
-    return this.parentPath === undefined;
+    return this.parentPath === null;
   }
 
+  /**
+   * Get collection depth in hierarchy
+   * Root collections have depth 0
+   */
   getDepth(): number {
-    return getCollectionDepth(this);
+    if (!this.parentPath) return 0;
+    return this.path.split('/').length / 2 - 1;
   }
 
+  /**
+   * Get the underlying reference
+   */
   getReference(): CollectionReference<TDocument> | Query<TDocument> {
     return this.reference;
   }
 
+  /**
+   * Check if collection is a query (has filters/limits)
+   */
   isQuery(): boolean {
-    return isQueryReference(this.reference);
+    return 'type' in this.reference && this.reference.type === 'query';
   }
 
+  /**
+   * Check if collection is a collection reference (no filters)
+   */
   isCollectionReference(): boolean {
-    return isCollectionReferenceUtil(this.reference);
+    return !this.isQuery();
   }
 
-  toObject(): CollectionMetadata {
-    return collectionToObject(this);
-  }
+  /**
+   * Validate collection name format
+   * Collection names must match Firestore requirements
+   */
+  static isValidName(name: string): boolean {
+    // Collection names must be non-empty strings
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return false;
+    }
 
-  createSubCollectionPath(subCollectionName: string): string | null {
-    return createSubCollectionPathUtil(this.path, subCollectionName);
-  }
+    // Cannot contain special characters
+    const invalidChars = /[\/\\.\s]/;
+    if (invalidChars.test(name)) {
+      return false;
+    }
 
-  isUserCollection(): boolean {
-    return isUserCollectionPath(this.path);
-  }
-
-  extractUserId(): string | null {
-    return extractUserIdFromPath(this.path);
-  }
-}
-
-// Re-export factory function for backward compatibility
-export { createCollection, fromReference, fromQuery } from './CollectionFactory';
+    // Cannot start or end with double underscore
+    if (name.startsWith('__') || name.endsWith('__')) {
+      return false;

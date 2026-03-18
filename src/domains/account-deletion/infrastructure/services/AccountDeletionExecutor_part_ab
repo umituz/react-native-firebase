@@ -1,0 +1,80 @@
+   * Perform account deletion
+   */
+  private async performDeletion(
+    user: User,
+    originalUserId: string,
+    options: AccountDeletionOptions
+  ): Promise<AccountDeletionResult> {
+    try {
+      // Validate user hasn't changed
+      const auth = getFirebaseAuth();
+      const validation = userValidationService.validateUserUnchanged(auth, originalUserId);
+      if (!validation.success) {
+        return {
+          success: false,
+          error: validation.error!,
+          requiresReauth: false,
+        };
+      }
+
+      // Delete account
+      const result = await this.repository.deleteAccount(user);
+      if (result.success) {
+        return { success: true };
+      }
+
+      // Check if reauthentication can help
+      const error = result.error;
+      if (
+        error?.code === 'auth/requires-recent-login' &&
+        options.autoReauthenticate
+      ) {
+        const reauthResult = await handleReauthentication(user, options, originalUserId, this.repository);
+        if (reauthResult) {
+          return reauthResult;
+        }
+      }
+
+      return {
+        success: false,
+        error,
+        requiresReauth: error?.code === 'auth/requires-recent-login',
+      };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: {
+          code: 'auth/failed',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+        requiresReauth: false,
+      };
+    }
+  }
+
+  /**
+   * Check if deletion is in progress
+   */
+  isDeletionInProgress(): boolean {
+    return this.deletionInProgress;
+  }
+
+  /**
+   * Get the repository instance
+   */
+  getRepository(): AccountDeletionRepository {
+    return this.repository;
+  }
+}
+
+/**
+ * Factory function to create account deletion executor
+ */
+export function createAccountDeletionExecutor(): AccountDeletionExecutor {
+  return new AccountDeletionExecutor();
+}
+
+/**
+ * Default singleton instance
+ */
+export const accountDeletionExecutor = createAccountDeletionExecutor();

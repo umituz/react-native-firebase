@@ -1,5 +1,5 @@
 /**
- * Query Options Value Object
+ * Query Options Value Object (Main)
  * Single Responsibility: Encapsulate query configuration options
  *
  * Value object that represents query options in a type-safe way.
@@ -89,7 +89,7 @@ export class QueryOptions {
    */
   withWhere(clause: WhereClause): QueryOptions {
     return new QueryOptions(
-      [...this.whereClauses, clause] as WhereClause[] as WhereClause[],
+      [...this.whereClauses, clause] as WhereClause[],
       this.sortOptions,
       this.dateRange,
       this.pagination
@@ -161,135 +161,6 @@ export class QueryOptions {
   }
 
   /**
-   * Check if has any where clauses
-   */
-  hasWhereClauses(): boolean {
-    return this.whereClauses.length > 0;
-  }
-
-  /**
-   * Check if has any sort options
-   */
-  hasSort(): boolean {
-    return this.sortOptions.length > 0;
-  }
-
-  /**
-   * Check if has date range
-   */
-  hasDateRange(): boolean {
-    return this.dateRange !== null;
-  }
-
-  /**
-   * Check if has pagination
-   */
-  hasPagination(): boolean {
-    return this.pagination !== null;
-  }
-
-  /**
-   * Check if is empty (no options set)
-   */
-  isEmpty(): boolean {
-    return !this.hasWhereClauses() &&
-           !this.hasSort() &&
-           !this.hasDateRange() &&
-           !this.hasPagination();
-  }
-
-  /**
-   * Validate query options
-   */
-  validate(): { valid: boolean; errors: string[] } {
-    const errors: string[] = [];
-
-    // Validate where clauses
-    for (const clause of this.whereClauses) {
-      const clauseValidation = clause.validate();
-      if (!clauseValidation.valid) {
-        errors.push(...clauseValidation.errors);
-      }
-    }
-
-    // Validate sort options
-    for (const sort of this.sortOptions) {
-      if (!sort.field || typeof sort.field !== 'string') {
-        errors.push('Sort field must be a non-empty string');
-      }
-      if (sort.direction !== 'asc' && sort.direction !== 'desc') {
-        errors.push('Sort direction must be "asc" or "desc"');
-      }
-    }
-
-    // Validate date range
-    if (this.dateRange) {
-      if (!this.dateRange.field || typeof this.dateRange.field !== 'string') {
-        errors.push('Date range field must be a non-empty string');
-      }
-      if (this.dateRange.startDate && !(this.dateRange.startDate instanceof Date)) {
-        errors.push('Start date must be a Date instance');
-      }
-      if (this.dateRange.endDate && !(this.dateRange.endDate instanceof Date)) {
-        errors.push('End date must be a Date instance');
-      }
-      if (
-        this.dateRange.startDate &&
-        this.dateRange.endDate &&
-        this.dateRange.startDate > this.dateRange.endDate
-      ) {
-        errors.push('Start date must be before end date');
-      }
-    }
-
-    // Validate pagination
-    if (this.pagination) {
-      if (this.pagination.limit !== undefined && (typeof this.pagination.limit !== 'number' || this.pagination.limit <= 0)) {
-        errors.push('Pagination limit must be a positive number');
-      }
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors,
-    };
-  }
-
-  /**
-   * Convert to plain object (for serialization)
-   */
-  toObject(): {
-    where: WhereClause[];
-    sort: SortOptions[];
-    dateRange: DateRangeOptions | null;
-    pagination: PaginationOptions | null;
-  } {
-    return {
-      where: [...this.whereClauses] as WhereClause[],
-      sort: [...this.sortOptions] as SortOptions[],
-      dateRange: this.dateRange,
-      pagination: this.pagination,
-    };
-  }
-
-  /**
-   * Create from plain object
-   */
-  static fromObject(obj: {
-    where?: Array<{ field: string; operator: WhereFilterOp; value: unknown }>;
-    sort?: SortOptions[];
-    dateRange?: DateRangeOptions;
-    pagination?: PaginationOptions;
-  }): QueryOptions {
-    return QueryOptions.create({
-      where: obj.where?.map(w => WhereClause.create(w.field, w.operator, w.value)) || [],
-      sort: obj.sort || [],
-      dateRange: obj.dateRange || null,
-      pagination: obj.pagination || null,
-    });
-  }
-
-  /**
    * Clone with modifications
    */
   clone(modifications: {
@@ -299,10 +170,10 @@ export class QueryOptions {
     pagination?: PaginationOptions | null;
   }): QueryOptions {
     return QueryOptions.create({
-      where: modifications.where ?? this.whereClauses,
-      sort: modifications.sort ?? this.sortOptions,
-      dateRange: modifications.dateRange ?? this.dateRange,
-      pagination: modifications.pagination ?? this.pagination,
+      where: modifications.where ?? [...this.whereClauses] as WhereClause[],
+      sort: modifications.sort ?? [...this.sortOptions] as SortOptions[],
+      dateRange: modifications.dateRange ?? this.dateRange ?? null,
+      pagination: modifications.pagination ?? this.pagination ?? null,
     });
   }
 }

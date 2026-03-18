@@ -1,0 +1,31 @@
+  return completion;
+}
+
+/**
+ * Check if user can perform sensitive operation
+ */
+export function canPerformSensitiveOperation(user: User, maxSessionAgeMs: number = 5 * 60 * 1000): boolean {
+  return isSessionValid(user, maxSessionAgeMs);
+}
+
+/**
+ * Get user account age in days
+ */
+export function getAccountAgeDays(user: User): number | null {
+  if (!user.metadata.creationTime) {
+    return null;
+  }
+
+  const creationTime = new Date(user.metadata.creationTime).getTime();
+  const ageMs = Date.now() - creationTime;
+
+  return Math.floor(ageMs / (24 * 60 * 60 * 1000));
+}
+
+/**
+ * Check if account is old enough for operation
+ */
+export function isAccountOldEnough(user: User, minDays: number = 1): boolean {
+  const ageDays = getAccountAgeDays(user);
+  return ageDays !== null && ageDays >= minDays;
+}

@@ -1,5 +1,5 @@
 /**
- * User Validation Service
+ * User Validation Service (Main)
  * Single Responsibility: Validate user state for account operations
  *
  * Domain service that encapsulates user validation logic.
@@ -11,15 +11,6 @@
 import type { Auth, User } from 'firebase/auth';
 import type { Result } from '../../../../shared/domain/utils';
 import { successResult, failureResultFrom } from '../../../../shared/domain/utils';
-
-/**
- * User validation result
- */
-export interface UserValidationResult {
-  readonly valid: boolean;
-  readonly error?: { code: string; message: string };
-  readonly userId?: string;
-}
 
 /**
  * User validation service

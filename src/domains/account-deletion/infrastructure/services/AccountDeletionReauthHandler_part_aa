@@ -1,0 +1,150 @@
+/**
+ * Account Deletion Reauthentication Handler
+ * Single Responsibility: Handle reauthentication during account deletion
+ *
+ * Max lines: 150 (enforced for maintainability)
+ */
+
+import type { User } from 'firebase/auth';
+import { getFirebaseAuth } from '../../../auth/infrastructure/config/FirebaseAuthClient';
+import { userValidationService } from '../../domain/services/UserValidationService';
+import type { Result } from '../../../../shared/domain/utils';
+import type { AccountDeletionOptions } from '../../application/ports/reauthentication.types';
+import type { AccountDeletionResult, ReauthenticationContext } from './AccountDeletionTypes';
+
+/**
+ * Handle reauthentication during account deletion
+ * Coordinates reauthentication flow with credential management
+ */
+export async function handleReauthentication(
+  user: User,
+  options: AccountDeletionOptions,
+  originalUserId: string | undefined,
+  repository: any
+): Promise<AccountDeletionResult | null> {
+  // Validate user hasn't changed before reauthentication
+  if (originalUserId) {
+    const auth = getFirebaseAuth();
+    const validation = userValidationService.validateUserUnchanged(auth, originalUserId);
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error!,
+        requiresReauth: false,
+      };
+    }
+  }
+
+  // Import reauthentication functions
+  const {
+    getUserAuthProvider,
+    reauthenticateWithApple,
+    reauthenticateWithPassword,
+    reauthenticateWithGoogle,
+  } = await import('./reauthentication.service');
+
+  const provider = getUserAuthProvider(user);
+
+  // Attempt reauthentication based on provider
+  let reauthResult: { success: boolean; error?: { code?: string; message?: string } } | null = null;
+
+  if (provider === 'apple.com') {
+    reauthResult = await reauthenticateWithApple(user);
+  } else if (provider === 'google.com') {
+    const googleToken = await getGoogleToken(options);
+    if (!googleToken) {
+      return {
+        success: false,
+        error: { code: 'auth/google-reauth', message: 'Google reauthentication required' },
+        requiresReauth: true,
+      };
+    }
+    reauthResult = await reauthenticateWithGoogle(user, googleToken);
+  } else if (provider === 'password') {
+    const password = await getPassword(options);
+    if (!password) {
+      return {
+        success: false,
+        error: { code: 'auth/password-reauth', message: 'Password required' },
+        requiresReauth: true,
+      };
+    }
+    reauthResult = await reauthenticateWithPassword(user, password);
+  } else {
+    return null;
+  }
+
+  // If reauthentication successful, retry deletion
+  if (reauthResult.success) {
+    return await retryDeletionAfterReauth(originalUserId, repository);
+  }
+
+  return {
+    success: false,
+    error: {
+      code: reauthResult.error?.code || 'auth/reauth-failed',
+      message: reauthResult.error?.message || 'Reauthentication failed',
+    },
+    requiresReauth: true,
+  };
+}
+
+/**
+ * Get Google ID token from options or callback
+ */
+async function getGoogleToken(options: AccountDeletionOptions): Promise<string | undefined> {
+  if (options.googleIdToken) {
+    return options.googleIdToken;
+  }
+
+  if (options.onGoogleReauthRequired) {
+    return await options.onGoogleReauthRequired();
+  }
+
+  return undefined;
+}
+
+/**
+ * Get password from options or callback
+ */
+async function getPassword(options: AccountDeletionOptions): Promise<string | undefined> {
+  if (options.password) {
+    return options.password;
+  }
+
+  if (options.onPasswordRequired) {
+    return await options.onPasswordRequired();
+  }
+
+  return undefined;
+}
+
+/**
+ * Retry deletion after successful reauthentication
+ */
+async function retryDeletionAfterReauth(
+  originalUserId: string | undefined,
+  repository: any
+): Promise<AccountDeletionResult> {
+  try {
+    const auth = getFirebaseAuth();
+    const user = auth?.currentUser;
+
+    if (!user) {
+      return {
+        success: false,
+        error: { code: 'auth/not-ready', message: 'User not found after reauthentication' },
+        requiresReauth: false,
+      };
+    }
+
+    // Validate user hasn't changed after reauthentication
+    if (originalUserId) {
+      const validation = userValidationService.validateUserUnchanged(auth, originalUserId);
+      if (!validation.success) {
+        return {
+          success: false,
+          error: validation.error!,
+          requiresReauth: false,
+        };
+      }

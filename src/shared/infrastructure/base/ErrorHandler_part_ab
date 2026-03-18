@@ -1,0 +1,39 @@
+      'auth/too-many-requests': ERROR_MESSAGES.AUTH.TOO_MANY_REQUESTS,
+      'auth/user-disabled': ERROR_MESSAGES.AUTH.USER_DISABLED,
+    };
+
+    return authMessages[code] || ERROR_MESSAGES.AUTH.GENERIC_ERROR;
+  }
+
+  /**
+   * Get user-friendly firestore error message
+   */
+  private getFirestoreUserMessage(code: string): string {
+    const firestoreMessages: Record<string, string> = {
+      'firestore/permission-denied': ERROR_MESSAGES.FIRESTORE.PERMISSION_DENIED,
+      'firestore/not-found': ERROR_MESSAGES.FIRESTORE.NOT_FOUND,
+      'firestore/unavailable': ERROR_MESSAGES.FIRESTORE.UNAVAILABLE,
+    };
+
+    return firestoreMessages[code] || ERROR_MESSAGES.FIRESTORE.GENERIC_ERROR;
+  }
+
+  /**
+   * Create a failure result from error code
+   */
+  failureFrom(code: string, message?: string): Result {
+    return {
+      success: false,
+      error: {
+        code,
+        message: message || ERROR_MESSAGES.GENERAL.UNKNOWN,
+      },
+    };
+  }
+}
+
+/**
+ * Default error handler instance
+ * Can be used across the application
+ */
+export const defaultErrorHandler = new ErrorHandler();

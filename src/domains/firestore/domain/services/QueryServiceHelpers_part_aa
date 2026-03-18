@@ -1,0 +1,150 @@
+/**
+ * Query Service Helpers
+ * Single Responsibility: Provide helper methods for query operations
+ *
+ * Helper methods for query options manipulation and creation.
+ * Separated from main QueryService for better maintainability.
+ *
+ * Max lines: 150 (enforced for maintainability)
+ */
+
+import type { Query } from 'firebase/firestore';
+import { QueryOptions, createQueryOptions } from '../value-objects/QueryOptions';
+import { WhereClause } from '../value-objects/WhereClause';
+import type { Collection } from '../entities/Collection';
+import type { QueryBuilderResult } from './QueryService';
+
+/**
+ * Create query options from filters object
+ */
+export function createOptionsFromFilters(filters: Record<string, unknown>): QueryOptions {
+  const whereClauses = Object.entries(filters).map(([field, value]) =>
+    WhereClause.equals(field, value)
+  );
+
+  return createQueryOptions({ where: whereClauses });
+}
+
+/**
+ * Merge multiple query options
+ * Later options override earlier ones for conflicting settings
+ */
+export function mergeOptions(...options: QueryOptions[]): QueryOptions {
+  if (options.length === 0) {
+    return createQueryOptions();
+  }
+
+  if (options.length === 1) {
+    return options[0];
+  }
+
+  const merged = options.reduce((acc, opt) => {
+    return QueryOptions.create({
+      where: [...acc.whereClauses, ...opt.whereClauses] as WhereClause[],
+      sort: opt.sortOptions.length > 0 ? [...opt.sortOptions] as any[] : [...acc.sortOptions] as any[],
+      dateRange: opt.dateRange ?? acc.dateRange,
+      pagination: opt.pagination ?? acc.pagination,
+    });
+  });
+
+  return merged ?? createQueryOptions();
+}
+
+/**
+ * Create paginated query options
+ */
+export function createPaginatedOptions(limit: number, cursor?: number): QueryOptions {
+  return createQueryOptions({
+    pagination: { limit, cursor },
+  });
+}
+
+/**
+ * Create sorted query options
+ */
+export function createSortedOptions(
+  field: string,
+  direction: 'asc' | 'desc' = 'asc'
+): QueryOptions {
+  return createQueryOptions({
+    sort: [{ field, direction }],
+  });
+}
+
+/**
+ * Optimize query options
+ * Removes redundant clauses and sorts
+ */
+export function optimizeOptions(options: QueryOptions): QueryOptions {
+  // Remove duplicate where clauses
+  const uniqueWheres = options.whereClauses.filter((clause, index, self) =>
+    index === self.findIndex(c => c.equals(clause))
+  );
+
+  // Remove duplicate sorts
+  const uniqueSorts = options.sortOptions.filter((sort, index, self) =>
+    index === self.findIndex(s => s.field === sort.field && s.direction === sort.direction)
+  );
+
+  return QueryOptions.create({
+    where: uniqueWheres,
+    sort: uniqueSorts,
+    dateRange: options.dateRange,
+    pagination: options.pagination,
+  });
+}
+
+/**
+ * Build query from collection entity
+ */
+export function buildQueryFromCollection(
+  collection: Collection,
+  options: QueryOptions,
+  queryService: any
+): QueryBuilderResult {
+  return queryService.buildQuery(collection.getPath(), options);
+}
+
+/**
+ * Get query description for logging
+ */
+export function describeQuery(options: QueryOptions): string {
+  const parts: string[] = [];
+
+  if (options.hasWhereClauses()) {
+    parts.push(`where: ${options.whereClauses.length} clause(s)`);
+  }
+
+  if (options.hasSort()) {
+    parts.push(`sort: ${options.sortOptions.length} field(s)`);
+  }
+
+  if (options.hasDateRange()) {
+    parts.push('date range: yes');
+  }
+
+  if (options.hasPagination()) {
+    parts.push(`limit: ${options.pagination?.limit || 'none'}`);
+  }
+
+  return parts.length > 0 ? parts.join(', ') : 'no filters';
+}
+
+/**
+ * Clone query options with modifications
+ */
+export function cloneOptions(
+  base: QueryOptions,
+  modifications: {
+    where?: WhereClause[];
+    sort?: Array<{ field: string; direction: 'asc' | 'desc' }>;
+    dateRange?: { field: string; startDate?: Date; endDate?: Date };
+    pagination?: { limit?: number; cursor?: number };
+  }
+): QueryOptions {
+  return QueryOptions.create({
+    where: modifications.where ?? [...base.whereClauses] as WhereClause[],
+    sort: modifications.sort ?? [...base.sortOptions] as any[],
+    dateRange: modifications.dateRange ?? base.dateRange ?? undefined,
+    pagination: modifications.pagination ?? base.pagination ?? undefined,
+  });

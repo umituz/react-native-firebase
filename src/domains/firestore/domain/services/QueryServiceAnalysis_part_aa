@@ -1,0 +1,150 @@
+/**
+ * Query Service Analysis
+ * Single Responsibility: Analyze query complexity and metadata
+ *
+ * Provides analysis functionality for query options.
+ * Extracts field information and calculates complexity scores.
+ *
+ * Max lines: 150 (enforced for maintainability)
+ */
+
+import { QueryOptions } from '../value-objects/QueryOptions';
+
+/**
+ * Extract field names from query options
+ */
+export function extractFields(options: QueryOptions): string[] {
+  const fields = new Set<string>();
+
+  for (const clause of options.whereClauses) {
+    fields.add(clause.field);
+  }
+
+  for (const sort of options.sortOptions) {
+    fields.add(sort.field);
+  }
+
+  if (options.dateRange) {
+    fields.add(options.dateRange.field);
+  }
+
+  return Array.from(fields);
+}
+
+/**
+ * Check if query uses array operators
+ */
+export function hasArrayOperators(options: QueryOptions): boolean {
+  return options.whereClauses.some(clause => clause.isArrayOperator());
+}
+
+/**
+ * Check if query uses membership operators
+ */
+export function hasMembershipOperators(options: QueryOptions): boolean {
+  return options.whereClauses.some(clause => clause.isMembership());
+}
+
+/**
+ * Get query complexity score
+ * Higher score = more complex query
+ */
+export function getComplexityScore(options: QueryOptions): number {
+  let score = 0;
+
+  score += options.whereClauses.length * 1;
+  score += options.sortOptions.length * 2;
+  score += options.dateRange ? 3 : 0;
+  score += options.pagination?.limit ? 1 : 0;
+
+  // Array and membership operators add complexity
+  if (hasArrayOperators(options)) score += 5;
+  if (hasMembershipOperators(options)) score += 5;
+
+  return score;
+}
+
+/**
+ * Check if query is too complex
+ */
+export function isTooComplex(options: QueryOptions, maxScore: number = 20): boolean {
+  return getComplexityScore(options) > maxScore;
+}
+
+/**
+ * Get query statistics
+ */
+export function getQueryStats(options: QueryOptions): {
+  readonly whereClauseCount: number;
+  readonly sortOptionCount: number;
+  readonly hasDateRange: boolean;
+  readonly hasPagination: boolean;
+  readonly complexityScore: number;
+  readonly fieldCount: number;
+} {
+  return {
+    whereClauseCount: options.whereClauses.length,
+    sortOptionCount: options.sortOptions.length,
+    hasDateRange: options.hasDateRange(),
+    hasPagination: options.hasPagination(),
+    complexityScore: getComplexityScore(options),
+    fieldCount: extractFields(options).length,
+  };
+}
+
+/**
+ * Check if query is simple (low complexity)
+ */
+export function isSimpleQuery(options: QueryOptions, maxScore: number = 5): boolean {
+  return getComplexityScore(options) <= maxScore;
+}
+
+/**
+ * Check if query is moderate complexity
+ */
+export function isModerateQuery(options: QueryOptions): boolean {
+  const score = getComplexityScore(options);
+  return score > 5 && score <= 15;
+}
+
+/**
+ * Check if query is high complexity
+ */
+export function isComplexQuery(options: QueryOptions): boolean {
+  return getComplexityScore(options) > 15;
+}
+
+/**
+ * Get query complexity level
+ */
+export function getComplexityLevel(options: QueryOptions): 'simple' | 'moderate' | 'complex' {
+  if (isSimpleQuery(options)) {
+    return 'simple';
+  }
+
+  if (isModerateQuery(options)) {
+    return 'moderate';
+  }
+
+  return 'complex';
+}
+
+/**
+ * Compare two queries by complexity
+ */
+export function compareComplexity(options1: QueryOptions, options2: QueryOptions): number {
+  const score1 = getComplexityScore(options1);
+  const score2 = getComplexityScore(options2);
+
+  return score1 - score2;
+}
+
+/**
+ * Get query performance hints
+ */
+export function getPerformanceHints(options: QueryOptions): string[] {
+  const hints: string[] = [];
+
+  if (hasArrayOperators(options)) {
+    hints.push('Array operators can impact performance');
+  }

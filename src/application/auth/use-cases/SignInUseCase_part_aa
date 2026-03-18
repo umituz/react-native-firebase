@@ -1,0 +1,150 @@
+/**
+ * Sign In Use Case
+ * Single Responsibility: Handle user sign in operations
+ *
+ * Application use case for user authentication.
+ * Coordinates domain services and infrastructure.
+ *
+ * Max lines: 150 (enforced for maintainability)
+ */
+
+import type { User } from 'firebase/auth';
+import type { Result } from '../../../shared/domain/utils';
+import type { IAuthPort, EmailCredentials, SignInResult } from '../ports/AuthPort';
+
+/**
+ * Sign in use case result
+ */
+export interface SignInUseCaseResult extends Result<SignInResult> {
+  readonly requiresVerification?: boolean;
+}
+
+/**
+ * Sign in use case options
+ */
+export interface SignInOptions {
+  /** Email credentials */
+  readonly email: string;
+  /** Password */
+  readonly password: string;
+  /** Remember user */
+  readonly rememberMe?: boolean;
+}
+
+/**
+ * Sign in use case
+ * Handles user sign in with validation and error handling
+ */
+export class SignInUseCase {
+  private readonly authPort: IAuthPort;
+
+  constructor(authPort: IAuthPort) {
+    this.authPort = authPort;
+  }
+
+  /**
+   * Execute sign in use case
+   * Validates credentials and signs in user
+   */
+  async execute(options: SignInOptions): Promise<SignInUseCaseResult> {
+    // Validate credentials
+    const validation = this.validateCredentials(options);
+    if (!validation.valid) {
+      return {
+        success: false,
+        error: {
+          code: 'auth/invalid-credentials',
+          message: validation.error,
+        },
+      };
+    }
+
+    // Create credentials object
+    const credentials: EmailCredentials = {
+      email: options.email,
+      password: options.password,
+    };
+
+    // Sign in with credentials
+    const result = await this.authPort.signInWithEmail(credentials);
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error,
+        requiresVerification: this.requiresVerification(result.error?.code),
+      };
+    }
+
+    return {
+      success: true,
+      data: result.data,
+    };
+  }
+
+  /**
+   * Validate email and password
+   */
+  private validateCredentials(options: SignInOptions): { valid: boolean; error?: string } {
+    const { email, password } = options;
+
+    // Validate email
+    if (!email || typeof email !== 'string' || email.trim() === '') {
+      return { valid: false, error: 'Email is required' };
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return { valid: false, error: 'Invalid email format' };
+    }
+
+    // Validate password
+    if (!password || typeof password !== 'string' || password.trim() === '') {
+      return { valid: false, error: 'Password is required' };
+    }
+
+    if (password.length < 6) {
+      return { valid: false, error: 'Password must be at least 6 characters' };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Check if error requires email verification
+   */
+  private requiresVerification(errorCode?: string): boolean {
+    return errorCode === 'auth/unverified-email' || errorCode === 'auth/email-not-verified';
+  }
+
+  /**
+   * Check if user is already signed in
+   */
+  isSignedIn(): boolean {
+    return this.authPort.isAuthenticated();
+  }
+
+  /**
+   * Get current user
+   */
+  getCurrentUser(): User | null {
+    return this.authPort.getCurrentUser();
+  }
+
+  /**
+   * Sign out current user
+   */
+  async signOut(): Promise<Result<void>> {
+    return this.authPort.signOut();
+  }
+
+  /**
+   * Check if credentials match current user
+   */
+  async credentialsMatchCurrentUser(email: string): Promise<boolean> {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser || !currentUser.email) {
+      return false;
+    }
+
+    return currentUser.email.toLowerCase() === email.toLowerCase();

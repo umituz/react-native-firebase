@@ -1,0 +1,70 @@
+    }
+
+    return this.errorHandler.handleAsync(operation, errorCode);
+  }
+
+  /**
+   * Wrap sync operation with error handling
+   */
+  protected executeSync<T>(operation: () => T, errorCode?: string): Result<T> {
+    return this.errorHandler.handle(operation, errorCode);
+  }
+
+  /**
+   * Check if service is initialized
+   */
+  isInitialized(): boolean {
+    return this.state.isInitialized;
+  }
+
+  /**
+   * Get initialization error if any
+   */
+  getInitializationError(): string | null {
+    return this.state.initializationError;
+  }
+
+  /**
+   * Reset service state
+   * Override to add custom cleanup logic
+   */
+  reset(): void {
+    this.state = {
+      isInitialized: false,
+      initializationError: null,
+    };
+    this.initInProgress = false;
+  }
+
+  /**
+   * Get service name
+   */
+  getServiceName(): string {
+    return this.serviceName;
+  }
+
+  /**
+   * Log in development mode
+   */
+  protected log(message: string, ...args: unknown[]): void {
+    if (__DEV__) {
+      console.log(`[${this.serviceName}] ${message}`, ...args);
+    }
+  }
+
+  /**
+   * Log error in development mode
+   */
+  protected logError(message: string, error?: unknown): void {
+    if (__DEV__) {
+      console.error(`[${this.serviceName}] ${message}`, error);
+    }
+  }
+
+  /**
+   * Create a failure result
+   */
+  protected failure(code: string, message?: string): Result {
+    return this.errorHandler.failureFrom(code, message);
+  }
+}

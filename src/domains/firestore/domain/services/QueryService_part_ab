@@ -1,0 +1,32 @@
+  }
+
+  /**
+   * Build query with date range
+   */
+  buildDateRangeQuery(
+    collectionPath: string,
+    field: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Query {
+    const options = createQueryOptions({
+      dateRange: { field, startDate, endDate },
+    });
+
+    return this.buildQuery(collectionPath, options).query;
+  }
+
+  /**
+   * Validate query options
+   */
+  validateOptions(options: QueryOptions): { valid: boolean; errors: string[] } {
+    return options.validate();
+  }
+
+  /**
+   * Check if query is empty (no filters)
+   */
+  isEmptyQuery(options: QueryOptions): boolean {
+    return options.isEmpty();
+  }
+}

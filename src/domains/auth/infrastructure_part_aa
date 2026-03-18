@@ -1,0 +1,150 @@
+/**
+ * Firebase Auth Infrastructure Layer
+ * Domain-Driven Design (DDD) - Infrastructure Exports
+ *
+ * Infrastructure implementation including:
+ * - Firebase Auth client configuration
+ * - Auth utilities and services
+ * - Social auth providers
+ * - Email/password authentication
+ * - User document management
+ */
+
+// =============================================================================
+// Firebase Auth Client
+// =============================================================================
+
+export {
+  getFirebaseAuth,
+  isFirebaseAuthInitialized,
+  getFirebaseAuthInitializationError,
+  resetFirebaseAuthClient,
+  firebaseAuthClient,
+  initializeFirebaseAuth,
+} from './infrastructure/config/FirebaseAuthClient';
+
+export type {
+  Auth,
+} from './infrastructure/config/FirebaseAuthClient';
+
+// =============================================================================
+// Auth Utilities
+// =============================================================================
+
+export {
+  checkAuthState,
+  isAuthenticated,
+  isAnonymous,
+  getCurrentUserId,
+  getCurrentUser,
+  getCurrentUserIdFromGlobal,
+  getCurrentUserFromGlobal,
+  isCurrentUserAuthenticated,
+  isCurrentUserAnonymous,
+  verifyUserId,
+  isValidUser,
+} from './infrastructure/services/auth-utils.service';
+
+export type {
+  AuthCheckResult,
+} from './infrastructure/services/auth-utils.service';
+
+// =============================================================================
+// Anonymous Auth Service
+// =============================================================================
+
+export {
+  AnonymousAuthService,
+  anonymousAuthService,
+} from './infrastructure/services/anonymous-auth.service';
+
+export type {
+  AnonymousAuthResult,
+  AnonymousAuthServiceInterface,
+} from './infrastructure/services/anonymous-auth.service';
+
+// =============================================================================
+// Firestore Utilities
+// =============================================================================
+
+export {
+  shouldSkipFirestoreQuery,
+  createFirestoreQueryOptions,
+} from './infrastructure/services/firestore-utils.service';
+
+export type {
+  FirestoreQueryOptions,
+  FirestoreQueryResult,
+  FirestoreQuerySkipReason,
+} from './infrastructure/services/firestore-utils.service';
+
+// =============================================================================
+// Social Auth Services
+// =============================================================================
+
+export {
+  GoogleAuthService,
+  googleAuthService,
+} from './infrastructure/services/google-auth.service';
+export type {
+  GoogleAuthConfig,
+  GoogleAuthResult,
+} from './infrastructure/services/google-auth.types';
+
+export {
+  GoogleOAuthService,
+  googleOAuthService,
+} from './infrastructure/services/google-oauth.service';
+export type {
+  GoogleOAuthConfig,
+} from './infrastructure/services/google-oauth.service';
+
+export {
+  AppleAuthService,
+  appleAuthService,
+} from './infrastructure/services/apple-auth.service';
+export type { AppleAuthResult } from './infrastructure/services/apple-auth.types';
+
+// =============================================================================
+// Email/Password Authentication
+// =============================================================================
+
+export {
+  signInWithEmail,
+  signUpWithEmail,
+  signOut,
+  linkAnonymousWithEmail,
+} from './infrastructure/services/email-auth.service';
+export type {
+  EmailCredentials,
+  EmailAuthResult,
+} from './infrastructure/services/email-auth.service';
+
+// =============================================================================
+// Password Management
+// =============================================================================
+
+export {
+  updateUserPassword,
+} from './infrastructure/services/password.service';
+
+// =============================================================================
+// Auth Listener
+// =============================================================================
+
+export {
+  setupAuthListener,
+} from './infrastructure/services/auth-listener.service';
+export type {
+  AuthListenerConfig,
+  AuthListenerResult,
+} from './infrastructure/services/auth-listener.service';
+
+// =============================================================================
+// User Document Service
+// =============================================================================
+
+export {
+  ensureUserDocument,
+  markUserDeleted,
+  configureUserDocumentService,

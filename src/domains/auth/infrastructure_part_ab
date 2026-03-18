@@ -1,0 +1,6 @@
+} from './infrastructure/services/user-document.service';
+export type {
+  UserDocumentUser,
+  UserDocumentConfig,
+  UserDocumentExtras,
+} from './infrastructure/services/user-document.types';

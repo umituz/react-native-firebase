@@ -1,0 +1,83 @@
+  withData<K extends keyof T>(field: K, value: T[K]): Document<T> {
+    if (!this.data) {
+      throw new Error('Cannot update null document data');
+    }
+
+    const newData = { ...this.data, [field]: value };
+    return new Document(
+      {
+        id: this.id,
+        exists: true,
+        data() {
+          return newData;
+        },
+      } as unknown as DocumentSnapshot<T>,
+      this.path
+    );
+  }
+
+  /**
+   * Validate document data against required fields
+   */
+  validateRequiredFields(requiredFields: (keyof T)[]): { valid: boolean; missing: (keyof T)[] } {
+    if (!this.data) {
+      return { valid: false, missing: requiredFields };
+    }
+
+    const missing = requiredFields.filter(field => !this.hasField(field));
+    return {
+      valid: missing.length === 0,
+      missing,
+    };
+  }
+
+  /**
+   * Check if document matches filter criteria
+   */
+  matches(filter: Partial<T>): boolean {
+    if (!this.data) return false;
+
+    return Object.entries(filter).every(([key, value]) => {
+      const fieldValue = this.data![key as keyof T];
+      return fieldValue === value;
+    });
+  }
+
+  /**
+   * Check if document matches filter criteria
+   */
+  matches(filter: Partial<T>): boolean {
+    if (!this.data) return false;
+
+    return Object.entries(filter).every(([key, value]) => {
+      return this.data[key as keyof T] === value;
+    });
+  }
+
+  /**
+   * Get document size in bytes (approximate)
+   * Useful for quota management
+   */
+  getSize(): number {
+    if (!this.data) return 0;
+
+    return JSON.stringify(this.data).length;
+  }
+
+  /**
+   * Check if document size exceeds limit
+   */
+  exceedsSizeLimit(maxBytes: number): boolean {
+    return this.getSize() > maxBytes;
+  }
+}
+
+/**
+ * Factory function to create document entity
+ */
+export function createDocument<T extends DocumentData>(
+  snapshot: DocumentSnapshot<T>,
+  path: string
+): Document<T> {
+  return Document.fromSnapshot(snapshot, path);
+}
