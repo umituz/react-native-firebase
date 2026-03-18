@@ -158,14 +158,5 @@ export type { UseFirestoreMutationOptions } from './presentation/hooks/useFirest
 export type { UseFirestoreSnapshotOptions } from './presentation/hooks/useFirestoreSnapshot';
 export type { UseSmartFirestoreSnapshotOptions, BackgroundStrategy } from './presentation/hooks/useSmartFirestoreSnapshot';
 
-export { Timestamp } from 'firebase/firestore';
-export type {
-  CollectionReference,
-  QueryDocumentSnapshot,
-  DocumentData,
-  Transaction,
-  DocumentReference,
-  WriteBatch,
-  DocumentSnapshot,
-  QuerySnapshot,
-} from 'firebase/firestore';
+// Firebase types are available from the 'firebase' package directly
+// Import them in your app: import { Timestamp } from 'firebase/firestore';
