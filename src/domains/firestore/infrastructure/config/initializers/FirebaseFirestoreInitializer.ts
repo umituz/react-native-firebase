@@ -4,12 +4,16 @@
  * Single Responsibility: Initialize Firestore instance with optimal caching
  *
  * OPTIMIZATIONS:
- * - Web: Persistent IndexedDB cache (survives restarts)
- * - React Native: Optimized memory cache
- * - Configurable cache size limits (10 MB default)
+ * - Web: Persistent IndexedDB cache (survives restarts) with configurable size
+ * - React Native: Memory cache (platform limitation)
+ * - Configurable cache size limits (10 MB default for persistent cache)
  * - Platform-aware cache strategy
  *
  * COST SAVINGS: ~90% reduction in network reads through persistent caching
+ *
+ * NOTE: As of Firebase v10+, cacheSizeBytes must be specified within the cache
+ * configuration object (e.g., persistentLocalCache({ cacheSizeBytes })) rather than
+ * as a separate Firestore setting. Memory cache doesn't support custom sizes.
  */
 
 import {
@@ -68,11 +72,13 @@ const Platform = {
 function createPersistentCacheConfig(config: Required<FirestoreCacheConfig>): FirestoreSettings {
   try {
     // Create persistent cache with IndexedDB
-    const cacheConfig = persistentLocalCache(/* no settings needed for default */);
+    // Note: cacheSizeBytes must be specified inside the cache object, not as a separate setting
+    const cacheConfig = persistentLocalCache({
+      cacheSizeBytes: config.cacheSizeBytes,
+    });
 
     return {
       localCache: cacheConfig,
-      cacheSizeBytes: config.cacheSizeBytes,
     };
   } catch (error) {
     // If persistent cache fails, fall back to memory cache
@@ -88,12 +94,12 @@ function createPersistentCacheConfig(config: Required<FirestoreCacheConfig>): Fi
  * Uses memory cache for platforms without IndexedDB support
  */
 function createMemoryCacheConfig(config: Required<FirestoreCacheConfig>): FirestoreSettings {
-  // Memory cache - no additional settings needed for React Native
+  // Memory cache - doesn't support cacheSizeBytes parameter
+  // Note: memoryLocalCache() doesn't accept any parameters
   const cacheConfig = memoryLocalCache();
 
   return {
     localCache: cacheConfig,
-    cacheSizeBytes: config.cacheSizeBytes,
   };
 }
 
