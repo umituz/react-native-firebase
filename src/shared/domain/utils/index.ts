@@ -37,8 +37,6 @@ export {
   calculatePercentage,
   calculateRemaining,
   safeFloor,
-  safeCeil,
-  clamp,
   diffMs,
   diffMinutes,
   diffHours,
@@ -48,7 +46,4 @@ export {
   hasMore,
   getResultCount,
   chunkArray,
-  sumArray,
-  averageArray,
-  roundToDecimals,
 } from './calculation.util';
