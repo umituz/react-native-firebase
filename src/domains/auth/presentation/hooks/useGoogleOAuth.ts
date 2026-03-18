@@ -2,20 +2,13 @@
  * useGoogleOAuth Hook
  * Handles Google OAuth flow using expo-auth-session and Firebase auth
  *
- * This hook delegates business logic to GoogleOAuthHookService.
- * Focuses only on React state management and side effects.
- *
  * Max lines: 150 (enforced for maintainability)
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { getFirebaseAuth } from '../../infrastructure/config/FirebaseAuthClient';
 import type { GoogleOAuthConfig } from '../../infrastructure/services/google-oauth.service';
-import {
-  GoogleOAuthHookService,
-  createGoogleOAuthHookService,
-  isExpoAuthSessionAvailable,
-} from './GoogleOAuthHookService';
+import { GoogleOAuthService } from '../../infrastructure/services/google-oauth.service';
 
 export interface UseGoogleOAuthResult {
   signInWithGoogle: () => Promise<SocialAuthResult>;
@@ -33,68 +26,41 @@ interface SocialAuthResult {
 
 /**
  * Hook for Google OAuth authentication
- * Requires expo-auth-session and expo-web-browser to be installed
  */
 export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult {
   const [isLoading, setIsLoading] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
 
-  // Initialize service with config
-  const service = useMemo(() => createGoogleOAuthHookService(config), [config]);
+  const service = new GoogleOAuthService();
 
-  // Update service when config changes
-  useEffect(() => {
-    service.updateConfig(config);
-  }, [service, config]);
+  const googleAvailable = service.isAvailable();
+  const googleConfigured = service.isConfigured(config);
 
-  // Memoize service checks
-  const googleAvailable = useMemo(() => service.isAvailable(), [service]);
-  const googleConfigured = useMemo(() => service.isConfigured(), [service]);
-
-  // Get auth request tuple from service
-  const [, response] = service.getAuthRequest();
-
-  // Handle OAuth response
-  useEffect(() => {
-    if (!googleAvailable || !response) return;
-
-    const handleResponse = async () => {
-      setIsLoading(true);
-      setGoogleError(null);
-
-      try {
-        const auth = getFirebaseAuth();
-        await service.handleResponse(response, auth);
-      } catch (error) {
-        setGoogleError(service.getErrorMessage(error));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    handleResponse().catch((err) => {
-      if (__DEV__) {
-        console.error('[useGoogleOAuth] Unexpected error in handleResponse:', err);
-      }
-    });
-  }, [response, googleAvailable, service]);
-
-  // Sign in with Google
   const signInWithGoogle = useCallback(async (): Promise<SocialAuthResult> => {
     setIsLoading(true);
     setGoogleError(null);
 
     try {
       const auth = getFirebaseAuth();
-      return await service.signIn(auth);
+      const result = await service.signInWithOAuth(auth, config);
+
+      if (!result.success) {
+        setGoogleError(result.error || 'Google sign-in failed');
+        return { success: false, error: result.error };
+      }
+
+      return {
+        success: true,
+        isNewUser: result.isNewUser,
+      };
     } catch (error) {
-      const errorMessage = service.getErrorMessage(error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setGoogleError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
     }
-  }, [service]);
+  }, [service, config]);
 
   return {
     signInWithGoogle,
@@ -104,10 +70,3 @@ export function useGoogleOAuth(config?: GoogleOAuthConfig): UseGoogleOAuthResult
     googleError,
   };
 }
-
-/**
- * Check if expo-auth-session is available
- * Useful for conditional rendering
- */
-export { isExpoAuthSessionAvailable };
-

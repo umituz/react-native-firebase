@@ -20,7 +20,6 @@ export {
   isFirestoreInitialized,
   getFirestoreInitializationError,
   resetFirestoreClient,
-  firestoreClient,
 } from './infrastructure/config/FirestoreClient';
 export type { Firestore } from './infrastructure/config/FirestoreClient';
 

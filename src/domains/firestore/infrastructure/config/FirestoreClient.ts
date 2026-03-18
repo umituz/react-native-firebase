@@ -3,14 +3,11 @@
  *
  * Domain-Driven Design: Infrastructure implementation of Firestore client
  * Singleton pattern for managing Firestore instance
- *
- * IMPORTANT: This package requires Firebase App to be initialized first.
- * Use @umituz/react-native-firebase to initialize Firebase App.
  */
 
 import type { Firestore } from 'firebase/firestore';
+import { getFirestore as getFirestoreFromFirebase } from 'firebase/firestore';
 import { getFirebaseApp } from '../../../../shared/infrastructure/config/services/FirebaseInitializationService';
-import { FirebaseFirestoreInitializer } from './initializers/FirebaseFirestoreInitializer';
 import { ServiceClientSingleton } from '../../../../shared/infrastructure/config/base/ServiceClientSingleton';
 
 /**
@@ -19,22 +16,32 @@ import { ServiceClientSingleton } from '../../../../shared/infrastructure/config
  */
 class FirestoreClientSingleton extends ServiceClientSingleton<Firestore> {
   private constructor() {
-    super({
-      serviceName: 'Firestore',
-      initializer: () => {
-        const app = getFirebaseApp();
-        if (!app) {
-          this.setError('Firebase App is not initialized');
-          return null;
-        }
-        return FirebaseFirestoreInitializer.initialize(app);
-      },
-      autoInitializer: () => {
-        const app = getFirebaseApp();
-        if (!app) return null;
-        return FirebaseFirestoreInitializer.initialize(app);
-      },
-    });
+    super();
+  }
+
+  initialize(): Firestore {
+    try {
+      const app = getFirebaseApp();
+      if (!app) {
+        this.setError('Firebase App is not initialized');
+        throw new Error('Firebase App is not initialized');
+      }
+
+      const firestore = getFirestoreFromFirebase(app);
+      this.instance = firestore;
+      return firestore;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Firestore initialization failed';
+      this.setError(errorMessage);
+      throw error;
+    }
+  }
+
+  getFirestore(): Firestore {
+    if (!this.isInitialized()) {
+      return this.initialize();
+    }
+    return this.getInstance();
   }
 
   private static instance: FirestoreClientSingleton | null = null;
@@ -45,53 +52,28 @@ class FirestoreClientSingleton extends ServiceClientSingleton<Firestore> {
     }
     return this.instance;
   }
-
-  /**
-   * Initialize Firestore
-   */
-  override initialize(): Firestore | null {
-    return super.initialize();
-  }
-
-  /**
-   * Get Firestore instance with auto-initialization
-   */
-  getFirestore(): Firestore | null {
-    return this.getInstance(true);
-  }
 }
 
-function getFirestoreClientSafe(): FirestoreClientSingleton | null {
-  try {
-    return FirestoreClientSingleton.getInstance();
-  } catch (error) {
-    if (__DEV__) {
-      console.error('[Firestore] Could not create Firestore client singleton:', error);
-    }
-    return null;
-  }
-}
+const firestoreClientSingleton = FirestoreClientSingleton.getInstance();
 
-export const firestoreClient = getFirestoreClientSafe();
+export const initializeFirestore = (): Firestore => {
+  return firestoreClientSingleton.initialize();
+};
 
-export function initializeFirestore(): Firestore | null {
-  return firestoreClient?.initialize() ?? null;
-}
+export const getFirestore = (): Firestore => {
+  return firestoreClientSingleton.getFirestore();
+};
 
-export function getFirestore(): Firestore | null {
-  return firestoreClient?.getFirestore() ?? null;
-}
+export const isFirestoreInitialized = (): boolean => {
+  return firestoreClientSingleton.isInitialized();
+};
 
-export function isFirestoreInitialized(): boolean {
-  return firestoreClient?.isInitialized() ?? false;
-}
+export const getFirestoreInitializationError = (): Error | null => {
+  return firestoreClientSingleton.getInitializationError();
+};
 
-export function getFirestoreInitializationError(): string | null {
-  return firestoreClient?.getInitializationError() ?? null;
-}
-
-export function resetFirestoreClient(): void {
-  firestoreClient?.reset();
-}
+export const resetFirestoreClient = (): void => {
+  firestoreClientSingleton.reset();
+};
 
 export type { Firestore } from 'firebase/firestore';
