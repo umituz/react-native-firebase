@@ -2,6 +2,11 @@
  * React Native Firebase - Unified Package
  *
  * Domain-Driven Design (DDD) Architecture
+ *
+ * IMPORTANT: This package does NOT import from 'firebase/app' or other firebase packages.
+ * Import firebase SDK directly in your app if you need those types.
+ *
+ * This package provides utilities and abstractions ONLY for React Native.
  */
 
 // Core Errors

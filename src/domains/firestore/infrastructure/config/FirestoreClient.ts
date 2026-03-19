@@ -1,79 +1,80 @@
 /**
- * Firestore Client - Infrastructure Layer
+ * Firestore Configuration Client
  *
- * Domain-Driven Design: Infrastructure implementation of Firestore client
- * Singleton pattern for managing Firestore instance
+ * IMPORTANT: Does NOT import from firebase/firestore.
+ * Import firebase SDK in your app and initialize it there.
+ *
+ * This client only provides type definitions and initialization helpers.
  */
 
-import type { Firestore } from 'firebase/firestore';
-import { getFirestore as getFirestoreFromFirebase } from 'firebase/firestore';
-import { getFirebaseApp } from '../../../../shared/infrastructure/config/services/FirebaseInitializationService';
-import { ServiceClientSingleton } from '../../../../shared/infrastructure/config/base/ServiceClientSingleton';
+import { FirebaseInitializationError } from "../../../../shared/domain/errors/FirebaseError";
+
+export interface Firestore {
+  app: unknown; // FirebaseApp from firebase/app
+}
+
+let firestoreInstance: Firestore | null = null;
+let initializationError: Error | null = null;
 
 /**
- * Firestore Client Singleton
- * Manages Firestore initialization
+ * Initialize Firestore
+ * Note: This is a placeholder. You should initialize Firestore in your app using:
+ * import { initializeFirestore } from 'firebase/firestore';
+ * import { getReactNativePersistence } from 'firebase/firestore/react-native';
  */
-class FirestoreClientSingleton extends ServiceClientSingleton<Firestore> {
-  private constructor() {
-    super();
+export async function initializeFirestore(
+  firebaseApp: unknown // FirebaseApp from firebase/app
+): Promise<Firestore> {
+  if (firestoreInstance) {
+    return firestoreInstance;
   }
 
-  initialize(): Firestore {
-    try {
-      const app = getFirebaseApp();
-      if (!app) {
-        this.setError('Firebase App is not initialized');
-        throw new Error('Firebase App is not initialized');
-      }
+  try {
+    // In a real app, you would do:
+    // const { getFirestore, initializeFirestore } = await import('firebase/firestore');
+    // const { getReactNativePersistence } = await import('firebase/firestore/react-native');
+    // const persistence = getReactNativePersistence();
+    // firestoreInstance = initializeFirestore(firebaseApp, {
+    //   localCache: persistence
+    // });
 
-      const firestore = getFirestoreFromFirebase(app);
-      this.instance = firestore;
-      return firestore;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Firestore initialization failed';
-      this.setError(errorMessage);
-      throw error;
-    }
-  }
-
-  getFirestore(): Firestore {
-    if (!this.isInitialized()) {
-      return this.initialize();
-    }
-    return this.getInstance();
-  }
-
-  private static instance: FirestoreClientSingleton | null = null;
-
-  static getInstance(): FirestoreClientSingleton {
-    if (!this.instance) {
-      this.instance = new FirestoreClientSingleton();
-    }
-    return this.instance;
+    // For now, this is a placeholder that assumes firestore is initialized elsewhere
+    throw new FirebaseInitializationError(
+      "Firestore must be initialized in your app using firebase/firestore SDK. " +
+      "Use initializeFirestore() from 'firebase/firestore' with React Native persistence."
+    );
+  } catch (error) {
+    initializationError = error as Error;
+    throw error;
   }
 }
 
-const firestoreClientSingleton = FirestoreClientSingleton.getInstance();
+/**
+ * Get Firestore instance
+ * Returns null if not initialized
+ */
+export function getFirestore(): Firestore | null {
+  return firestoreInstance;
+}
 
-export const initializeFirestore = (): Firestore => {
-  return firestoreClientSingleton.initialize();
-};
+/**
+ * Check if Firestore is initialized
+ */
+export function isFirestoreInitialized(): boolean {
+  return firestoreInstance !== null;
+}
 
-export const getFirestore = (): Firestore => {
-  return firestoreClientSingleton.getFirestore();
-};
+/**
+ * Get Firestore initialization error
+ */
+export function getFirestoreInitializationError(): Error | null {
+  return initializationError;
+}
 
-export const isFirestoreInitialized = (): boolean => {
-  return firestoreClientSingleton.isInitialized();
-};
-
-export const getFirestoreInitializationError = (): Error | null => {
-  return firestoreClientSingleton.getInitializationError();
-};
-
-export const resetFirestoreClient = (): void => {
-  firestoreClientSingleton.reset();
-};
-
-export type { Firestore } from 'firebase/firestore';
+/**
+ * Reset Firestore client state
+ */
+export function resetFirestoreClient(): void {
+  firestoreInstance = null;
+  initializationError = null;
+}

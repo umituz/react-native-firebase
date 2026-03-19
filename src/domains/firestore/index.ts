@@ -1,6 +1,11 @@
 /**
  * React Native Firestore Module
  * Domain-Driven Design (DDD) Architecture
+ *
+ * IMPORTANT: This package does NOT import from 'firebase/firestore' or 'firebase/auth'.
+ * Import those directly in your app using the firebase SDK if you need types.
+ *
+ * This package provides utilities and repositories ONLY.
  */
 
 // =============================================================================
@@ -101,7 +106,3 @@ export { useFirestoreSnapshot } from './presentation/hooks/useFirestoreSnapshot'
 export type { UseFirestoreQueryOptions } from './presentation/hooks/useFirestoreQuery';
 export type { UseFirestoreMutationOptions } from './presentation/hooks/useFirestoreMutation';
 export type { UseFirestoreSnapshotOptions } from './presentation/hooks/useFirestoreSnapshot';
-
-// Export Firestore types directly from firebase package
-// Import them in your app: import { Timestamp } from 'firebase/firestore';
-
