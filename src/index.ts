@@ -32,8 +32,6 @@ export type {
   ServiceInitializationResult,
 } from "./shared/infrastructure/config/services/FirebaseInitializationService";
 
-export type { FirebaseApp } from 'firebase/app';
-
 // Type Guards
 export {
   isFirestoreError,

@@ -102,16 +102,6 @@ export type { UseFirestoreQueryOptions } from './presentation/hooks/useFirestore
 export type { UseFirestoreMutationOptions } from './presentation/hooks/useFirestoreMutation';
 export type { UseFirestoreSnapshotOptions } from './presentation/hooks/useFirestoreSnapshot';
 
-// Re-export commonly used Firebase Firestore types
-export type {
-  Timestamp,
-  DocumentSnapshot,
-  QuerySnapshot,
-  DocumentReference,
-  CollectionReference,
-  Query,
-  Transaction,
-} from 'firebase/firestore';
-
-// Firebase types are available from the 'firebase' package directly
+// Export Firestore types directly from firebase package
 // Import them in your app: import { Timestamp } from 'firebase/firestore';
+
