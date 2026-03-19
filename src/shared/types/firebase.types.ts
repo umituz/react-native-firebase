@@ -29,9 +29,9 @@ export interface FirebaseAppOptions {
 // Firestore Types
 // =============================================================================
 
-export interface Firestore {
-  app: FirebaseApp;
-}
+// Firestore type - use 'any' to avoid type conflicts with Firebase SDK
+// In your app, import the actual type: import type { Firestore } from 'firebase/firestore'
+export type Firestore = any;
 
 export interface DocumentSnapshot<T = unknown> {
   id: string;

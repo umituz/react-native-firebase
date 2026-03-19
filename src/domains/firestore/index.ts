@@ -18,14 +18,19 @@ export * from './domain';
 // INFRASTRUCTURE LAYER - Implementation
 // =============================================================================
 
-// Firestore Client
-export {
-  initializeFirestore,
-  getFirestore,
-  isFirestoreInitialized,
-  getFirestoreInitializationError,
-  resetFirestoreClient,
-} from './infrastructure/config/FirestoreClient';
+// IMPORTANT: Use Firebase SDK directly for Firestore operations
+// Import in your app: import { getFirestore } from 'firebase/firestore';
+//
+// Firestore initialization:
+// import { initializeFirestore } from 'firebase/firestore';
+// import { getReactNativePersistence } from 'firebase/firestore/react-native';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+//
+// const db = initializeFirestore(firebaseApp, {
+//   localCache: getReactNativePersistence(AsyncStorage)
+// });
+
+// Firestore type (any to avoid conflicts)
 export type { Firestore } from './infrastructure/config/FirestoreClient';
 
 // Repositories
