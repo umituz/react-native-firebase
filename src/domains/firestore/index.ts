@@ -30,8 +30,11 @@ export * from './domain';
 //   localCache: getReactNativePersistence(AsyncStorage)
 // });
 
-// Firestore type (any to avoid conflicts)
+// Re-export Firestore type (any to avoid conflicts)
 export type { Firestore } from './infrastructure/config/FirestoreClient';
+
+// Re-export getFirestore for convenience (imports from Firebase SDK)
+export { getFirestore } from 'firebase/firestore';
 
 // Repositories
 export { BaseRepository } from './infrastructure/repositories/BaseRepository';
