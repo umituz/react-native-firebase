@@ -47,7 +47,7 @@ class FirebaseAuthClientSingleton extends ServiceClientSingleton<Auth, FirebaseA
   }
 
   /**
-   * Get Auth instance
+   * Get Auth instance with enhanced auto-initialization
    */
   getAuth(): Auth | null {
     // Attempt initialization if not already initialized
@@ -55,16 +55,26 @@ class FirebaseAuthClientSingleton extends ServiceClientSingleton<Auth, FirebaseA
       try {
         const app = getFirebaseApp();
         if (app) {
-          this.initialize();
+          const auth = this.initialize();
+          if (__DEV__ && !auth) {
+            console.warn('[Firebase] Auto-initialization of Auth returned null');
+          }
+        } else {
+          if (__DEV__) {
+            console.warn('[Firebase] Firebase App not available for Auth auto-initialization');
+          }
         }
       } catch (error) {
         // Silently handle auto-initialization errors
         // The error will be stored in state for later retrieval
         const errorMessage = error instanceof Error ? error.message : 'Auto-initialization failed';
         this.setError(errorMessage);
+        if (__DEV__) {
+          console.error('[Firebase] Auth auto-initialization failed:', errorMessage);
+        }
       }
     }
-    // Enable auto-initialization flag when getting instance
+    // Return instance (will attempt auto-init if needed)
     return this.getInstance(true);
   }
 }

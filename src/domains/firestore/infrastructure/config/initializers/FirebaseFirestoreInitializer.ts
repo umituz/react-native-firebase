@@ -68,11 +68,13 @@ const Platform = {
 function createPersistentCacheConfig(config: Required<FirestoreCacheConfig>): FirestoreSettings {
   try {
     // Create persistent cache with IndexedDB
-    const cacheConfig = persistentLocalCache(/* no settings needed for default */);
+    // Note: cacheSizeBytes is deprecated, must be specified in cache object
+    const cacheConfig = persistentLocalCache({
+      cacheSizeBytes: config.cacheSizeBytes,
+    });
 
     return {
       localCache: cacheConfig,
-      cacheSizeBytes: config.cacheSizeBytes,
     };
   } catch (error) {
     // If persistent cache fails, fall back to memory cache
@@ -88,12 +90,13 @@ function createPersistentCacheConfig(config: Required<FirestoreCacheConfig>): Fi
  * Uses memory cache for platforms without IndexedDB support
  */
 function createMemoryCacheConfig(config: Required<FirestoreCacheConfig>): FirestoreSettings {
-  // Memory cache - no additional settings needed for React Native
-  const cacheConfig = memoryLocalCache();
+  // Memory cache with cacheSizeBytes specified in cache object
+  const cacheConfig = memoryLocalCache({
+    cacheSizeBytes: config.cacheSizeBytes,
+  });
 
   return {
     localCache: cacheConfig,
-    cacheSizeBytes: config.cacheSizeBytes,
   };
 }
 

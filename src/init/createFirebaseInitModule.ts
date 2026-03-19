@@ -51,23 +51,37 @@ export function createFirebaseInitModule(
         });
 
         if (!result.app) {
+          const errorMsg = 'Firebase configuration not found. Please set EXPO_PUBLIC_FIREBASE_* environment variables.';
           if (__DEV__) {
-            console.warn('[Firebase] Firebase config not found or invalid — skipping initialization. Set EXPO_PUBLIC_FIREBASE_* env vars to enable.');
+            console.error(`[Firebase] ${errorMsg}`);
+          }
+          // In production, this is a critical error
+          if (critical) {
+            throw new Error(errorMsg);
           }
           return false;
         }
 
         if (result.auth === false && result.authError) {
+          const errorMsg = `Auth initialization failed: ${result.authError}`;
           if (__DEV__) {
-            console.warn(`[Firebase] Auth initialization skipped: ${result.authError}`);
+            console.error(`[Firebase] ${errorMsg}`);
+          }
+          // Auth failure is critical for apps that require authentication
+          if (critical && authInitializer) {
+            throw new Error(errorMsg);
           }
         }
 
         return true;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage = error instanceof Error ? error.message : 'Unknown Firebase initialization error';
         if (__DEV__) {
-          console.warn(`[Firebase] Initialization skipped: ${errorMessage}`);
+          console.error(`[Firebase] Initialization failed: ${errorMessage}`);
+        }
+        // Re-throw in production if this is a critical module
+        if (critical) {
+          throw error;
         }
         return false;
       }
