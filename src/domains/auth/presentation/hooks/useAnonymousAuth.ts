@@ -87,9 +87,11 @@ export function useAnonymousAuth(auth: Auth | null): UseAnonymousAuthResult {
 
     try {
       // Listen to auth state changes
-      unsubscribeRef.current = onAuthStateChanged(auth, (user) => {
+      // FIX: Capture return value for proper cleanup
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
         handleAuthStateChange(user);
       });
+      unsubscribeRef.current = unsubscribe;
     } catch (err) {
       const authError = err instanceof Error ? err : new Error('Auth listener setup failed');
       setError(authError);

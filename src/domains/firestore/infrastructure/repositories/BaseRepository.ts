@@ -120,7 +120,7 @@ export abstract class BaseRepository implements IPathResolver {
   /**
    * Track read operation for quota monitoring
    *
-   * @param collection - Collection name
+   * @param collection - Collection name (for documentation purposes)
    * @param count - Number of documents read
    * @param cached - Whether the result is from cache
    */
@@ -129,33 +129,33 @@ export abstract class BaseRepository implements IPathResolver {
     count: number = 1,
     cached: boolean = false,
   ): void {
-    quotaTrackingMiddleware.trackRead(collection, count, cached);
+    quotaTrackingMiddleware.trackRead(count, cached);
   }
 
   /**
    * Track write operation for quota monitoring
    *
-   * @param collection - Collection name
+   * @param collection - Collection name (for documentation purposes)
    * @param count - Number of documents written
    */
   protected trackWrite(
     collection: string,
     count: number = 1,
   ): void {
-    quotaTrackingMiddleware.trackWrite(collection, count);
+    quotaTrackingMiddleware.trackWrite(count);
   }
 
   /**
    * Track delete operation for quota monitoring
    *
-   * @param collection - Collection name
+   * @param collection - Collection name (for documentation purposes)
    * @param count - Number of documents deleted
    */
   protected trackDelete(
     collection: string,
     count: number = 1,
   ): void {
-    quotaTrackingMiddleware.trackDelete(collection, count);
+    quotaTrackingMiddleware.trackDelete(count);
   }
 
   /**

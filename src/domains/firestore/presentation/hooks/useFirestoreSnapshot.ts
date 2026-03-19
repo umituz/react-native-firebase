@@ -50,7 +50,8 @@ export function useFirestoreSnapshot<TData>(
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Stabilize queryKey to prevent unnecessary listener re-subscriptions
-  const stableKeyString = JSON.stringify(queryKey);
+  // PERF: Memoize stringified key to avoid expensive JSON.stringify on every render
+  const stableKeyString = useMemo(() => JSON.stringify(queryKey), [queryKey]);
   const stableQueryKey = useMemo(() => queryKey, [stableKeyString]);
 
   useEffect(() => {

@@ -43,9 +43,11 @@ export class RequestLoggerService {
 
   /**
    * Get all logs
+   * PERF: Return array directly without copy - logs is private and immutable from outside
+   * Callers should not modify the returned array.
    */
   getLogs(): RequestLog[] {
-    return [...this.logs];
+    return this.logs;
   }
 
   /**
@@ -144,9 +146,10 @@ export class RequestLoggerService {
 
   /**
    * Notify all listeners
+   * PERF: Use for...of instead of forEach for better performance
    */
   private notifyListeners(log: RequestLog): void {
-    this.listeners.forEach((listener) => {
+    for (const listener of this.listeners) {
       try {
         listener(log);
       } catch (error) {
@@ -157,7 +160,7 @@ export class RequestLoggerService {
           console.warn(`${RequestLoggerService.LISTENER_ERROR_PREFIX} ${errorMessage}`);
         }
       }
-    });
+    }
   }
 }
 

@@ -82,7 +82,10 @@ export const useFirebaseAuthStore = createStore<AuthState, AuthActions>({
           unsubscribe = null;
         }
         setupInProgress = false;
-        activeComponentCount--;
+        // Only decrement if we successfully incremented (wasn't already set up)
+        if (state.listenerSetup === false && !unsubscribe) {
+          activeComponentCount--;
+        }
         set({ listenerSetup: false, loading: false });
         throw error; // Re-throw to allow caller to handle
       }

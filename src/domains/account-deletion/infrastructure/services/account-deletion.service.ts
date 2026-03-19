@@ -175,7 +175,16 @@ async function attemptReauth(user: User, options: AccountDeletionOptions, origin
   if (res.success) {
     try {
       const postReauthAuth = getFirebaseAuth();
-      const currentUser = postReauthAuth?.currentUser || user;
+      // FIX: Explicit null check - don't fallback to user if auth state changed
+      if (!postReauthAuth?.currentUser) {
+        return {
+          success: false,
+          error: { code: 'auth/user-changed', message: 'User changed during reauthentication' },
+          requiresReauth: false
+        };
+      }
+
+      const currentUser = postReauthAuth.currentUser;
 
       if (originalUserId) {
         const validationCheck = validateUserUnchanged(postReauthAuth, originalUserId);

@@ -89,7 +89,7 @@ export {
   isRetryableError,
 } from '../../shared/domain/utils/error-handlers/error-checkers';
 export {
-  getQuotaErrorMessage,
+  ERROR_MESSAGES,
 } from '../../shared/domain/utils/error-handlers/error-messages';
 
 // Middleware
@@ -97,7 +97,6 @@ export {
   QueryDeduplicationMiddleware,
   queryDeduplicationMiddleware,
   syncDeduplicationWithQuota,
-  useDeduplicationWithQuota,
 } from './infrastructure/middleware/QueryDeduplicationMiddleware';
 export type {
   QueryDeduplicationConfig,

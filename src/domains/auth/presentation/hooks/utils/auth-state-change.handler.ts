@@ -30,17 +30,11 @@ export function createAuthStateChangeHandler(
   const { setAuthState, setLoading, setError } = params;
 
   return (user: User | null) => {
-    try {
-      const authState = createAuthCheckResult(user);
-      setAuthState(authState);
-      setError(null);
-    } catch (err) {
-      const authError =
-        err instanceof Error ? err : new Error('Auth state check failed');
-      setError(authError);
-    } finally {
-      setLoading(false);
-    }
+    // FIX: Removed unnecessary try-catch - createAuthCheckResult cannot throw
+    const authState = createAuthCheckResult(user);
+    setAuthState(authState);
+    setError(null);
+    setLoading(false);
   };
 }
 

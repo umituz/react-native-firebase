@@ -38,7 +38,9 @@ export class PendingQueryManager {
     const pending = this.pendingQueries.get(key);
     if (!pending) return false;
 
-    const age = Date.now() - pending.timestamp;
+    // PERF: Cache Date.now() to avoid multiple calls in hot path
+    const now = Date.now();
+    const age = now - pending.timestamp;
     if (age > this.deduplicationWindowMs) {
       this.pendingQueries.delete(key);
       return false;
@@ -61,16 +63,21 @@ export class PendingQueryManager {
    * Also attaches cleanup handlers to prevent memory leaks.
    */
   add(key: string, promise: Promise<unknown>): void {
+    // PERF: Cache timestamp to avoid multiple Date.now() calls
+    const now = Date.now();
+
+    // Set first, then attach cleanup handler to prevent race condition
+    // where immediately-resolved promise triggers cleanup before set()
+    this.pendingQueries.set(key, {
+      promise,
+      timestamp: now,
+    });
+
     // Attach cleanup handler to ensure query is removed from map
     // even if caller's finally block doesn't execute (e.g., unhandled rejection)
     promise.finally(() => {
       // Immediate cleanup - no delay needed for better performance
       this.pendingQueries.delete(key);
-    });
-
-    this.pendingQueries.set(key, {
-      promise,
-      timestamp: Date.now(),
     });
   }
 

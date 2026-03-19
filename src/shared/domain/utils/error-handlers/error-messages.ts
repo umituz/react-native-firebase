@@ -43,7 +43,3 @@ export const ERROR_MESSAGES = {
   },
 } as const;
 
-export function getQuotaErrorMessage(): string {
-  return ERROR_MESSAGES.FIRESTORE.QUOTA_EXCEEDED;
-}
-

@@ -31,10 +31,16 @@ export async function runTransaction<T>(
     const errorCode = hasCodeProperty(error) ? error.code : 'unknown';
 
     if (isQuotaError(error)) {
-      throw new Error(`[runTransaction] ${ERROR_MESSAGES.FIRESTORE.QUOTA_EXCEEDED}: ${errorMessage} (Code: ${errorCode})`);
+      // FIX: Preserve original error by adding it as a custom property
+      const quotaError = new Error(`[runTransaction] ${ERROR_MESSAGES.FIRESTORE.QUOTA_EXCEEDED}: ${errorMessage} (Code: ${errorCode})`);
+      (quotaError as any).originalError = error;
+      throw quotaError;
     }
 
-    throw new Error(`[runTransaction] Transaction failed: ${errorMessage} (Code: ${errorCode})`);
+    // FIX: Preserve original error for debugging
+    const transactionError = new Error(`[runTransaction] Transaction failed: ${errorMessage} (Code: ${errorCode})`);
+    (transactionError as any).originalError = error;
+    throw transactionError;
   }
 }
 

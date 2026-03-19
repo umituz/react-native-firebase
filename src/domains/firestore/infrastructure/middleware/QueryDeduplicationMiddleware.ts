@@ -304,9 +304,3 @@ export function syncDeduplicationWithQuota(
   const quotaPercentage = counts.reads / quotaLimits.dailyReadLimit;
   deduplication.adjustWindowForQuota(quotaPercentage);
 }
-
-/**
- * @deprecated Use syncDeduplicationWithQuota instead (not a hook)
- * This will be removed in a future version
- */
-export const useDeduplicationWithQuota = syncDeduplicationWithQuota;

@@ -49,8 +49,11 @@ export class PaginationHelper<T> {
     let nextCursor: string | null = null;
     if (hasMoreValue && resultItems.length > 0) {
       // Access is safe because we checked length > 0
-      const lastItem = resultItems[resultItems.length - 1]!;
-      nextCursor = getCursor(lastItem);
+      const lastIndex = resultItems.length - 1;
+      const lastItem = resultItems[lastIndex];
+      if (lastItem) {
+        nextCursor = getCursor(lastItem);
+      }
     }
 
     return {

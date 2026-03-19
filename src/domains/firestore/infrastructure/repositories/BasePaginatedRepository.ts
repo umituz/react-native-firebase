@@ -78,7 +78,9 @@ export abstract class BasePaginatedRepository extends BaseQueryRepository {
     }
 
     // Generate a unique key for deduplication (after cursor is resolved)
-    const uniqueKey = `${collectionName}_list_${orderByField}_${orderDirection}_${fetchLimit}_${cursorKey}`;
+    // FIX: Escape cursor to prevent key collisions from special characters
+    const escapedCursor = cursorKey.replace(/[|]/g, '_');
+    const uniqueKey = `${collectionName}_list_${orderByField}_${orderDirection}_${fetchLimit}_${escapedCursor}`;
 
     return this.executeQuery(
       collectionName,
