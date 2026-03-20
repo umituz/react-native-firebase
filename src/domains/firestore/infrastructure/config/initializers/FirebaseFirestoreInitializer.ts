@@ -211,6 +211,8 @@ export class FirebaseFirestoreInitializer {
   static async clearPersistentCache(app: FirebaseApp): Promise<void> {
     try {
       const db = getFirestore(app);
+      // clearPersistentCache exists in Firestore SDK but not in TypeScript definitions
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (db as any).clearPersistentCache();
       if (__DEV__) {
         console.log('[Firestore] Persistent cache cleared');
