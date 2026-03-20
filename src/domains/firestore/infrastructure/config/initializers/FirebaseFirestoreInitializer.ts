@@ -90,10 +90,8 @@ function createPersistentCacheConfig(config: Required<FirestoreCacheConfig>): Fi
  * Uses memory cache for platforms without IndexedDB support
  */
 function createMemoryCacheConfig(config: Required<FirestoreCacheConfig>): FirestoreSettings {
-  // Memory cache with cacheSizeBytes specified in cache object
-  const cacheConfig = memoryLocalCache({
-    cacheSizeBytes: config.cacheSizeBytes,
-  });
+  // Memory cache - Firebase SDK manages cache size automatically
+  const cacheConfig = memoryLocalCache();
 
   return {
     localCache: cacheConfig,
