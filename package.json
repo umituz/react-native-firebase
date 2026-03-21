@@ -1,6 +1,6 @@
 {
   "name": "@umituz/react-native-firebase",
-  "version": "3.0.15",
+  "version": "3.0.16",
   "description": "Firebase package for React Native mobile apps - Auth and Firestore services.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
